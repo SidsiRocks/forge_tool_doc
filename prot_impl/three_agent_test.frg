@@ -14,7 +14,7 @@ three_agent_base_test : run {
 
     //constrain_skeleton_three_agent_0
 }for 
-    exactly 12 Timeslot,50 mesg,
+    exactly 6 Timeslot,50 mesg,
     exactly 1 KeyPairs,exactly 8 Key,exactly 8 akey,0 skey,
     exactly 4 PrivateKey,exactly 4 PublicKey,
 

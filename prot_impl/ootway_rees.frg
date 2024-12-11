@@ -19,7 +19,7 @@ ootway_ress_base_test: run {
 //ask about that itself
 //16 Timeslot should be enough trying larger number to check something
 
-    exactly 24 Timeslot,50 mesg,
+    exactly 8 Timeslot,50 mesg,
     exactly 1 KeyPairs,exactly 8 Key,exactly 0 akey,exactly 8 skey,
     exactly 0 PrivateKey, exactly 0 PublicKey,
 
