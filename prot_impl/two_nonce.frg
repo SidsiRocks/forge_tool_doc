@@ -6,7 +6,8 @@ pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
 }
 
-option run_sterling "temp_vis.js"
+option run_sterling "../documentation/temp_vis.js"
+option solver MiniSatProver
 
 two_nonce_init_pov : run {
     wellformed
@@ -37,6 +38,7 @@ two_nonce_init_pov : run {
     //same nonce problem seems to be resolved
     //have to deal with initiator trying tot talk to attacker, may want to change that
     //when planning to detect an attack
+    two_nonce_init.agent = AttackerStrand.agent
 }for 
     exactly 6 Timeslot,25 mesg,
     exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,0 skey,
