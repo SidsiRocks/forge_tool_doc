@@ -6,6 +6,8 @@ pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
 }
 
+option run_sterling "temp_vis.js"
+
 two_nonce_init_pov : run {
     wellformed
 

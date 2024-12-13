@@ -26,7 +26,7 @@
 )
 (defskeleton ootway_rees
     (vars (a b s name) (m na nb text) (k_ab skey))
-    (defstrand A 2 (a a) (b b) (s s) (m m) (na na) (nb nb) (k_ab k_ab))
+    (defstrand S 2 (a a) (b b) (s s) (m m) (na na) (nb nb) (k_ab k_ab))
     (non-orig (ltk a s) (ltk b s))
     (uniq-orig m na nb)    
 )
