@@ -11,6 +11,7 @@ option solver MiniSatProver
 option logtranslation 1
 option coregranularity 1
 option engine_verbosity 3
+option core_minimization rce
 
 two_nonce_init_pov : run {
     wellformed
