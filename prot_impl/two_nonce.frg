@@ -8,6 +8,9 @@ pred corrected_attacker_learns[d:mesg]{
 
 option run_sterling "../documentation/temp_vis.js"
 option solver MiniSatProver
+option logtranslation 1
+option coregranularity 1
+option engine_verbosity 3
 
 two_nonce_init_pov : run {
     wellformed
