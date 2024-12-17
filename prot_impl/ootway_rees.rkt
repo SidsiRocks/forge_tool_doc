@@ -11,7 +11,7 @@
         (vars (a b s name) (m na nb text) (k_ab skey))
         (trace
             (recv (cat m a b (enc na m a b (ltk a s))))
-            (send (cat m a b (enc na m a b (ltk a s)) (enc nb m a b (ltk b s))))
+            (send (cat m a b (enc na m a b (ltk a s))  (enc nb m a b (ltk b s))  )   )
             (recv (cat m (enc na k_ab (ltk a s)) (enc nb k_ab (ltk b s))))
             (send (cat m (enc na k_ab (ltk a s))))
         )
@@ -19,7 +19,7 @@
     (defrole S 
         (vars (a b s name) (m na nb text) (k_ab skey))
         (trace
-            (recv (cat m a b (enc na m a b (ltk a s)) (enc nb m a b (ltk b s))))
+            (recv (cat m a b (enc na m a b (ltk a s))  (enc nb m a b (ltk b s))  )   )
             (send (cat m (enc na k_ab (ltk a s)) (enc nb k_ab (ltk b s))))
         )
     )

@@ -6,6 +6,11 @@ pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
 }
 
+option run_sterling "../documentation/temp_vis.js"
+//option solver Glucose /*This doesn't seem to be working*/
+option solver MiniSatProver
+//option solver MiniSat /*This doesn't seem to be working*/
+
 ootway_ress_base_test: run {
     wellformed
     exec_ootway_rees_A
@@ -15,53 +20,29 @@ ootway_ress_base_test: run {
     constrain_skeleton_ootway_rees_0
 
     //appropiate nonce and agent constraints
-    ootway_rees_A.ootway_rees_A_na != ootway_rees_A.ootway_rees_A_nb
+    //Nonces being different
+    //only setting not equal for the places where the nonces are
+    //generated seems more reliastic and less number of constraints
+
+    //A generates m,na
+
     ootway_rees_A.ootway_rees_A_na != ootway_rees_A.ootway_rees_A_m
-    ootway_rees_A.ootway_rees_A_m  != ootway_rees_A.ootway_rees_A_nb
 
-    ootway_rees_A.ootway_rees_A_a  != ootway_rees_A.ootway_rees_A_b
-    ootway_rees_A.ootway_rees_A_a  != ootway_rees_A.ootway_rees_A_s
-    ootway_rees_A.ootway_rees_A_s  != ootway_rees_A.ootway_rees_A_b
-
-    
-    ootway_rees_B.ootway_rees_B_na != ootway_rees_B.ootway_rees_B_nb
-    ootway_rees_B.ootway_rees_B_na != ootway_rees_B.ootway_rees_B_m
-    ootway_rees_B.ootway_rees_B_m  != ootway_rees_B.ootway_rees_B_nb
-
-    ootway_rees_B.ootway_rees_B_a  != ootway_rees_B.ootway_rees_B_b
-    ootway_rees_B.ootway_rees_B_a  != ootway_rees_B.ootway_rees_B_s
-    ootway_rees_B.ootway_rees_B_s  != ootway_rees_B.ootway_rees_B_b
-    
-    
+    //S generates nb (also can read na nb)
     ootway_rees_S.ootway_rees_S_na != ootway_rees_S.ootway_rees_S_nb
     ootway_rees_S.ootway_rees_S_na != ootway_rees_S.ootway_rees_S_m
-    ootway_rees_S.ootway_rees_S_m  != ootway_rees_S.ootway_rees_S_nb
-    
-    ootway_rees_S.ootway_rees_S_a  != ootway_rees_S.ootway_rees_S_b
-    ootway_rees_S.ootway_rees_S_a  != ootway_rees_S.ootway_rees_S_s
-    ootway_rees_S.ootway_rees_S_s  != ootway_rees_S.ootway_rees_S_b
-    
-    
+    ootway_rees_S.ootway_rees_S_nb != ootway_rees_S.ootway_rees_S_m
+
     //These constraints similar to two_nonce also seems critical here
     /*
     ootway_rees_A.agent != AttackerStrand.agent
     ootway_rees_B.agent != AttackerStrand.agent 
     ootway_rees_S.agent != AttackerStrand.agent
     */
-
-    //trying to get honest principal run first
     /*
-    ootway_rees_A.ootway_rees_A_a = ootway_rees_A.agent
-    ootway_rees_A.ootway_rees_A_b = ootway_rees_B.agent
-    ootway_rees_A.ootway_rees_A_s = ootway_rees_S.agent
-
-    ootway_rees_B.ootway_rees_B_a = ootway_rees_A.agent
-    ootway_rees_B.ootway_rees_B_b = ootway_rees_B.agent
-    ootway_rees_B.ootway_rees_B_s = ootway_rees_S.agent
-
-    ootway_rees_S.ootway_rees_S_a = ootway_rees_A.agent
-    ootway_rees_S.ootway_rees_S_b = ootway_rees_B.agent
-    ootway_rees_S.ootway_rees_S_s = ootway_rees_S.agent
+    ootway_rees_A.agent != ootway_rees_B.agent
+    ootway_rees_B.agent != ootway_rees_S.agent
+    ootway_rees_S.agent != ootway_rees_A.agent
     */
 }for 
 //why exactly needed here

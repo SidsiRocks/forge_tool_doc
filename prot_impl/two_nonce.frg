@@ -5,14 +5,14 @@ open "two_nonce.rkt"
 pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
 }
-
+/*
 option run_sterling "../documentation/temp_vis.js"
 option solver MiniSatProver
 option logtranslation 1
 option coregranularity 1
 option engine_verbosity 3
 option core_minimization rce
-
+*/
 two_nonce_init_pov : run {
     wellformed
 
