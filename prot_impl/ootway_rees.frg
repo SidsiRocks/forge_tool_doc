@@ -6,9 +6,9 @@ pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
 }
 
-option run_sterling "../documentation/temp_vis.js"
+option run_sterling on
 //option solver Glucose /*This doesn't seem to be working*/
-option solver MiniSatProver
+// option solver MiniSatProver
 //option solver MiniSat /*This doesn't seem to be working*/
 
 ootway_ress_base_test: run {
@@ -25,7 +25,7 @@ ootway_ress_base_test: run {
     //generated seems more reliastic and less number of constraints
 
     //A generates m,na
-
+    
     ootway_rees_A.ootway_rees_A_na != ootway_rees_A.ootway_rees_A_m
 
     //S generates nb (also can read na nb)
@@ -34,16 +34,14 @@ ootway_ress_base_test: run {
     ootway_rees_S.ootway_rees_S_nb != ootway_rees_S.ootway_rees_S_m
 
     //These constraints similar to two_nonce also seems critical here
-    /*
+    
     ootway_rees_A.agent != AttackerStrand.agent
     ootway_rees_B.agent != AttackerStrand.agent 
     ootway_rees_S.agent != AttackerStrand.agent
-    */
-    /*
+    
     ootway_rees_A.agent != ootway_rees_B.agent
     ootway_rees_B.agent != ootway_rees_S.agent
     ootway_rees_S.agent != ootway_rees_A.agent
-    */
 }for 
 //why exactly needed here
 //just increased size of message and started working have to 
