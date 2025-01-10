@@ -89,13 +89,4 @@ for {next is linear}
 - Why visualization doesn't work properly when exactly is not included in constraints for text and Ciphertext. (In this case the text/ciphertext are both represented as different message types)
 - Exact length of attack should be known in advance to find attack, is there a way in forge to easily iterate over different possible lengths of the attack?
 - option run_sterling "../vis/crypto_viz.js" Doesn't seem to work, it doesn't open up the visualizer with the script anymore is there any alternative method to add that script?
-- Is there a constraint saying two agents owning LTK cannot be the same, couldn't find anything for that exactly.
-- How to run forge files from the command line, related to this how to check if custom solver being used etc.
-
-/*
-option solver MiniSatProver
-option logtranslation 1
-option coregranularity 1
-option engine_verbosity 3
-option core_minimization rce
-*/
+- Is there a constraint saying two agents owning LTK cannot be the same, couldn't find anything for that exac
