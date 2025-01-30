@@ -5,16 +5,17 @@ open "two_nonce.rkt"
 pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
 }
-/*
-option run_sterling "../documentation/temp_vis.js"
+
+//option run_sterling "../documentation/temp_vis.js"
+
 option solver MiniSatProver
-option logtranslation 1
+option logtranslation 2
 option coregranularity 1
 option engine_verbosity 3
 option core_minimization rce
-*/
+
 //option solver "./run_z3.sh"
-/*
+
 two_nonce_init_pov : run {
     wellformed
 
@@ -44,7 +45,7 @@ two_nonce_init_pov : run {
     //same nonce problem seems to be resolved
     //have to deal with initiator trying tot talk to attacker, may want to change that
     //when planning to detect an attack
-    //two_nonce_init.agent = AttackerStrand.agent
+    two_nonce_init.agent = AttackerStrand.agent
 }for 
     exactly 6 Timeslot,25 mesg,
     exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,0 skey,
@@ -54,5 +55,5 @@ two_nonce_init_pov : run {
     exactly 1 two_nonce_init,exactly 1 two_nonce_resp,
     1 Int
 for {next is linear}
-*/
-run {} for 3
+
+//run {} for 3
