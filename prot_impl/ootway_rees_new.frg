@@ -13,11 +13,11 @@ option core_minimization off
 pred prot_conditions{
         
     //ensure agents performing their own role correctly
-    /*
+    
     ootway_rees_A.ootway_rees_A_a = ootway_rees_A.agent
     ootway_rees_B.ootway_rees_B_b = ootway_rees_B.agent
     ootway_rees_S.ootway_rees_S_s = ootway_rees_S.agent 
-    */
+    
 
     ootway_rees_A.ootway_rees_A_na != ootway_rees_A.ootway_rees_A_m  
     
@@ -28,7 +28,7 @@ pred prot_conditions{
     ootway_rees_S.ootway_rees_S_nb != ootway_rees_S.ootway_rees_S_kab
     ootway_rees_S.ootway_rees_S_m  != ootway_rees_S.ootway_rees_S_kab
     //ensuring k_ab is not a long term key
-    no (KeyPairs.ltks).(ootway_rees_S.ootway_rees_S_kab)
+    //no (KeyPairs.ltks).(ootway_rees_S.ootway_rees_S_kab)
 
     ootway_rees_A.agent != Attacker
     ootway_rees_B.agent != Attacker
@@ -36,11 +36,33 @@ pred prot_conditions{
     
     //Adding this below by itself makes it unsat somehow
     //ootway_rees_S.ootway_rees_S_na != ootway_rees_S.ootway_rees_S_nb
+
+    //Adding these to create an honest run of the protocol
+    ootway_rees_A.ootway_rees_A_b = ootway_rees_B.agent 
+    ootway_rees_A.ootway_rees_A_s = ootway_rees_S.agent 
+
+    ootway_rees_B.ootway_rees_B_a = ootway_rees_A.agent
+    ootway_rees_B.ootway_rees_B_s = ootway_rees_S.agent
+
+    ootway_rees_S.ootway_rees_S_a = ootway_rees_A.agent
+    ootway_rees_S.ootway_rees_S_b = ootway_rees_B.agent
+
+    //added this because a run generated code where ltk was sent instead of k_ab
+    not (ootway_rees_S.ootway_rees_S_kab in (name.(name.(KeyPairs.ltks))))
 }
 
 ootway_prot_run : run {
     //should not ideally need this anyway
     all n: name | no getLTK[n,n]
+    //placing constraint that no long term key can be generated
+    //first part is all long term keys, second part is all generated terms
+    //the set difference should be empty
+    //no (  (name.(name.(KeyPairs.ltks))) - (name.generated_times.Timeslot))
+    //Above was the old constraint which had incorrect logic
+
+    //This is what the correct constraint would look like
+    (name.(name.(KeyPairs.ltks))) = (name.(name.(KeyPairs.ltks))) - (name.generated_times.Timeslot)
+
     wellformed
     prot_conditions
     exec_ootway_rees_A
