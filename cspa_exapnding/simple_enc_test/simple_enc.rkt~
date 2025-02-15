@@ -1,0 +1,17 @@
+#lang forge/domains/crypto
+(defprotocol simple_enc basic
+    (defrole A 
+        (vars (a b name) (n1 n2 text))
+        (trace
+            (send (enc n1 (pubk b)))
+            (recv (enc n2 (pubk a)))
+        )
+    )
+    (defrole B 
+        (vars (a b name) (n1 n2 text))
+        (trace
+            (recv (enc n1 (pubk b)))
+            (send (enc n2 (pubk a)))
+        )
+    )
+)
