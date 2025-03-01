@@ -1,0 +1,6 @@
+- What primitives does base.frg 
+- add signatures (cross check if it is there)
+- add hashes ()
+- no key cycles
+- adding pairs
+- adding timestamps
