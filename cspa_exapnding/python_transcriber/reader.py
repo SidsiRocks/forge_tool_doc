@@ -53,6 +53,7 @@ class MsgType(Enum):
     ATOM_TERM = 3
     LTK_TERM = 4
     PUBK_TERM = 5
+    ##have to add privk forgot to deal with that
 class Message:
     def __init__(self,msg_type:MsgType,args_arr:Union[List['Message'],Variable]):
         self.msg_type = msg_type
@@ -82,9 +83,25 @@ class Protocol:
         return f"Protocol(\n{self.roles_arr},\n{self.prot_name},\n{self.basic_str})"
     def __repr__(self):
         return self.__str__()
-file = open("../additional_enc_test/addit_enc.rkt",'r')
-s_expr = load_cspa_as_s_expr(file) 
-print(s_expr)
+class Strand:
+    #i think trace len is being ignored for now?
+    def __init__(self,role_name:str,trace_len:int,var_map:Dict[str,Variable]):
+        self.role_name = role_name
+        self.trace_len = trace_len
+        self.var_map = var_map
+class ConstrType(Enum):
+    UNIQ_ORIG = 0
+    NON_ORIG = 1
+class Constraint:
+    def __init__(self,constr_type:ConstrType,msg_on_constr:Message):
+        self.constr_type = constr_type
+        self.msg_on_constr = msg_on_constr
+class Skeleton:
+    def __init__(self,skelet_name:str,var_dict:Dict[str,Variable],strand_list:List[Strand],orig_constr:List[Constraint]):
+        self.skelet_name = skelet_name
+        self.var_dict = var_dict
+        self.strand_list = strand_list
+        self.orig_constr = orig_constr
 
 class ParseException(Exception):
     def __init__(self,message):
@@ -92,6 +109,10 @@ class ParseException(Exception):
         super().__init__(message)
 
 DEF_PROT_STR = "defprotocol"
+DEF_SKEL_STR = "defskeleton"
+DEF_STRAND_STR = "defstrand"
+NON_ORIG_STR = "non-orig"
+UNIQ_ORIG_STR = "uniq-orig"
 BASIC_STR = "basic"
 DEF_ROLE_STR = "defrole"
 VARS_STR = "vars"  
@@ -276,8 +297,30 @@ def parse_protocol(s_expr) -> Protocol:
     
     return Protocol([parse_role(role_expr) for role_expr in s_expr[3:]],prot_name,BASIC_STR)    
 
+def parse_strand(s_expr):
+    pass
+def parse_non_orig(s_expr):
+    pass 
+def parse_uniq_orig(s_expr):
+    pass
 def parse_skeleton(s_expr):
-    return ParseException("Have not written code for parsing skeleton yet")
+    if len(s_expr) == 0:
+        raise ParseException("Empty S expression expected defskeleton as first element")
+    match_type_and_str(s_expr[0],DEF_SKEL_STR)
+    skelet_name = get_str_from_symbol(s_expr[1],"skeleton name")
+    var_dict = parse_vars_clause
+
+    strands_list = []
+    constr_arr = []
+
+    for sub_s_expr in s_expr[3:]:
+        first_str = get_str_from_symbol(sub_s_expr[1],"defstrand/non-orig/uniq-orig")
+        if first_str == DEF_STRAND_STR:
+            strands_list.append(parse_strand(sub_s_expr))
+        elif first_str == NON_ORIG_STR:
+            constr_arr.append(parse_non_orig(sub_s_expr))
+        elif first_str == UNIQ_ORIG_STR:
+            constr_arr.append(parse_uniq_orig(sub_s_expr))
 
 def parse_file(s_expr):
     if len(s_expr) == 0:

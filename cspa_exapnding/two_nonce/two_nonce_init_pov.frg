@@ -1,21 +1,7 @@
-#lang forge 
-
-open "two_nonce.rkt"
-
+option run_sterling "../../crypto_viz.js"
 pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
 }
-
-option run_sterling "../../crypto_viz.js"
-
-option solver MiniSatProver
-option logtranslation 2
-option coregranularity 1
-option engine_verbosity 3
-option core_minimization rce
-
-//option solver "./run_z3.sh"
-
 two_nonce_init_pov : run {
     wellformed
 
@@ -54,5 +40,3 @@ two_nonce_init_pov : run {
     exactly 1 two_nonce_init,exactly 1 two_nonce_resp,
     1 Int
 for {next is linear}
-
-//run {} for 3
