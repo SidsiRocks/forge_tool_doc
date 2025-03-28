@@ -36,7 +36,7 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
     #indentation the space_lvl variable keeps track of the current level of 
     #indetnation and the print_to_file function adds the indentation along
     #with text passed as argument
-    space_lvl = 0 
+    space_lvl = 0
     #when generating temporary variables to be used in quantification predicates
     # ex: some atom5,atom6 : t0.data { t0.data = atom5 + atom6}
     #need distinct number suffix not previously used msg_num_avl stores the last
@@ -81,34 +81,37 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
             it belongs to"""
             def write_cat_constraint(msg_obj:Message,msg_var_name:str,arbit_role_name:str):
                 """write constraints for an object of cat type"""
-                def write_sub_term_header(msg_var_name,cat_sub_terms_names:List[str]):
+                def write_indices_header(msg_var_name:str,num_terms_int_cat:int):
+                    """constraints for subterm requires existential quantification, this function adds
+                    the code required for that"""
+                    print_to_file(f"inds[{msg_var_name}] = ")
+                    for i in range(num_terms_int_cat - 1):
+                        print_to_file(f"{i} + ",add_space=False)
+                    print_to_file(f"{num_terms_int_cat-1}\n",add_space=False)
+                def write_sub_term_header(msg_var_name,cat_sub_term_names:List[str]):
                     """constraints for subterm requires existential quantification, this function adds
                     the code required for that"""
                     nonlocal space_lvl
                     print_to_file(f"some ")
-                    #we are only writing some instead of some disjoint which 
-                    #means if two subterms have same shape and same data then 
-                    #only one occurence being present may count as two being present
-                    for sub_term_name in cat_sub_terms_names[:-1]:
+                    for sub_term_name in cat_sub_term_names[:-1]:
                         print_to_file(f"{sub_term_name},",add_space=False)
-                    print_to_file(f"{cat_sub_terms_names[-1]} : {msg_var_name} {{\n",add_space=False)
+                    print_to_file(f"{cat_sub_term_names[-1]} : elems[{msg_var_name}] {{\n",add_space=False)
                     space_lvl += 1
                 def write_sub_term_footer():
                     """closing the existential quantification block of code"""
                     nonlocal space_lvl
                     space_lvl -= 1
                     print_to_file(f"}}\n")
-                def write_data_constraint(msg_var_name:str,cat_sub_terms_names:List[str]):
+                ##along with cat term if message has only one term have to deal with that
+                def write_data_constraint(msg_var_name:str,cat_sub_term_names:List[str]):
                     """writes the constraint for each subterm belonging to the cat term"""
-                    print_to_file(f"{msg_var_name} = ")
-                    print_to_file(f"{cat_sub_terms_names[0]} ",add_space=False)
-                    for sub_term_name in cat_sub_terms_names[1:]:
-                        print_to_file(f"+ {sub_term_name} ",add_space=False)
-                    print_to_file("\n")
-                cat_sub_terms_names = [get_msg_var_name(msg_sub_term) for msg_sub_term in msg_obj.msg_data]
-                write_sub_term_header(msg_var_name,cat_sub_terms_names)
-                write_data_constraint(msg_var_name,cat_sub_terms_names)
-                for sub_term_name,sub_term_obj in zip(cat_sub_terms_names,msg_obj.msg_data):
+                    for indx,sub_term_name in enumerate(cat_sub_term_names):
+                        print_to_file(f"({msg_var_name})[{indx}] = {sub_term_name}\n")
+                cat_sub_term_names = [get_msg_var_name(msg_sub_term) for msg_sub_term in msg_obj.msg_data]
+                write_indices_header(msg_var_name,len(cat_sub_term_names))
+                write_sub_term_header(msg_var_name,cat_sub_term_names)    
+                write_data_constraint(msg_var_name,cat_sub_term_names)
+                for sub_term_name,sub_term_obj in zip(cat_sub_term_names,msg_obj.msg_data):
                     write_msg_constraint(sub_term_obj,sub_term_name,arbit_role_name,role_sig_name)
                 write_sub_term_footer()
             def write_enc_constraint(msg_obj:Message,msg_var_name:str,arbit_role_name:str):
@@ -257,7 +260,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    base_file_path = "./base.frg"
+    base_file_path = "./base_with_seq.frg"
     extra_func_path = "./extra_funcs.frg"
 
     with open(args.cspa_file_path) as f:

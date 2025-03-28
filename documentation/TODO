@@ -4,3 +4,10 @@
 - no key cycles
 - adding pairs
 - adding timestamps
+
+
+- RECENT TODO
+- documentationf or transcriber, for changes to base.frg
+- encrypted terma=s matching only when inverse key is known
+- run file constraints uses sensible defaults, and some json file like interface for giving constraints
+- visualizer updates

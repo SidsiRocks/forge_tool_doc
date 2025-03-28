@@ -148,8 +148,8 @@ timeslots.forEach((timeslot) => {
 
 // populating the dataMessageMap object
 data.tuples().forEach((tuple) => {
-    let m = tuple.atoms()[0];
-    let d = tuple.atoms()[1].toString();
+    let m = tuple.atoms()[0]; //Timeslot 
+    let d = tuple.atoms()[1].toString(); //message?
     dataMessageMap[d] = m;
 });
 
@@ -811,7 +811,7 @@ function render() {
         .attr('y2', arrowBottomY2);
 
     // for each message...
-
+    //here m is referring to timeslots not messages by themselves
     messages.forEach(m => {
         let labelX = (x(m.sender) + x(m.receiver)) / 2;
         let labelY = y(m) - 20;

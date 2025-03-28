@@ -310,3 +310,108 @@ run {
   }
 }
 */
+
+
+fun getPRIVK[name_a:name] : lone Key{
+    (KeyPairs.owners).name_a
+}
+fun getPUBK[name_a:name] : lone Key {
+    (KeyPairs.owners.(name_a)).(KeyPairs.pairs)
+}
+
+
+sig msg_order_A extends strand{
+    msg_order_A_n1: one text,
+    msg_order_A_n2: one text,
+    msg_order_A_n3: one text,
+    msg_order_A_b: one name
+}
+
+// predicate follows below
+pred exec_msg_order_A {
+    all arbitrary_msg_order_A : msg_order_A | {
+        some t0,t1 : Timeslot | {
+            t1 in t0.(^next)
+            
+            t0 + t1  = sender.arbitrary_msg_order_A + receiver.arbitrary_msg_order_A
+            
+            t0.sender = arbitrary_msg_order_A
+            t1.receiver = arbitrary_msg_order_A
+            
+            inds[t0.data] = 0 + 1
+            some atom1,atom2 : elems[t0.data] {
+                (t0.data)[0] = atom1
+                (t0.data)[1] = atom2
+                atom1 = arbitrary_msg_order_A.msg_order_A_n1
+                atom2 = arbitrary_msg_order_A.msg_order_A_n2
+            }
+            inds[t1.data] = 0 + 1
+            some atom3,atom4 : elems[t1.data] {
+                (t1.data)[0] = atom3
+                (t1.data)[1] = atom4
+                atom3 = arbitrary_msg_order_A.msg_order_A_b
+                atom4 = arbitrary_msg_order_A.msg_order_A_n3
+            }
+        }
+    }
+}
+// end of predicate
+
+sig msg_order_B extends strand{
+    msg_order_B_n1: one text,
+    msg_order_B_n2: one text,
+    msg_order_B_b: one name
+}
+
+// predicate follows below
+pred exec_msg_order_B {
+    all arbitrary_msg_order_B : msg_order_B | {
+        some t0,t1 : Timeslot | {
+            t1 in t0.(^next)
+            
+            t0 + t1  = sender.arbitrary_msg_order_B + receiver.arbitrary_msg_order_B
+            
+            t0.receiver = arbitrary_msg_order_B
+            t1.sender = arbitrary_msg_order_B
+            
+            inds[t0.data] = 0 + 1
+            some atom5,atom6 : elems[t0.data] {
+                (t0.data)[0] = atom5
+                (t0.data)[1] = atom6
+                atom5 = arbitrary_msg_order_B.msg_order_B_n1
+                atom6 = arbitrary_msg_order_B.msg_order_B_n2
+            }
+            inds[t1.data] = 0 + 1
+            some atom7,atom8 : elems[t1.data] {
+                (t1.data)[0] = atom7
+                (t1.data)[1] = atom8
+                atom7 = arbitrary_msg_order_B.msg_order_B_b
+                atom8 = arbitrary_msg_order_B.msg_order_B_n2
+            }
+        }
+    }
+}
+// end of predicate
+
+msg_order_test: run {
+    wellformed 
+    exec_msg_order_A
+    exec_msg_order_B
+
+    -- testing duplicate subterms would appear separately for 
+    -- sequences implementation
+    msg_order_A.msg_order_A_n1 = msg_order_A.msg_order_A_n2
+
+    msg_order_A.agent != msg_order_B.agent
+    msg_order_A.agent != AttackerStrand.agent
+    msg_order_B.agent != AttackerStrand.agent
+    
+}for 
+    exactly 4 Timeslot,16 mesg,
+    exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,0 skey,
+    exactly 3 PrivateKey,exactly 3 PublicKey,
+
+    exactly 3 name,exactly 6 text,exactly 0 Ciphertext,
+    exactly 1 msg_order_A,exactly 1 msg_order_B,
+    3 Int 
+for {next is linear}

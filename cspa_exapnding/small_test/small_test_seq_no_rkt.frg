@@ -115,7 +115,7 @@ pred wellformed {
   --   assume we have a shared notion of time
   all m: Timeslot | isSeqOf[m.data,mesg]
   -- You cannot send a message with no data
-  all m: Timeslot | some elems[m.data]
+  all m: Timeslot | some Int.(m.data)
 
   -- someone cannot send a message to themselves
   all m: Timeslot | m.sender not in m.receiver
@@ -125,7 +125,7 @@ pred wellformed {
   all d: mesg | all t, microt: Timeslot | let a = t.receiver.agent | d in (workspace[t])[microt] iff {
     -- Base case:
     -- received the data in the clear just now 
-    {d in elems[t.data] and no microt.~next}
+    {d in Int.(t.data) and no microt.~next}
     or
     -- Inductive case:
     -- breaking down a ciphertext we learned *previously*, or that we've produced from 
@@ -187,7 +187,7 @@ pred wellformed {
   all a: name | all d: text | lone t: Timeslot | d in (a.generated_times).t
 
   -- Messages comprise only values known by the sender
-  all m: Timeslot | elems[m.data] in (((m.sender).agent).learned_times).(Timeslot - m.^next) 
+  all m: Timeslot | Int.(m.data) in (((m.sender).agent).learned_times).(Timeslot - m.^next) 
   -- Always send or receive to the adversary
   all m: Timeslot | m.sender = AttackerStrand or m.receiver = AttackerStrand 
 
@@ -261,12 +261,12 @@ pred originates[s: strand, d: mesg] {
   --   whenever n' precedes n on the same strand, t is not subterm of n'
 
   some m: sender.s | { -- messages sent by strand s (positive term)     
-      d in subterm[elems[m.data]] -- d is a sub-term of m     
+      d in subterm[Int.(m.data)] -- d is a sub-term of m     
       all m2: (sender.s + receiver.s) - m | { -- everything else on the strand
           -- ASSUME: messages are sent/received in same timeslot
           {m2 in m.^(~(next))}
           implies          
-          {d not in subterm[elems[m2.data]]}
+          {d not in subterm[Int.(m2.data)]}
       }
   }
 }
@@ -310,3 +310,74 @@ run {
   }
 }
 */
+sig small_test_A extends strand{
+    small_test_A_a: one name,
+    small_test_A_b: one name,
+    small_test_A_n1: one text,
+    small_test_A_n2: one text
+}
+
+pred exec_small_test_A{
+    all arbitrary_small_test_A : small_test_A | { 
+        some t0,t1 : Timeslot | {
+            t1 in t0.(^next)
+            t0 + t1 = sender.arbitrary_small_test_A + receiver.arbitrary_small_test_A
+            
+            t0.sender = arbitrary_small_test_A
+            inds[t0.data] = 0 + 1 
+            (t0.data)[0] = arbitrary_small_test_A.small_test_A_a
+            (t0.data)[1] = arbitrary_small_test_A.small_test_A_n1
+
+            t1.receiver = arbitrary_small_test_A
+            inds[t1.data] = 0 + 1
+            (t1.data)[0] = arbitrary_small_test_A.small_test_A_b
+            (t1.data)[1] = arbitrary_small_test_A.small_test_A_n2        
+        }
+    }
+}
+
+sig small_test_B extends strand{
+    small_test_B_a: one name,
+    small_test_B_b: one name,
+    small_test_B_n1: one text,
+    small_test_B_n2: one text
+}
+
+pred exec_small_test_B{
+    all arbitrary_small_test_B : small_test_B | { some t0,t1 : Timeslot | {
+        t1 in t0.(^next)
+        t0 + t1 = sender.arbitrary_small_test_B + receiver.arbitrary_small_test_B
+
+        t0.receiver = arbitrary_small_test_B
+        inds[t0.data] = 0 + 1 
+        (t0.data)[0] = arbitrary_small_test_B.small_test_B_a
+        (t0.data)[1] = arbitrary_small_test_B.small_test_B_n1
+
+        t1.sender = arbitrary_small_test_B
+        inds[t1.data] = 0 + 1
+        (t1.data)[0] = arbitrary_small_test_B.small_test_B_b
+        (t1.data)[1] = arbitrary_small_test_B.small_test_B_n2
+    }}
+}
+
+small_test_run : run {
+    small_test_A.agent != Attacker
+    small_test_B.agent != Attacker
+
+    small_test_A.small_test_A_a = small_test_A.agent
+    small_test_A.small_test_A_b = small_test_B.agent
+
+    small_test_B.small_test_B_a = small_test_A.agent
+    small_test_B.small_test_B_b = small_test_B.agent
+
+    wellformed 
+    exec_small_test_A
+    exec_small_test_B
+}for 
+    exactly 4 Timeslot,16 mesg,
+    exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,exactly 0 skey,
+    exactly 3 PublicKey,exactly 3 PrivateKey,
+    exactly 3 name,exactly 2 text,exactly 0 Ciphertext,
+    exactly 1 small_test_A,exactly 1 small_test_B,
+    3 Int
+for {next is linear}
