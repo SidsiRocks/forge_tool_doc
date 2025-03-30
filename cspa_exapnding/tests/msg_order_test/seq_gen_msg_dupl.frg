@@ -393,6 +393,8 @@ pred exec_msg_order_B {
 }
 // end of predicate
 
+option run_sterling "../../../crypto_viz_seq.js"
+
 msg_order_test: run {
     wellformed 
     exec_msg_order_A
