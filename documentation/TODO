@@ -11,3 +11,5 @@
 - encrypted terma=s matching only when inverse key is known
 - run file constraints uses sensible defaults, and some json file like interface for giving constraints
 - visualizer updates
+
+- visualizer not handling encypted terms correctly have to fix

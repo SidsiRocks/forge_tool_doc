@@ -316,3 +316,168 @@ run {
   }
 }
 */
+
+
+fun getPRIVK[name_a:name] : lone Key{
+    (KeyPairs.owners).name_a
+}
+fun getPUBK[name_a:name] : lone Key {
+    (KeyPairs.owners.(name_a)).(KeyPairs.pairs)
+}
+
+
+sig two_nonce_resp extends strand{
+    two_nonce_resp_a: one name,
+    two_nonce_resp_b: one name,
+    two_nonce_resp_n1: one text,
+    two_nonce_resp_n2: one text
+}
+
+// predicate follows below
+pred exec_two_nonce_resp {
+    all arbitrary_two_nonce_resp : two_nonce_resp | {
+        some t0,t1,t2 : Timeslot | {
+            t1 in t0.(^next)
+            t2 in t1.(^next)
+            
+            t0 + t1 + t2  = sender.arbitrary_two_nonce_resp + receiver.arbitrary_two_nonce_resp
+            
+            t0.receiver = arbitrary_two_nonce_resp
+            t1.sender = arbitrary_two_nonce_resp
+            t2.receiver = arbitrary_two_nonce_resp
+            
+            inds[t0.data] = 0
+            some enc1 : elems[t0.data] | {
+                elems[t0.data] = enc1
+                getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_b] = (enc1).encryptionKey
+                inds[((enc1).plaintext)] = 0
+                some atom2 : elems[((enc1).plaintext)] {
+                    (((enc1).plaintext))[0] = atom2
+                    atom2 = arbitrary_two_nonce_resp.two_nonce_resp_n1
+                }
+            }
+            inds[t1.data] = 0
+            some enc3 : elems[t1.data] | {
+                elems[t1.data] = enc3
+                getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_a] = (enc3).encryptionKey
+                inds[((enc3).plaintext)] = 0 + 1
+                some atom4,atom5 : elems[((enc3).plaintext)] {
+                    (((enc3).plaintext))[0] = atom4
+                    (((enc3).plaintext))[1] = atom5
+                    atom4 = arbitrary_two_nonce_resp.two_nonce_resp_n1
+                    atom5 = arbitrary_two_nonce_resp.two_nonce_resp_n2
+                }
+            }
+            inds[t2.data] = 0
+            some enc6 : elems[t2.data] | {
+                elems[t2.data] = enc6
+                getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_b] = (enc6).encryptionKey
+                inds[((enc6).plaintext)] = 0
+                some atom7 : elems[((enc6).plaintext)] {
+                    (((enc6).plaintext))[0] = atom7
+                    atom7 = arbitrary_two_nonce_resp.two_nonce_resp_n2
+                }
+            }
+        }
+    }
+}
+// end of predicate
+
+sig two_nonce_init extends strand{
+    two_nonce_init_a: one name,
+    two_nonce_init_b: one name,
+    two_nonce_init_n1: one text,
+    two_nonce_init_n2: one text
+}
+
+// predicate follows below
+pred exec_two_nonce_init {
+    all arbitrary_two_nonce_init : two_nonce_init | {
+        some t0,t1,t2 : Timeslot | {
+            t1 in t0.(^next)
+            t2 in t1.(^next)
+            
+            t0 + t1 + t2  = sender.arbitrary_two_nonce_init + receiver.arbitrary_two_nonce_init
+            
+            t0.sender = arbitrary_two_nonce_init
+            t1.receiver = arbitrary_two_nonce_init
+            t2.sender = arbitrary_two_nonce_init
+            
+            inds[t0.data] = 0
+            some enc8 : elems[t0.data] | {
+                elems[t0.data] = enc8
+                getPUBK[arbitrary_two_nonce_init.two_nonce_init_b] = (enc8).encryptionKey
+                inds[((enc8).plaintext)] = 0
+                some atom9 : elems[((enc8).plaintext)] {
+                    (((enc8).plaintext))[0] = atom9
+                    atom9 = arbitrary_two_nonce_init.two_nonce_init_n1
+                }
+            }
+            inds[t1.data] = 0
+            some enc10 : elems[t1.data] | {
+                elems[t1.data] = enc10
+                getPUBK[arbitrary_two_nonce_init.two_nonce_init_a] = (enc10).encryptionKey
+                inds[((enc10).plaintext)] = 0 + 1
+                some atom11,atom12 : elems[((enc10).plaintext)] {
+                    (((enc10).plaintext))[0] = atom11
+                    (((enc10).plaintext))[1] = atom12
+                    atom11 = arbitrary_two_nonce_init.two_nonce_init_n1
+                    atom12 = arbitrary_two_nonce_init.two_nonce_init_n2
+                }
+            }
+            inds[t2.data] = 0
+            some enc13 : elems[t2.data] | {
+                elems[t2.data] = enc13
+                getPUBK[arbitrary_two_nonce_init.two_nonce_init_b] = (enc13).encryptionKey
+                inds[((enc13).plaintext)] = 0
+                some atom14 : elems[((enc13).plaintext)] {
+                    (((enc13).plaintext))[0] = atom14
+                    atom14 = arbitrary_two_nonce_init.two_nonce_init_n2
+                }
+            }
+        }
+    }
+}
+// end of predicate
+
+pred corrected_attacker_learns[d:mesg]{
+    d in Attacker.learned_times.Timeslot
+}
+two_nonce_init_pov : run {
+    wellformed
+
+    exec_two_nonce_init
+    exec_two_nonce_resp
+
+    //constrain_skeleton_two_nonce_0
+    
+    two_nonce_resp.agent != two_nonce_init.agent
+    //should not need restriction on a and b this time?
+
+    //this may prevent attack have to check
+    two_nonce_init.agent != AttackerStrand.agent
+    two_nonce_resp.agent != AttackerStrand.agent
+
+    //prevents responder from sending same nonce again
+    two_nonce_resp.two_nonce_resp_n1 != two_nonce_resp.two_nonce_resp_n2
+    //prevents attacker from sending duplicate n1,n2 in a run of protocol
+    two_nonce_init.two_nonce_init_n1 != two_nonce_init.two_nonce_init_n2
+    
+    //attacker_learns[AttackerStrand,two_nonce_resp.two_nonce_resp_n2]
+    
+    //finding attack where init beleives it is talking to resp 
+    //but attacker knows the nonce
+    two_nonce_init.two_nonce_init_b = two_nonce_resp.agent
+    corrected_attacker_learns[two_nonce_init.two_nonce_init_n2]
+    //same nonce problem seems to be resolved
+    //have to deal with initiator trying tot talk to attacker, may want to change that
+    //when planning to detect an attack
+}for 
+    exactly 6 Timeslot,25 mesg,
+    exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,0 skey,
+    exactly 3 PrivateKey,exactly 3 PublicKey,
+
+    exactly 3 name,exactly 6 text,exactly 10 Ciphertext,
+    exactly 1 two_nonce_init,exactly 1 two_nonce_resp,
+    4 Int
+for {next is linear}

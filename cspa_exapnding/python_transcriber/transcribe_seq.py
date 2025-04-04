@@ -127,10 +127,14 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
                 plaintxt_terms = msg_obj.msg_data[:-1]
 
                 plaintxt_var_name = f"(({msg_var_name}).plaintext)"
-                if len(plaintxt_terms) == 1:
-                    write_msg_constraint(plaintxt_terms[0],plaintxt_var_name,arbit_role_name,role_sig_name)
-                else:
-                    write_cat_constraint(Message(MsgType.CAT_TERM,plaintxt_terms),plaintxt_var_name,arbit_role_name)
+                #if len(plaintxt_terms) == 1:
+                #    write_msg_constraint(plaintxt_terms[0],plaintxt_var_name,arbit_role_name,role_sig_name)
+                #else:
+                #    write_cat_constraint(Message(MsgType.CAT_TERM,plaintxt_terms),plaintxt_var_name,arbit_role_name)
+                #changing the code to be use write_cat_constraint in both would generate more code
+                #that way though
+                write_cat_constraint(Message(MsgType.CAT_TERM,plaintxt_terms),plaintxt_var_name,arbit_role_name)
+
 
             if  msg_obj.msg_type == MsgType.ATOM_TERM:
                 var_name = msg_obj.msg_data.var_name
@@ -147,17 +151,22 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
                 #print_to_file(f"((Keypairs.owners).({arbit_role_name}.{role_sig_name}_{name_var.var_name})).(KeyPairs.pairs) = {msg_var_name}\n")
                 print_to_file(f"getPUBK[{arbit_role_name}.{role_sig_name}_{name_var.var_name}] = {msg_var_name}\n")
         nonlocal space_lvl
+
         for index,(_,msg_in_trace) in enumerate(msg_trace):
+            ##unclear why separate case try to understand later
             if msg_in_trace.msg_type == MsgType.ENCRYPTED_TERM:
                 enc_term_name = get_msg_var_name(msg_in_trace)
-                print_to_file(f"some {enc_term_name} : t{index}.data | {{\n")
+                ##if root term is an encrypted term then we will
+                ##not have any other terms concatenated so only one term
+                print_to_file(f"inds[t{index}.data] = 0\n")
+                print_to_file(f"some {enc_term_name} : elems[t{index}.data] | {{\n")
                 space_lvl += 1
-                print_to_file(f"t{index}.data = {enc_term_name}\n")
+                print_to_file(f"elems[t{index}.data] = {enc_term_name}\n")
                 write_msg_constraint(msg_in_trace,enc_term_name,arbit_role_name,role_sig_name)
                 space_lvl -= 1
                 print_to_file(f"}}\n")
             else:
-                write_msg_constraint(msg_in_trace,f"t{index}.data",arbit_role_name,role_sig_name)
+                write_msg_constraint(msg_in_trace,f"elems[t{index}.data]",arbit_role_name,role_sig_name)
     def transcribe_role_trace_to_pred(role_obj:Role,prot_name:str,role_sig_name:str):
         """the exec_pred_roleName created for each role, contains constraints for traces,
         timeslot the sender/receiver for all the timeslots"""

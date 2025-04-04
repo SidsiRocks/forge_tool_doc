@@ -192,7 +192,7 @@ KeyPairs0.ltks.tuples().forEach(x => {
 plaintext.tuples().forEach((tuple) => {
     let atoms = tuple.atoms();
     let key = atoms[0].toString();
-    let val = atoms[1];
+    let val = atoms[2];
 
     if (!ciphertextMap[key]) {
         ciphertextMap[key] = [];
@@ -362,7 +362,7 @@ function convert_seq_msg(data_tpls){
     data_tpls.forEach(cur_seq_msg => {
         var cur_arr = cur_seq_msg.split(",");
         var indx = parseInt(cur_arr[0]);
-        var msg = cur_arr[1];
+        var msg = cur_arr[1].trim();
         result[indx] = msg;
     });
     return result;
