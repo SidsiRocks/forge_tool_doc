@@ -252,8 +252,11 @@ pred wellformed {
 /** Definition of subterms for some set of terms */
 fun subterm[supers: set mesg]: set mesg {
   -- VITAL: if you add a new subterm relation, needs to be added here, too!
-  supers +
-  supers.^(plaintext) -- union on new subterm relations inside parens
+  -- do cross check that it actually returns the correct thing and not an empty set
+  -- or something
+  let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
+    supers + supers.^(old_plain) -- union on new subterm relations inside parens
+  }
 }
 
 /** When does a strand 'originate' some term? 
@@ -447,11 +450,11 @@ one sig skeleton_two_nonce_0 {
     skeleton_two_nonce_0_n2: one text
 }
 pred constrain_skeleton_two_nonce_0 {
-    some skeleton_two_nonce_0_strand1 : init | {
-        skeleton_two_nonce_0.a = skeleton_two_nonce_0_strand1.a
-        skeleton_two_nonce_0.b = skeleton_two_nonce_0_strand1.b
-        skeleton_two_nonce_0.n1 = skeleton_two_nonce_0_strand1.n1
-        skeleton_two_nonce_0.n2 = skeleton_two_nonce_0_strand1.n2
+    some skeleton_two_nonce_0_strand1 : two_nonce_init | {
+        skeleton_two_nonce_0.skeleton_two_nonce_0_a = skeleton_two_nonce_0_strand1.two_nonce_init_a
+        skeleton_two_nonce_0.skeleton_two_nonce_0_b = skeleton_two_nonce_0_strand1.two_nonce_init_b
+        skeleton_two_nonce_0.skeleton_two_nonce_0_n1 = skeleton_two_nonce_0_strand1.two_nonce_init_n1
+        skeleton_two_nonce_0.skeleton_two_nonce_0_n2 = skeleton_two_nonce_0_strand1.two_nonce_init_n2
     }
 
     not ( getPRIVK[skeleton_two_nonce_0.skeleton_two_nonce_0_a] in baseKnown[Attacker]  )
@@ -471,12 +474,14 @@ pred constrain_skeleton_two_nonce_0 {
     not ( skeleton_two_nonce_0.skeleton_two_nonce_0_n1 in baseKnown[Attacker]  )
     one aStrand : strand | {
         originates[aStrand,skeleton_two_nonce_0.skeleton_two_nonce_0_n1]
+        or
         generates[aStrand,skeleton_two_nonce_0.skeleton_two_nonce_0_n1]
     }
     
     not ( skeleton_two_nonce_0.skeleton_two_nonce_0_n2 in baseKnown[Attacker]  )
     one aStrand : strand | {
         originates[aStrand,skeleton_two_nonce_0.skeleton_two_nonce_0_n2]
+        or
         generates[aStrand,skeleton_two_nonce_0.skeleton_two_nonce_0_n2]
     }
     
@@ -513,6 +518,7 @@ two_nonce_init_pov : run {
     //same nonce problem seems to be resolved
     //have to deal with initiator trying tot talk to attacker, may want to change that
     //when planning to detect an attack
+    constrain_skeleton_two_nonce_0
 }for 
     exactly 6 Timeslot,25 mesg,
     exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,0 skey,
@@ -520,5 +526,6 @@ two_nonce_init_pov : run {
 
     exactly 3 name,exactly 6 text,exactly 10 Ciphertext,
     exactly 1 two_nonce_init,exactly 1 two_nonce_resp,
+    exactly 1 skeleton_two_nonce_0,
     4 Int
 for {next is linear}

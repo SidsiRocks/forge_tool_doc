@@ -309,10 +309,13 @@ def transcribe_skelet(skelet_obj:Skeleton,file:io.TextIOWrapper):
     def transcribe_strand(skel_obj:Skeleton,cur_strand:Strand,cur_skelet_num:int,cur_strand_num:int):
         skel_name = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}"
         strand_name = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}_strand{cur_strand_num}"
+        strand_sig_name = f"{skel_obj.prot_name}_{cur_strand.role_name}"
 
-        print_to_file(f"some {strand_name} : {cur_strand.role_name} | {{\n")
+        print_to_file(f"some {strand_name} : {skel_obj.prot_name}_{cur_strand.role_name} | {{\n")
         start_block()
         for skel_var_name,role_var_name in cur_strand.var_map.items():
+            skel_var_name = f"{skel_name}_{skel_var_name}"
+            role_var_name = f"{strand_sig_name}_{role_var_name}"
             print_to_file(f"{skel_name}.{skel_var_name} = {strand_name}.{role_var_name}\n")
         end_block()
         print_to_file(f"}}\n\n")
@@ -374,6 +377,7 @@ def transcribe_skelet(skelet_obj:Skeleton,file:io.TextIOWrapper):
 
             start_block()
             originates(strand_name,cur_constr_var_name)
+            print_to_file("or\n")
             generates(strand_name,cur_constr_var_name)
             end_block()
 

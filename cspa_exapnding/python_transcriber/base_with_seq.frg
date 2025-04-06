@@ -252,8 +252,11 @@ pred wellformed {
 /** Definition of subterms for some set of terms */
 fun subterm[supers: set mesg]: set mesg {
   -- VITAL: if you add a new subterm relation, needs to be added here, too!
-  supers +
-  supers.^(plaintext) -- union on new subterm relations inside parens
+  -- do cross check that it actually returns the correct thing and not an empty set
+  -- or something
+  let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
+    supers + supers.^(old_plain) -- union on new subterm relations inside parens
+  }
 }
 
 /** When does a strand 'originate' some term? 
