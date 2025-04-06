@@ -21,3 +21,11 @@
 - FOR LATER
 - what the predicates for a trace based property and equivalence basedd property,
 - bettter interface/language for stating additional predicates
+
+
+- IMP NOTE
+- The only thing ensuring that attacker can't generate the same nonces as the other agents is 
+  a uniq-orig statement, can probably add separate constraint which says a nonce can never be genrated agian
+  transcription for skeleton blocks of code is complete, still have to do proper checks
+- consider if want to add code for transcribing skeleton to transcribe.py, currently only in 
+  transcribe_seq.py

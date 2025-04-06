@@ -8,6 +8,35 @@ def load_cspa_as_s_expr(file):
     file_txt = file.read()
     result = sexpdata.loads(file_txt)
     return result
+def get_root_s_expr_lst(txt:str):
+    brkt_count = 0
+    brkt_started = False
+    prev_indx = 0
+    strs_so_far = []
+    for indx,chr in enumerate(txt):
+        if chr == '(':
+            brkt_count += 1
+            brkt_started = True
+        elif chr == ')':
+            brkt_count = brkt_count - 1
+        if brkt_count == 0 and brkt_started:
+            cur_s_expr_str = txt[prev_indx:(indx+1)]
+            prev_indx = indx + 1
+            brkt_started = False
+            strs_so_far.append(cur_s_expr_str)
+    return strs_so_far
+def load_cspa_as_s_expr_new(file):
+    result = []
+    for line in file:
+        break
+    str1 = file.read()
+    lst = get_root_s_expr_lst(str1)
+    for elm in lst:
+        #print("processed element")
+        #print(elm)
+        #print("="*8)
+        result.append(sexpdata.loads(elm))
+    return result
 
 class VarType(Enum):
     NAME = 1
@@ -53,6 +82,7 @@ class MsgType(Enum):
     ATOM_TERM = 3
     LTK_TERM = 4
     PUBK_TERM = 5
+    PRIVK_TERM = 6
     ##have to add privk forgot to deal with that
 class Message:
     def __init__(self,msg_type:MsgType,args_arr:Union[List['Message'],Variable]):
@@ -70,6 +100,10 @@ class Role:
         self.role_name = role_name
         self.var_dict = var_dict
         self.msg_trace = msg_trace
+    def is_valid_var_name(self,var_name:str):
+        return (var_name in self.var_dict)
+    def get_var_obj(self,var_name:str):
+        return self.var_dict[var_name]
     def __str__(self):
         return f"Role({self.role_name},{self.var_dict},{self.msg_trace})"
     def __repr__(self):
@@ -79,16 +113,27 @@ class Protocol:
         self.roles_arr = roles_arr
         self.prot_name = prot_name
         self.basic_str = basic_str
+    def is_valid_role_name(self,role_name:str):
+        return (role_name in map(lambda role_obj:role_obj.role_name,self.roles_arr))
+    def get_role_obj(self,role_name:str):
+        for role_obj in self.roles_arr:
+            if role_name == role_obj.role_name:
+                return role_obj
+        return None
     def __str__(self):
         return f"Protocol(\n{self.roles_arr},\n{self.prot_name},\n{self.basic_str})"
     def __repr__(self):
         return self.__str__()
 class Strand:
     #i think trace len is being ignored for now?
-    def __init__(self,role_name:str,trace_len:int,var_map:Dict[str,Variable]):
+    def __init__(self,role_name:str,trace_len:int,var_map:Dict[str,str]):
         self.role_name = role_name
         self.trace_len = trace_len
         self.var_map = var_map
+    def __str__(self):
+        return f"Strand({self.role_name},{self.trace_len},\n{self.var_map})"
+    def __repr__(self):
+        return self.__str__()
 class ConstrType(Enum):
     UNIQ_ORIG = 0
     NON_ORIG = 1
@@ -96,13 +141,20 @@ class Constraint:
     def __init__(self,constr_type:ConstrType,msg_on_constr:Message):
         self.constr_type = constr_type
         self.msg_on_constr = msg_on_constr
+    def __str__(self):
+        return f"Constraint({self.constr_type},{self.msg_on_constr})"
+    def __repr__(self):
+        return self.__str__()
 class Skeleton:
-    def __init__(self,skelet_name:str,var_dict:Dict[str,Variable],strand_list:List[Strand],orig_constr:List[Constraint]):
-        self.skelet_name = skelet_name
+    def __init__(self,prot_name:str,var_dict:Dict[str,Variable],strand_list:List[Strand],orig_constr:List[Constraint]):
+        self.prot_name = prot_name
         self.var_dict = var_dict
         self.strand_list = strand_list
         self.orig_constr = orig_constr
-
+    def __str__(self):
+        return f"Skeleton({self.prot_name},\n{self.var_dict},\n{self.strand_list},\n{self.orig_constr})"
+    def __repr__(self):
+        return self.__str__()
 class ParseException(Exception):
     def __init__(self,message):
         self.message = message
@@ -123,6 +175,7 @@ ENC_STR = "enc"
 CAT_STR = "cat"
 LTK_STR = "ltk"
 PUBK_STR = "pubk"
+PRIVK_STR = "privk"
 
 def s_expr_instead_of_str(expected_str:str,s_expr) -> ParseException:
     return ParseException(f"Expected '{expected_str}' string not an s expression {str(s_expr)} with type {type(s_expr)}")
@@ -154,7 +207,10 @@ def get_str_from_symbol(s_expr:sexpdata.Symbol,data_name:str) -> str:
     if not is_symbol_type(s_expr):
         raise s_expr_instead_of_str(data_name,s_expr)
     return str(s_expr)
-
+def get_int_from_s_expr(s_expr,data_name:str) -> str:
+    if type(s_expr) != int:
+        raise ParseException(f"Expected type int here not type {type(s_expr)}")
+    return s_expr
 def parse_vars_list(s_expr,var_dict) -> None:
     if len(s_expr) < 2:
         raise ParseException(f"Expected variable name and type not {str(s_expr)}")
@@ -171,6 +227,7 @@ def parse_vars_clause(s_expr) -> Dict[str,Variable]:
     var_dict = {}
     if len(s_expr) < 2:
         raise ParseException(f"Expected 'vars' and variables list in the s expression but length of s expression is = {len(s_expr)}")
+    match_type_and_str(s_expr[0],VARS_STR)
     for elm in s_expr[1:]:
         parse_vars_list(elm,var_dict)
     return var_dict
@@ -187,6 +244,7 @@ def parse_term(s_expr,var_dict:Dict[str,Variable]) -> Message:
 def parse_ltk(s_expr,var_dict:Dict[str,Variable]) -> Message:
     if len(s_expr) != 3:
         raise ParseException(f"Expected s-expr of length 3 ltk name1 name2 but length is {len(s_expr)}")
+    match_type_and_str(s_expr[0],LTK_STR)
     str_name_1 = get_str_from_symbol(s_expr[1],"name1 in ltk")
     str_name_2 = get_str_from_symbol(s_expr[2],"name2 in ltk")
     name_1 = get_var(str_name_1,var_dict)
@@ -202,13 +260,23 @@ def parse_ltk(s_expr,var_dict:Dict[str,Variable]) -> Message:
 def parse_pubk(s_expr,var_dict:Dict[str,Variable]) -> Message:
     if len(s_expr) != 2:
         raise ParseException(f"Expected s-expr of length 2 pibk name but length is {len(s_expr)} s_expr is {str(s_expr)}")
+    match_type_and_str(s_expr[0],PUBK_STR)
     str_name = get_str_from_symbol(s_expr[1],"name in pubk")
     name = get_var(str_name,var_dict)
     if name.var_type != VarType.NAME:
         raise ParseException(f"Expected variable type {vartype_to_str(VarType.NAME)} got {vartype_to_str(name.var_type)}")
     name_term = Message(MsgType.ATOM_TERM,name)
     return Message(MsgType.PUBK_TERM,[name_term])
-
+def parse_privk(s_expr,var_dict:Dict[str,Variable]) -> Message:
+    if len(s_expr) != 2:
+        raise ParseException(f"Expected s-expr of length 2 privk, name but length is {len(s_expr)} s_expr is {str(s_expr)}")
+    match_type_and_str(s_expr[0],PRIVK_STR)
+    str_name = get_str_from_symbol(s_expr[1],"name in privk")
+    name = get_var(str_name,var_dict)
+    if name.var_type != VarType.NAME:
+        raise ParseException(f"Expected varaible type {vartype_to_str(VarType.NAME)} got {vartype_to_str(name.var_type)}")
+    name_term = Message(MsgType.ATOM_TERM,name)
+    return Message(MsgType.PRIVK_TERM,[name_term])    
 def is_valid_key(msg:Message) -> bool:
     if msg.msg_type in [MsgType.PUBK_TERM,MsgType.LTK_TERM]:
         return True
@@ -235,21 +303,24 @@ def parse_cat_term(s_expr,var_dict:Dict[str,Variable]) -> Message:
     data_terms_lst = [parse_term(t,var_dict) for t in s_expr[1:]]
     return Message(MsgType.CAT_TERM,data_terms_lst)
 
-
+def parse_atom(s_expr:sexpdata.Symbol,var_dict:Dict[str,Variable]) -> Variable:
+    var_term_name = get_str_from_symbol(s_expr,"message term")
+    var_term = get_var(var_term_name,var_dict)
+    return var_term
 def parse_term(s_expr,var_dict:Dict[str,Variable]) -> Message:
     if type(s_expr) == sexpdata.Symbol:
-        #is simple string variable
-        var_term_name = get_str_from_symbol(s_expr,"message term")
-        var_term = get_var(var_term_name,var_dict)
+        var_term = parse_atom(s_expr,var_dict)
         return Message(MsgType.ATOM_TERM,var_term)
     if len(s_expr) < 2:
         raise ParseException(f"Since s-expr in message expected enc or cat followed by message term")
     enc_cat_ltk_pubk_str = get_str_from_symbol(s_expr[0],"enc/cat/ltk/pubk")        
+    # TODO: Add parsing for privk
     func_dict = {
         ENC_STR  : parse_enc_term,
         CAT_STR  : parse_cat_term,
         LTK_STR  : parse_ltk,
-        PUBK_STR : parse_pubk
+        PUBK_STR : parse_pubk,
+        PRIVK_STR: parse_privk
     }
     if enc_cat_ltk_pubk_str not in func_dict:
         raise ParseException(f"Expected s-expr message term to start with enc/cat/pubk/ltk not {enc_cat_ltk_pubk_str}")    
@@ -297,12 +368,7 @@ def parse_protocol(s_expr) -> Protocol:
     
     return Protocol([parse_role(role_expr) for role_expr in s_expr[3:]],prot_name,BASIC_STR)    
 
-def parse_strand(s_expr):
-    pass
-def parse_non_orig(s_expr):
-    pass 
-def parse_uniq_orig(s_expr):
-    pass
+"""
 def parse_skeleton(s_expr):
     if len(s_expr) == 0:
         raise ParseException("Empty S expression expected defskeleton as first element")
@@ -321,14 +387,102 @@ def parse_skeleton(s_expr):
             constr_arr.append(parse_non_orig(sub_s_expr))
         elif first_str == UNIQ_ORIG_STR:
             constr_arr.append(parse_uniq_orig(sub_s_expr))
+"""
+def parse_var_mapping(s_expr,var_map_dict:Dict[str,str],role_obj:Role):
+    if len(s_expr) != 2:
+        raise ParseException("Expected skeleton variable name,role variable name")
+    skelet_var_name = get_str_from_symbol(s_expr[0],"skeleton var name")
+    ##should add check for if role names and variable names are valid as well
+    role_var_name = get_str_from_symbol(s_expr[1],"role var name")
+    if not role_obj.is_valid_var_name(role_var_name):
+        raise ParseException(f"Varible name '{role_var_name}' and type '{type(role_var_name)}' not present in role declaration '{role_obj.role_name}' which has variable list '{list(role_obj.var_dict.keys())}' '{list(map(type,list(role_obj.var_dict.keys())))}'")
+    if (skelet_var_name in var_map_dict):
+        raise ParseException(f"Repeated variable name {skelet_var_name} in defstrand clause")
+    var_map_dict[skelet_var_name] = role_var_name
+def parse_strand(s_expr,prot_obj:Protocol) -> Strand:
+    if len(s_expr) < 4:
+        raise ParseException("Expected defstrand,role_name,strand len?,variable mappings")
+    match_type_and_str(s_expr[0],DEF_STRAND_STR)
+    ##should add check for if role names and variable names are valid as well
+    role_name = get_str_from_symbol(s_expr[1],"role name")
+    if not prot_obj.is_valid_role_name(role_name):
+        raise ParseException(f"Role Name {role_name} has not been declared in defprotocol clause")
+    role_obj = prot_obj.get_role_obj(role_name)
+    trace_len = get_int_from_s_expr(s_expr[2],"trace length")
 
+    var_map_dict = {}
+    for elm in s_expr[3:]:
+        parse_var_mapping(elm,var_map_dict,role_obj)
+    return Strand(role_name,trace_len,var_map_dict)    
+#only handles parsing atom terms,pubk,privk,ltk as examples
+#doesn't handle parsing cat,enc
+def parse_base_term(s_expr,var_dict:Dict[str,Variable]) -> Message:
+    if type(s_expr) == sexpdata.Symbol:
+        var_term = parse_atom(s_expr,var_dict)  
+        return Message(MsgType.ATOM_TERM,var_term)
+    if len(s_expr) == 0:
+        raise ParseException(f"Empty s-expression expected ltk,pubk,privk clause")
+    clause_type = get_str_from_symbol(s_expr[0],"pubk/privk/ltk")
+    if clause_type == PUBK_STR:
+        return parse_pubk(s_expr,var_dict)
+    elif clause_type == PRIVK_STR:
+        return parse_privk(s_expr,var_dict)
+    elif clause_type == LTK_STR:
+        return parse_ltk(s_expr,var_dict)
+    else:
+        raise ParseException(f"Unexpected clause_type {clause_type} expected pubk/privk/ltk")
+def parse_non_orig(s_expr,var_dict:Dict[str,Variable],constr_lst:List[Constraint]):
+    if len(s_expr) < 2:
+        raise ParseException("expected non-orig and variable clause")
+    match_type_and_str(s_expr[0],NON_ORIG_STR)
+    for elm in s_expr[1:]:
+        cur_base_term = parse_base_term(elm,var_dict)
+        cur_constr = Constraint(ConstrType.NON_ORIG,cur_base_term)
+        constr_lst.append(cur_constr)
+
+def parse_uniq_orig(s_expr,var_dict:Dict[str,Variable],constr_list:List[Constraint]):
+    if len(s_expr) < 2:
+        raise ParseException("expected non-orig and variable clause")
+    match_type_and_str(s_expr[0],UNIQ_ORIG_STR)
+    for elm in s_expr[1:]:
+        cur_base_term = parse_base_term(elm,var_dict)
+        cur_constr = Constraint(ConstrType.UNIQ_ORIG,cur_base_term)
+        constr_list.append(cur_constr)
+
+def parse_skeleton(s_expr,prot_obj:Protocol) -> Skeleton:
+    if type(s_expr) == sexpdata.Symbol:
+        raise ParseException("Expected s expression not string literal")
+    if len(s_expr) == 1:
+        raise ParseException("Empty s expression expected defskeleton")
+    match_type_and_str(s_expr[0],DEF_SKEL_STR)
+    prot_name = get_str_from_symbol(s_expr[1],"protocol name")
+    vars_dict = parse_vars_clause(s_expr[2])
+
+    constraints_lst = []
+    strand_arr = [] 
+
+    for sub_expr in s_expr[3:]:
+        if type(s_expr) == sexpdata.Symbol:
+            raise ParseException("Expected s-expressions not basic string")
+        clasue_type = get_str_from_symbol(sub_expr[0],"clause type")
+        if clasue_type == DEF_STRAND_STR:
+            cur_strand = parse_strand(sub_expr,prot_obj)
+            strand_arr.append(cur_strand)
+        elif clasue_type == NON_ORIG_STR:
+            parse_non_orig(sub_expr,vars_dict,constraints_lst)
+        elif clasue_type == UNIQ_ORIG_STR:
+            parse_uniq_orig(sub_expr,vars_dict,constraints_lst)
+    return Skeleton(prot_name,vars_dict,strand_arr,constraints_lst)
+##TODO: Just wrote parse_skeleton function also have to test it
 def parse_file(s_expr):
     if len(s_expr) == 0:
         raise ParseException("Empty S expression expected defprotocol clause")
     if len(s_expr) == 1:
         return parse_protocol(s_expr[0])
     if len(s_expr) == 2:
-        return [parse_protocol(s_expr[0]),parse_skeleton(s_expr[1])]
+        prot_obj = parse_protocol(s_expr[0])
+        skel_obj = parse_skeleton(s_expr[1],prot_obj)
+        return [prot_obj,skel_obj]
     if len(s_expr) > 2:
-        raise ParseException("Expected only two s-expr for protocol and skeleton respectively")
+        raise ParseException(f"Expected only two s-expr for protocol and skeleton respectively len is {len(s_expr)}\n the s-exprs are\n{str(s_expr)}")
     

@@ -8,7 +8,7 @@ CAT_MSG_STR = "cat"
 ATOM_MSG_STR= "atom"
 LTK_MSG_STR = "ltk"
 PUBK_MSG_STR= "pubk"
-
+PRIVK_MSG_STR="privk"
 def msg_type_to_str(msg_type:MsgType):
     f"""Convert the msg type enum values to corresponding 
     strings seen in the racket code example 
@@ -18,7 +18,8 @@ def msg_type_to_str(msg_type:MsgType):
         MsgType.ENCRYPTED_TERM: ENC_MSG_STR,
         MsgType.CAT_TERM: CAT_MSG_STR,
         MsgType.LTK_TERM: LTK_MSG_STR,
-        MsgType.PUBK_TERM: PUBK_MSG_STR
+        MsgType.PUBK_TERM: PUBK_MSG_STR,
+        MsgType.PRIVK_TERM: PRIVK_MSG_STR
     }
     return msg_type_to_str_dict[msg_type]
 
@@ -150,6 +151,9 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
                 name_var = msg_obj.msg_data[0].msg_data                
                 #print_to_file(f"((Keypairs.owners).({arbit_role_name}.{role_sig_name}_{name_var.var_name})).(KeyPairs.pairs) = {msg_var_name}\n")
                 print_to_file(f"getPUBK[{arbit_role_name}.{role_sig_name}_{name_var.var_name}] = {msg_var_name}\n")
+            elif msg_obj.msg_type == MsgType.PRIVK_TERM:
+                name_var = msg_obj.msg_data[0].msg_data
+                print_to_file(f"getPRIVK[{arbit_role_name}.{role_sig_name}_{name_var.var_name}] = {msg_var_name}\n")
         nonlocal space_lvl
 
         for index,(_,msg_in_trace) in enumerate(msg_trace):
@@ -260,6 +264,139 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
         transcribe_role_trace_to_pred(role,prot_name,role_sig_name)
         print_to_file("\n")
 
+fresh_skelet_num = -1
+def get_new_skelet_num():
+    global fresh_skelet_num
+    fresh_skelet_num += 1    
+    return fresh_skelet_num
+def transcribe_skelet(skelet_obj:Skeleton,file:io.TextIOWrapper):
+    fresh_strand_num = -1
+    space_lvl = 0
+    def get_fresh_strand_num():
+        nonlocal fresh_strand_num
+        fresh_strand_num += 1
+        return fresh_strand_num
+    def print_to_file(txt:str,add_space = True):
+        """helper function to print txt argument with correct level of indentation
+        into generated file, add_space = True adds indentation, add_space = False
+        does not"""
+        nonlocal space_lvl
+        if add_space:
+            print(space_lvl*space_str,end="",file=file)
+        print(txt,end="",file=file)
+    def start_block():
+        nonlocal space_lvl 
+        space_lvl += 1
+    def end_block():
+        nonlocal space_lvl
+        space_lvl -= 1
+    def write_skel_sig(skel_obj:Skeleton,cur_skelet_num:int):
+        def write_var_fields(skel_obj:Skeleton,cur_skelet_num:int):
+            skel_obj.var_dict
+            lst_var_names = list(skel_obj.var_dict.keys())
+            for var_name in lst_var_names[:-1]:
+                cur_var_obj = skel_obj.var_dict[var_name]
+                print_to_file(f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}_{var_name}: one {vartype_to_str(cur_var_obj.var_type)},\n")
+            var_name = lst_var_names[-1]
+            cur_var_obj = skel_obj.var_dict[var_name]
+            print_to_file(f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}_{var_name}: one {vartype_to_str(cur_var_obj.var_type)}\n")
+
+        print_to_file(f"one sig skeleton_{skel_obj.prot_name}_{cur_skelet_num} {{\n")
+        start_block()
+        write_var_fields(skel_obj,cur_skelet_num)
+        end_block()
+        print_to_file(f"}}\n")
+    def transcribe_strand(skel_obj:Skeleton,cur_strand:Strand,cur_skelet_num:int,cur_strand_num:int):
+        skel_name = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}"
+        strand_name = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}_strand{cur_strand_num}"
+
+        print_to_file(f"some {strand_name} : {cur_strand.role_name} | {{\n")
+        start_block()
+        for skel_var_name,role_var_name in cur_strand.var_map.items():
+            print_to_file(f"{skel_name}.{skel_var_name} = {strand_name}.{role_var_name}\n")
+        end_block()
+        print_to_file(f"}}\n\n")
+    def transcribe_constraints(skel_obj:Skeleton,cur_skelet_num:int):
+        def not_in_attack_base(var_name:str):
+            print_to_file(f"not ( {var_name} in baseKnown[Attacker]  )\n")
+        def originates(strand_name:str,var_name:str):
+            print_to_file(f"originates[{strand_name},{var_name}]\n")
+        def generates(strand_name:str,var_name:str):
+            print_to_file(f"generates[{strand_name},{var_name}]\n")
+        def get_var_name_constr(skel_obj:Skeleton,cur_constr:Constraint,cur_skelet_num:int):
+            cur_msg = cur_constr.msg_on_constr
+            cur_type = cur_msg.msg_type
+            if cur_type == MsgType.ATOM_TERM:
+                cur_var = cur_msg.msg_data
+                cur_var_name = cur_var.var_name
+                sig_name     = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}"
+                sig_var_name = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}_{cur_var_name}" 
+                return f"{sig_name}.{sig_var_name}"
+            elif cur_type == MsgType.LTK_TERM:
+                name_1,name_2 = cur_msg.msg_data
+                return f"getLTK[{name_1},{name_2}]"
+            elif cur_type == MsgType.PRIVK_TERM:
+                name_term = cur_msg.msg_data[0]
+                name_var_term = name_term.msg_data
+                cur_var_name = name_var_term.var_name
+
+                sig_name     = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}"
+                sig_var_name = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}_{cur_var_name}" 
+                return f"getPRIVK[{sig_name}.{sig_var_name}]"
+            elif cur_type == MsgType.PUBK_TERM:
+                name_term = cur_msg.msg_data[0]
+                name_var_term = name_term.msg_data
+                cur_var_name = name_var_term.var_name
+
+                sig_name     = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}"
+                sig_var_name = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}_{cur_var_name}" 
+                return f"getPUBK[{sig_name}.{sig_var_name}]"
+        def transcr_non_orig(skel_obj:Skeleton,cur_constr:Constraint,cur_skelet_num:int):
+            cur_constr_var_name = get_var_name_constr(skel_obj,cur_constr,cur_skelet_num)
+            not_in_attack_base(cur_constr_var_name)
+            strand_name = "aStrand"
+
+            print_to_file(f"no {strand_name} : strand | {{\n")
+            
+            start_block()
+            originates(strand_name,cur_constr_var_name)
+            print_to_file("or\n")
+            generates(strand_name,cur_constr_var_name)
+            end_block()
+
+            print_to_file(f"}}\n")
+        def transcr_uniq_orig(skel_obj:Skeleton,cur_constr:Constraint,cur_skelet_num:int):
+            cur_constr_var_name = get_var_name_constr(skel_obj,cur_constr,cur_skelet_num)
+            not_in_attack_base(cur_constr_var_name)
+            strand_name = "aStrand"
+
+            print_to_file(f"one {strand_name} : strand | {{\n")
+
+            start_block()
+            originates(strand_name,cur_constr_var_name)
+            generates(strand_name,cur_constr_var_name)
+            end_block()
+
+            print_to_file(f"}}\n")
+        for cur_constr in skel_obj.orig_constr:
+            if cur_constr.constr_type == ConstrType.NON_ORIG:
+                transcr_non_orig(skel_obj,cur_constr,cur_skelet_num) 
+            if cur_constr.constr_type == ConstrType.UNIQ_ORIG:
+                transcr_uniq_orig(skel_obj,cur_constr,cur_skelet_num)
+            print_to_file(f"\n")
+    def write_constrain_pred(skel_obj:Skeleton,cur_skelet_num:int):
+        print_to_file(f"pred constrain_skeleton_{skel_obj.prot_name}_{cur_skelet_num} {{\n") 
+        start_block()
+        for cur_strand in skel_obj.strand_list:
+            cur_strand_num = get_fresh_strand_num()
+            transcribe_strand(skel_obj,cur_strand,cur_skelet_num,cur_strand_num)
+        transcribe_constraints(skel_obj,cur_skelet_num)
+        end_block()
+        print_to_file(f"}}\n")
+    
+    this_skel_num = get_fresh_strand_num()
+    write_skel_sig(skelet_obj,cur_skelet_num=this_skel_num)
+    write_constrain_pred(skelet_obj,cur_skelet_num=this_skel_num)
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
@@ -272,14 +409,23 @@ if __name__ == "__main__":
     base_file_path = "./base_with_seq.frg"
     extra_func_path = "./extra_funcs.frg"
 
+    prot_obj = None
+    skel_obj = None
     with open(args.cspa_file_path) as f:
-        s_expr = load_cspa_as_s_expr(f)
-        parse_prot =  parse_protocol(s_expr)
+        s_expr = load_cspa_as_s_expr_new(f)
+        print(f"Debug len s_expr is: {len(s_expr)}")
+        tmp =  parse_file(s_expr)
+        if type(tmp) == type([]):
+            prot_obj,skel_obj = tmp 
+        else:
+            prot_obj = tmp
     with open(args.out_file_path,'w') as out_file:
         with open(base_file_path) as base_file:
             append_file(base_file,out_file)
         with open(extra_func_path) as extra_func_file:
             append_file(extra_func_file,out_file)
-        transcribe_prot(parse_prot,out_file)
+        transcribe_prot(prot_obj,out_file)
+        if skel_obj is not None:
+            transcribe_skelet(skel_obj,out_file)
         with open(args.run_file_path) as run_file:
             append_file(run_file,out_file)
