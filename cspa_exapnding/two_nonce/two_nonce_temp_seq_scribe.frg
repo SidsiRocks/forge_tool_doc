@@ -327,7 +327,9 @@ fun getPRIVK[name_a:name] : lone Key{
 fun getPUBK[name_a:name] : lone Key {
     (KeyPairs.owners.(name_a)).(KeyPairs.pairs)
 }
-
+pred learnt_term_by[m:mesg,a:name,t:Timeslot] {
+    m in (a.learned_times).(Timeslot - t.^next)
+}
 
 sig two_nonce_init extends strand{
     two_nonce_init_a: one name,
@@ -352,33 +354,42 @@ pred exec_two_nonce_init {
             inds[t0.data] = 0
             some enc1 : elems[t0.data] | {
                 elems[t0.data] = enc1
-                getPUBK[arbitrary_two_nonce_init.two_nonce_init_b] = (enc1).encryptionKey
-                inds[((enc1).plaintext)] = 0
-                some atom2 : elems[((enc1).plaintext)] {
-                    (((enc1).plaintext))[0] = atom2
-                    atom2 = arbitrary_two_nonce_init.two_nonce_init_n1
+                enc1 in Ciphertext
+                learnt_term_by[getPUBK[arbitrary_two_nonce_init.two_nonce_init_b],arbitrary_two_nonce_init.agent,t0] => {
+                    getPUBK[arbitrary_two_nonce_init.two_nonce_init_b] = (enc1).encryptionKey
+                    inds[((enc1).plaintext)] = 0
+                    some atom2 : elems[((enc1).plaintext)] {
+                        (((enc1).plaintext))[0] = atom2
+                        atom2 = arbitrary_two_nonce_init.two_nonce_init_n1
+                    }
                 }
             }
             inds[t1.data] = 0
             some enc3 : elems[t1.data] | {
                 elems[t1.data] = enc3
-                getPUBK[arbitrary_two_nonce_init.two_nonce_init_a] = (enc3).encryptionKey
-                inds[((enc3).plaintext)] = 0 + 1
-                some atom4,atom5 : elems[((enc3).plaintext)] {
-                    (((enc3).plaintext))[0] = atom4
-                    (((enc3).plaintext))[1] = atom5
-                    atom4 = arbitrary_two_nonce_init.two_nonce_init_n1
-                    atom5 = arbitrary_two_nonce_init.two_nonce_init_n2
+                enc3 in Ciphertext
+                learnt_term_by[getPUBK[arbitrary_two_nonce_init.two_nonce_init_a],arbitrary_two_nonce_init.agent,t1] => {
+                    getPUBK[arbitrary_two_nonce_init.two_nonce_init_a] = (enc3).encryptionKey
+                    inds[((enc3).plaintext)] = 0 + 1
+                    some atom4,atom5 : elems[((enc3).plaintext)] {
+                        (((enc3).plaintext))[0] = atom4
+                        (((enc3).plaintext))[1] = atom5
+                        atom4 = arbitrary_two_nonce_init.two_nonce_init_n1
+                        atom5 = arbitrary_two_nonce_init.two_nonce_init_n2
+                    }
                 }
             }
             inds[t2.data] = 0
             some enc6 : elems[t2.data] | {
                 elems[t2.data] = enc6
-                getPUBK[arbitrary_two_nonce_init.two_nonce_init_b] = (enc6).encryptionKey
-                inds[((enc6).plaintext)] = 0
-                some atom7 : elems[((enc6).plaintext)] {
-                    (((enc6).plaintext))[0] = atom7
-                    atom7 = arbitrary_two_nonce_init.two_nonce_init_n2
+                enc6 in Ciphertext
+                learnt_term_by[getPUBK[arbitrary_two_nonce_init.two_nonce_init_b],arbitrary_two_nonce_init.agent,t2] => {
+                    getPUBK[arbitrary_two_nonce_init.two_nonce_init_b] = (enc6).encryptionKey
+                    inds[((enc6).plaintext)] = 0
+                    some atom7 : elems[((enc6).plaintext)] {
+                        (((enc6).plaintext))[0] = atom7
+                        atom7 = arbitrary_two_nonce_init.two_nonce_init_n2
+                    }
                 }
             }
         }
@@ -409,33 +420,42 @@ pred exec_two_nonce_resp {
             inds[t0.data] = 0
             some enc8 : elems[t0.data] | {
                 elems[t0.data] = enc8
-                getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_b] = (enc8).encryptionKey
-                inds[((enc8).plaintext)] = 0
-                some atom9 : elems[((enc8).plaintext)] {
-                    (((enc8).plaintext))[0] = atom9
-                    atom9 = arbitrary_two_nonce_resp.two_nonce_resp_n1
+                enc8 in Ciphertext
+                learnt_term_by[getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_b],arbitrary_two_nonce_resp.agent,t0] => {
+                    getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_b] = (enc8).encryptionKey
+                    inds[((enc8).plaintext)] = 0
+                    some atom9 : elems[((enc8).plaintext)] {
+                        (((enc8).plaintext))[0] = atom9
+                        atom9 = arbitrary_two_nonce_resp.two_nonce_resp_n1
+                    }
                 }
             }
             inds[t1.data] = 0
             some enc10 : elems[t1.data] | {
                 elems[t1.data] = enc10
-                getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_a] = (enc10).encryptionKey
-                inds[((enc10).plaintext)] = 0 + 1
-                some atom11,atom12 : elems[((enc10).plaintext)] {
-                    (((enc10).plaintext))[0] = atom11
-                    (((enc10).plaintext))[1] = atom12
-                    atom11 = arbitrary_two_nonce_resp.two_nonce_resp_n1
-                    atom12 = arbitrary_two_nonce_resp.two_nonce_resp_n2
+                enc10 in Ciphertext
+                learnt_term_by[getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_a],arbitrary_two_nonce_resp.agent,t1] => {
+                    getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_a] = (enc10).encryptionKey
+                    inds[((enc10).plaintext)] = 0 + 1
+                    some atom11,atom12 : elems[((enc10).plaintext)] {
+                        (((enc10).plaintext))[0] = atom11
+                        (((enc10).plaintext))[1] = atom12
+                        atom11 = arbitrary_two_nonce_resp.two_nonce_resp_n1
+                        atom12 = arbitrary_two_nonce_resp.two_nonce_resp_n2
+                    }
                 }
             }
             inds[t2.data] = 0
             some enc13 : elems[t2.data] | {
                 elems[t2.data] = enc13
-                getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_b] = (enc13).encryptionKey
-                inds[((enc13).plaintext)] = 0
-                some atom14 : elems[((enc13).plaintext)] {
-                    (((enc13).plaintext))[0] = atom14
-                    atom14 = arbitrary_two_nonce_resp.two_nonce_resp_n2
+                enc13 in Ciphertext
+                learnt_term_by[getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_b],arbitrary_two_nonce_resp.agent,t2] => {
+                    getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_b] = (enc13).encryptionKey
+                    inds[((enc13).plaintext)] = 0
+                    some atom14 : elems[((enc13).plaintext)] {
+                        (((enc13).plaintext))[0] = atom14
+                        atom14 = arbitrary_two_nonce_resp.two_nonce_resp_n2
+                    }
                 }
             }
         }

@@ -26,6 +26,23 @@
 - IMP NOTE
 - The only thing ensuring that attacker can't generate the same nonces as the other agents is 
   a uniq-orig statement, can probably add separate constraint which says a nonce can never be genrated agian
-  transcription for skeleton blocks of code is complete, still have to do proper checks
+  transcription for skeleton blocks of code is complete, still have to do proper checks (seems to be working with two_nonce.rkt have to check in more detail later)
 - consider if want to add code for transcribing skeleton to transcribe.py, currently only in 
   transcribe_seq.py
+- added code for checking if strand knows the encryption key, have to check this more (two nonce working, have to check if will give arbitrary ciphertext when key is not known)
+Plan for handling encrypted terms properly,
+we add constraint that enc in Ciphertext
+and old constraint on keys and plaintext
+only if the key is in the known values for that strand
+
+inds[t2.data] = 0
+some enc13 : elems[t2.data] | {
+    elems[t2.data] = enc13
+    (a.learned_times).(Timeslot - t.^next)
+    getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_b] = (enc13).encryptionKey
+    inds[((enc13).plaintext)] = 0
+    some atom14 : elems[((enc13).plaintext)] {
+        (((enc13).plaintext))[0] = atom14
+        atom14 = arbitrary_two_nonce_resp.two_nonce_resp_n2
+    }
+}
