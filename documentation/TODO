@@ -51,3 +51,29 @@ some enc13 : elems[t2.data] | {
 Doubts to ask about report:
 1) any other sections/points to add 
 2) anything to mention in further work, work done 
+
+
+Improve formatting
+1) put code in figure doesn't span pages
+2) some images small make them larger to be legible
+3) put labels on figure refer to it correctly
+4) explain arrow notation ins ection of how tool models protocols
+5) explain change to workflow becuase of new tool (mention this is section)
+6) link modifications to shortcomnings noticed
+7) fix single and double quotes to have right orientation
+8) explain modify to visualizer
+9) add small section about creating documentation
+10) add link to github repository (imp that it is there in my presentation)
+11) diff btwn tool 
+
+12) add a bibliography (so that all links are numbers)
+13) when showing differences between old and new tool mention what parts of code are causing those differences
+14) in furthur work add imporving UX for specifying protocol
+
+Presesntaion
+1) can be brief of how forge works
+2) can be brief on inference system
+3) focus on changes made
+
+4) quick intro of security protocols need verification, this is a tool for that (?maybe mention symbloic verification?)
+5) in present. also focus on section 3 and 4(changes to code and how it manifests in the tool)
