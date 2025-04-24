@@ -8,7 +8,7 @@
 
 - RECENT TODO
 - documentationf or transcriber, for changes to base.frg
-- encrypted terma=s matching only when inverse key is known
+- encrypted terms matching only when inverse key is known
 - run file constraints uses sensible defaults, and some json file like interface for giving constraints
 - visualizer updates
 
@@ -21,7 +21,8 @@
 - FOR LATER
 - what the predicates for a trace based property and equivalence basedd property,
 - bettter interface/language for stating additional predicates
-
+- for the otway rees protocol attack detection need agents shouldn't be able to distinguish between the following  {Na,Kab}Kas
+  {Na,M,A,B}Kas have to somehow make agent take M,A,B as Kab.
 
 - IMP NOTE
 - The only thing ensuring that attacker can't generate the same nonces as the other agents is 
@@ -46,3 +47,7 @@ some enc13 : elems[t2.data] | {
         atom14 = arbitrary_two_nonce_resp.two_nonce_resp_n2
     }
 }
+
+Doubts to ask about report:
+1) any other sections/points to add 
+2) anything to mention in further work, work done 

@@ -1,14 +1,20 @@
 import sexpdata
 from typing import *
 from enum import Enum
+import io
 
-def load_cspa_as_s_expr(file):
+def load_cspa_as_s_expr(file:io.TextIOWrapper):
+    """reads the file and returns the s-expr of the 
+    file (ignores first line which contains #lang/forge/domains/crypto)"""
     for line in file:
         break
     file_txt = file.read()
     result = sexpdata.loads(file_txt)
     return result
 def get_root_s_expr_lst(txt:str):
+    """the sexpdata library can only parse one s-expr by itself,multiple
+    s-expr must be present as an array or similar,hence this adds a wrapper
+    around that to find all s-expr"""
     brkt_count = 0
     brkt_started = False
     prev_indx = 0
@@ -26,6 +32,7 @@ def get_root_s_expr_lst(txt:str):
             strs_so_far.append(cur_s_expr_str)
     return strs_so_far
 def load_cspa_as_s_expr_new(file):
+    """using get_root_s_expr_lst to parse multiple s-expr in one file"""
     result = []
     for line in file:
         break
@@ -38,6 +45,7 @@ def load_cspa_as_s_expr_new(file):
         result.append(sexpdata.loads(elm))
     return result
 
+"""The types which Variable class might have"""
 class VarType(Enum):
     NAME = 1
     TEXT = 2
@@ -50,6 +58,8 @@ SKEY_STR = "skey"
 AKEY_STR = "akey"
 
 def str_to_vartype(var_type_str:str):
+    """convert string of vartype to VarType Enum object,
+    used for parsing var name in variable declarations"""
     var_type_str_to_type_dict = {
         NAME_STR : VarType.NAME,
         TEXT_STR : VarType.TEXT,
@@ -60,6 +70,7 @@ def str_to_vartype(var_type_str:str):
         return var_type_str_to_type_dict[var_type_str]
     raise ParseException(f"Error unknown message type {var_type_str} seen")
 def vartype_to_str(var_type:VarType):
+    """convert VarType Enum to their corresponding strings"""
     var_str_to_var_type_dict = {
         VarType.NAME : NAME_STR,
         VarType.TEXT : TEXT_STR,
@@ -70,12 +81,14 @@ def vartype_to_str(var_type:VarType):
         return var_str_to_var_type_dict[var_type]
     raise ParseException(f"Unknown var_type {var_type}")
 class Variable:
+    """variable class stores the name and type of variable"""
     def __init__(self,var_name:str,var_type:VarType):
         self.var_name = var_name
         self.var_type = var_type
     def __str__(self):
         return f"Variable({self.var_name},{self.var_type})"
     __repr__ = __str__
+"""The types of a message class"""
 class MsgType(Enum):
     ENCRYPTED_TERM = 1
     CAT_TERM = 2
@@ -85,6 +98,9 @@ class MsgType(Enum):
     PRIVK_TERM = 6
     ##have to add privk forgot to deal with that
 class Message:
+    """Message class stores the type of the message and the data within a message,
+    for ATOM_TERM the msg_data contains just the Variable corresponding to the term
+    for CAT_TERM the list of messages in it and similar logic for other datatypes"""
     def __init__(self,msg_type:MsgType,args_arr:Union[List['Message'],Variable]):
         self.msg_type = msg_type
         self.msg_data = args_arr
@@ -92,10 +108,12 @@ class Message:
         return f"Message({self.msg_type},{self.msg_data})"
     def __repr__(self):
         return self.__str__()
+"""Marks whether trace is SEND/RECV"""
 class SendRecv(Enum):
     SEND_TRACE = 1
     RECV_TRACE = 2
 class Role:
+    """Stores all terms within a role"""
     def __init__(self,role_name:str,var_dict:Dict[str,Variable],msg_trace:List[Tuple[SendRecv,Message]]):
         self.role_name = role_name
         self.var_dict = var_dict
