@@ -54,21 +54,22 @@ Doubts to ask about report:
 
 
 Improve formatting
-1) put code in figure doesn't span pages
-2) some images small make them larger to be legible
-3) put labels on figure refer to it correctly
-4) explain arrow notation ins ection of how tool models protocols
-5) explain change to workflow becuase of new tool (mention this is section)
-6) link modifications to shortcomnings noticed
-7) fix single and double quotes to have right orientation
-8) explain modify to visualizer
-9) add small section about creating documentation
-10) add link to github repository (imp that it is there in my presentation)
-11) diff btwn tool 
+1) put code in figure doesn't span pages [mostly done]
+2) some images small make them larger to be legible [done cross check]
+3) put labels on figure refer to it correctly [put labels, have to add references]
+4) explain arrow notation in section of how tool models protocols [done]
+5) explain modify to visualizer [done]
+6) explain change to workflow becuase of new tool (mention this is section) [done]
+7) diff btwn tool 
+8) link modifications to shortcomnings noticed
+9) fix single and double quotes to have right orientation
+10) add small section about creating documentation
+11) add link to github repository (imp that it is there in my presentation)[done, have to remember to add in presentation]
 
 12) add a bibliography (so that all links are numbers)
 13) when showing differences between old and new tool mention what parts of code are causing those differences
 14) in furthur work add imporving UX for specifying protocol
+15) mention that protocol descriptions taken from spore
 
 Presesntaion
 1) can be brief of how forge works
