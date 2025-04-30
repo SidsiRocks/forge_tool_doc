@@ -165,6 +165,7 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
 
         for index,(_,msg_in_trace) in enumerate(msg_trace):
             ##unclear why separate case try to understand later
+            ##maybe can change (enc ..) to (cat (enc ..)) so that it works automatically here
             if msg_in_trace.msg_type == MsgType.ENCRYPTED_TERM:
                 enc_term_name = get_msg_var_name(msg_in_trace)
                 ##if root term is an encrypted term then we will
@@ -176,6 +177,8 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
                 write_msg_constraint(msg_in_trace,enc_term_name,arbit_role_name,role_sig_name,index)
                 end_block()
                 print_to_file(f"}}\n")
+            elif msg_in_trace.msg_type == MsgType.CAT_TERM:
+                write_msg_constraint(msg_in_trace,f"t{index}.data",arbit_role_name,role_sig_name,index)
             else:
                 write_msg_constraint(msg_in_trace,f"elems[t{index}.data]",arbit_role_name,role_sig_name,index)
     def transcribe_role_trace_to_pred(role_obj:Role,prot_name:str,role_sig_name:str):

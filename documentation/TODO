@@ -63,7 +63,7 @@ Improve formatting
 7) diff btwn tool 
 8) link modifications to shortcomnings noticed
 9) fix single and double quotes to have right orientation
-10) add small section about creating documentation
+10) add small section about creating documentation [done]
 11) add link to github repository (imp that it is there in my presentation)[done, have to remember to add in presentation]
 
 12) add a bibliography (so that all links are numbers)
@@ -78,3 +78,7 @@ Presesntaion
 
 4) quick intro of security protocols need verification, this is a tool for that (?maybe mention symbloic verification?)
 5) in present. also focus on section 3 and 4(changes to code and how it manifests in the tool)
+
+
+- Cannot have enc terms inside an enc term currently, not needed as enc already supports having multiple terms, have to translate something like
+(enc n1 (cat n2 n3) n4) to (enc n1 n2 n3 n4) currently would not 
