@@ -556,7 +556,13 @@ def parse_file(s_expr):
     if len(s_expr) == 2:
         prot_obj = parse_protocol(s_expr[0])
         skel_obj = parse_skeleton(s_expr[1],prot_obj)
-        return [prot_obj,skel_obj]
+        return [prot_obj,[skel_obj]]
     if len(s_expr) > 2:
-        raise ParseException(f"Expected only two s-expr for protocol and skeleton respectively len is {len(s_expr)}\n the s-exprs are\n{str(s_expr)}")
+        prot_obj = parse_protocol(s_expr[0])
+        skel_obj_arr = []
+        for i in range(1,len(s_expr)):
+            cur_skel_obj = parse_skeleton(s_expr[i],prot_obj)
+            skel_obj_arr.append(cur_skel_obj)
+        return [prot_obj,skel_obj_arr]
+
     

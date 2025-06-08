@@ -46,9 +46,7 @@ fun getLTK[name_a: name, name_b: name]: lone skey {
 
 /** Get the inverse key for a given key (if any) */
 fun getInv[k: Key]: one Key {
-  (k in PublicKey => ((KeyPairs.pairs).k) else none)
-  +
-  (k in PrivateKey => (k.(KeyPairs.pairs)) else none)
+  (k in PublicKey => ((KeyPairs.pairs).k) else (k.(KeyPairs.pairs)))
   +
   (k in skey => k else none)
 }
@@ -321,3 +319,99 @@ run {
   }
 }
 */
+
+
+fun getPRIVK[name_a:name] : lone Key{
+    (KeyPairs.owners).name_a
+}
+fun getPUBK[name_a:name] : lone Key {
+    (KeyPairs.owners.(name_a)).(KeyPairs.pairs)
+}
+pred learnt_term_by[m:mesg,a:name,t:Timeslot] {
+    m in (a.learned_times).(Timeslot - t.^next)
+}
+
+sig duplic_terms_A extends strand{
+    duplic_terms_A_n1: one text,
+    duplic_terms_A_n2: one text
+}
+
+// predicate follows below
+pred exec_duplic_terms_A {
+    all arbitrary_duplic_terms_A : duplic_terms_A | {
+        some t0,t1 : Timeslot | {
+            t1 in t0.(^next)
+            
+            t0 + t1  = sender.arbitrary_duplic_terms_A + receiver.arbitrary_duplic_terms_A
+            
+            t0.sender = arbitrary_duplic_terms_A
+            t1.receiver = arbitrary_duplic_terms_A
+            
+            inds[t0.data] = 0
+            some atom1 : elems[t0.data] {
+                (t0.data)[0] = atom1
+                atom1 = arbitrary_duplic_terms_A.duplic_terms_A_n1
+            }
+            inds[t1.data] = 0 + 1
+            some atom2,atom3 : elems[t1.data] {
+                (t1.data)[0] = atom2
+                (t1.data)[1] = atom3
+                atom2 = arbitrary_duplic_terms_A.duplic_terms_A_n1
+                atom3 = arbitrary_duplic_terms_A.duplic_terms_A_n2
+            }
+        }
+    }
+}
+// end of predicate
+
+sig duplic_terms_B extends strand{
+    duplic_terms_B_n1: one text,
+    duplic_terms_B_n2: one text
+}
+
+// predicate follows below
+pred exec_duplic_terms_B {
+    all arbitrary_duplic_terms_B : duplic_terms_B | {
+        some t0,t1 : Timeslot | {
+            t1 in t0.(^next)
+            
+            t0 + t1  = sender.arbitrary_duplic_terms_B + receiver.arbitrary_duplic_terms_B
+            
+            t0.receiver = arbitrary_duplic_terms_B
+            t1.sender = arbitrary_duplic_terms_B
+            
+            inds[t0.data] = 0 + 1
+            some atom4,atom5 : elems[t0.data] {
+                (t0.data)[0] = atom4
+                (t0.data)[1] = atom5
+                atom4 = arbitrary_duplic_terms_B.duplic_terms_B_n1
+                atom5 = arbitrary_duplic_terms_B.duplic_terms_B_n2
+            }
+            inds[t1.data] = 0
+            some atom6 : elems[t1.data] {
+                (t1.data)[0] = atom6
+                atom6 = arbitrary_duplic_terms_B.duplic_terms_B_n2
+            }
+        }
+    }
+}
+// end of predicate
+
+option run_sterling "../../crypto_viz_seq.js"
+
+duplic_terms_exmpl : run {
+    wellformed 
+
+    exec_duplic_terms_A
+    exec_duplic_terms_B 
+
+    duplic_terms_A.agent != AttackerStrand.agent
+    duplic_terms_B.agent != AttackerStrand.agent
+}for 
+    exactly 4 Timeslot,10 mesg,
+    exactly 1 KeyPairs,exactly 0 Key,exactly 0 akey,exactly 0 skey,
+    exactly 0 PrivateKey,exactly 0 PublicKey,
+    exactly 3 name,exactly 5 text,exactly 0 Ciphertext,
+    exactly 1 duplic_terms_A,exactly 1 duplic_terms_B,
+    4 Int
+for {next is linear}

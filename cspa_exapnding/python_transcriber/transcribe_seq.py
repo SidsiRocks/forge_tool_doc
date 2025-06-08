@@ -9,6 +9,26 @@ ATOM_MSG_STR= "atom"
 LTK_MSG_STR = "ltk"
 PUBK_MSG_STR= "pubk"
 PRIVK_MSG_STR="privk"
+
+def invert_key(msg_term:Message):
+    if msg_term.msg_type not in [MsgType.ATOM_TERM,MsgType.LTK_TERM,MsgType.PRIVK_TERM,MsgType.PUBK_TERM]:
+        raise ParseException("Expected a Key to invert")
+    if msg_term.msg_type == MsgType.ATOM_TERM:
+        if msg_term.msg_data.var_type not in [VarType.AKEY,VarType.SKEY]:
+            raise ParseException("Expected a Key to invert")
+    #TODO: have to handle akey variable being passed in 
+    if msg_term.msg_type == MsgType.ATOM_TERM:
+        if msg_term.msg_data.var_type == VarType.SKEY:
+            return msg_term
+        else:
+            raise ParseException("Not implemented yet")
+    if msg_term.msg_type == MsgType.LTK_TERM:
+        return msg_term
+    if msg_term.msg_type == MsgType.PRIVK_TERM:
+        return Message(MsgType.PUBK_TERM,msg_term.msg_data)
+    if msg_term.msg_type == MsgType.PUBK_TERM:
+        return Message(MsgType.PRIVK_TERM,msg_term.msg_data)
+
 def msg_type_to_str(msg_type:MsgType):
     f"""Convert the msg type enum values to corresponding 
     strings seen in the racket code example 
@@ -88,7 +108,10 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
             def transcribe_key_term(msg_obj:Message,arbit_role_name:str):
                 if msg_obj.msg_type == MsgType.LTK_TERM:
                     name_var_1,name_var_2 = msg_obj.msg_data
-                    return f"getLTK[{name_var_1.msg_data.var_name},{name_var_2.msg_data.var_name}]"
+                    name1_str,name2_str = name_var_1.msg_data.var_name,name_var_2.msg_data.var_name
+                    name1_full_str = f"{arbit_role_name}.{role_sig_name}_{name1_str}"
+                    name2_full_str = f"{arbit_role_name}.{role_sig_name}_{name2_str}"
+                    return f"getLTK[{name1_full_str},{name2_full_str}]"
                 elif msg_obj.msg_type == MsgType.PUBK_TERM:
                     name_var = msg_obj.msg_data[0].msg_data                
                     #print_to_file(f"((Keypairs.owners).({arbit_role_name}.{role_sig_name}_{name_var.var_name})).(KeyPairs.pairs) = {msg_var_name}\n")
@@ -139,10 +162,14 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
                     pass
 
                 key_term = msg_obj.msg_data[-1]                
+                inv_key_term = invert_key(key_term)
                 transcribed_key = transcribe_key_term(key_term,arbit_role_name)
+                inv_transcr_key = transcribe_key_term(inv_key_term,arbit_role_name)
 
                 print_to_file(f"{msg_var_name} in Ciphertext\n") #ensuring even if key is not known the term is still in Ciphertext
-                print_to_file(f"learnt_term_by[{transcribed_key},{arbit_role_name}.agent,t{time_indx}] => {{\n")
+                #TODO: Don't need to know inverse key while encrypting and sending, only when receving have to add code handling this soon
+                #would break other code like two nonce
+                print_to_file(f"learnt_term_by[{inv_transcr_key},{arbit_role_name}.agent,t{time_indx}] => {{\n")
                 start_block()
                 write_msg_constraint(key_term,f"({msg_var_name}).encryptionKey",arbit_role_name,role_sig_name,time_indx)
                 plaintxt_terms = msg_obj.msg_data[:-1]
@@ -340,7 +367,12 @@ def transcribe_skelet(skelet_obj:Skeleton,file:io.TextIOWrapper):
                 return f"{sig_name}.{sig_var_name}"
             elif cur_type == MsgType.LTK_TERM:
                 name_1,name_2 = cur_msg.msg_data
-                return f"getLTK[{name_1},{name_2}]"
+                name_1_str = name_1.msg_data.var_name
+                name_2_str = name_2.msg_data.var_name
+                sig_name   = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}"
+                name_1_full_str = f"{sig_name}.skeleton_{skel_obj.prot_name}_{cur_skelet_num}_{name_1_str}"
+                name_2_full_str = f"{sig_name}.skeleton_{skel_obj.prot_name}_{cur_skelet_num}_{name_2_str}"
+                return f"getLTK[{name_1_full_str},{name_2_full_str}]"
             elif cur_type == MsgType.PRIVK_TERM:
                 name_term = cur_msg.msg_data[0]
                 name_var_term = name_term.msg_data
@@ -401,7 +433,8 @@ def transcribe_skelet(skelet_obj:Skeleton,file:io.TextIOWrapper):
         end_block()
         print_to_file(f"}}\n")
     
-    this_skel_num = get_fresh_strand_num()
+    this_skel_num = get_new_skelet_num()
+    print(f"assigning this_skel_num:{this_skel_num}")
     write_skel_sig(skelet_obj,cur_skelet_num=this_skel_num)
     write_constrain_pred(skelet_obj,cur_skelet_num=this_skel_num)
 if __name__ == "__main__":
@@ -417,13 +450,13 @@ if __name__ == "__main__":
     extra_func_path = "./extra_funcs.frg"
 
     prot_obj = None
-    skel_obj = None
+    skel_obj_arr = None
     with open(args.cspa_file_path) as f:
         s_expr = load_cspa_as_s_expr_new(f)
         print(f"Debug len s_expr is: {len(s_expr)}")
         tmp =  parse_file(s_expr)
         if type(tmp) == type([]):
-            prot_obj,skel_obj = tmp 
+            prot_obj,skel_obj_arr = tmp 
         else:
             prot_obj = tmp
     with open(args.out_file_path,'w') as out_file:
@@ -432,7 +465,8 @@ if __name__ == "__main__":
         with open(extra_func_path) as extra_func_file:
             append_file(extra_func_file,out_file)
         transcribe_prot(prot_obj,out_file)
-        if skel_obj is not None:
-            transcribe_skelet(skel_obj,out_file)
+        if skel_obj_arr is not None:
+            for skel_obj in skel_obj_arr:
+                transcribe_skelet(skel_obj,out_file)
         with open(args.run_file_path) as run_file:
             append_file(run_file,out_file)

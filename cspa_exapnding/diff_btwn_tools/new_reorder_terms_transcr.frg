@@ -321,3 +321,226 @@ run {
   }
 }
 */
+
+
+fun getPRIVK[name_a:name] : lone Key{
+    (KeyPairs.owners).name_a
+}
+fun getPUBK[name_a:name] : lone Key {
+    (KeyPairs.owners.(name_a)).(KeyPairs.pairs)
+}
+pred learnt_term_by[m:mesg,a:name,t:Timeslot] {
+    m in (a.learned_times).(Timeslot - t.^next)
+}
+
+sig new_reorder_terms_A extends strand{
+    new_reorder_terms_A_a: one name,
+    new_reorder_terms_A_b: one name,
+    new_reorder_terms_A_n1: one text,
+    new_reorder_terms_A_n2: one text
+}
+
+// predicate follows below
+pred exec_new_reorder_terms_A {
+    all arbitrary_new_reorder_terms_A : new_reorder_terms_A | {
+        some t0,t1 : Timeslot | {
+            t1 in t0.(^next)
+            
+            t0 + t1  = sender.arbitrary_new_reorder_terms_A + receiver.arbitrary_new_reorder_terms_A
+            
+            t0.sender = arbitrary_new_reorder_terms_A
+            t1.receiver = arbitrary_new_reorder_terms_A
+            
+            inds[t0.data] = 0
+            some enc1 : elems[t0.data] | {
+                elems[t0.data] = enc1
+                enc1 in Ciphertext
+                learnt_term_by[getLTK[arbitrary_new_reorder_terms_A.new_reorder_terms_A_a,arbitrary_new_reorder_terms_A.new_reorder_terms_A_b],arbitrary_new_reorder_terms_A.agent,t0] => {
+                    getLTK[arbitrary_new_reorder_terms_A.new_reorder_terms_A_a,arbitrary_new_reorder_terms_A.new_reorder_terms_A_b] = (enc1).encryptionKey
+                    inds[((enc1).plaintext)] = 0 + 1
+                    some atom2,atom3 : elems[((enc1).plaintext)] {
+                        (((enc1).plaintext))[0] = atom2
+                        (((enc1).plaintext))[1] = atom3
+                        atom2 = arbitrary_new_reorder_terms_A.new_reorder_terms_A_n1
+                        atom3 = arbitrary_new_reorder_terms_A.new_reorder_terms_A_n2
+                    }
+                }
+            }
+            inds[t1.data] = 0
+            some enc4 : elems[t1.data] | {
+                elems[t1.data] = enc4
+                enc4 in Ciphertext
+                learnt_term_by[getLTK[arbitrary_new_reorder_terms_A.new_reorder_terms_A_a,arbitrary_new_reorder_terms_A.new_reorder_terms_A_b],arbitrary_new_reorder_terms_A.agent,t1] => {
+                    getLTK[arbitrary_new_reorder_terms_A.new_reorder_terms_A_a,arbitrary_new_reorder_terms_A.new_reorder_terms_A_b] = (enc4).encryptionKey
+                    inds[((enc4).plaintext)] = 0
+                    some atom5 : elems[((enc4).plaintext)] {
+                        (((enc4).plaintext))[0] = atom5
+                        atom5 = arbitrary_new_reorder_terms_A.new_reorder_terms_A_n1
+                    }
+                }
+            }
+        }
+    }
+}
+// end of predicate
+
+sig new_reorder_terms_B extends strand{
+    new_reorder_terms_B_a: one name,
+    new_reorder_terms_B_b: one name,
+    new_reorder_terms_B_n1: one text,
+    new_reorder_terms_B_n2: one text
+}
+
+// predicate follows below
+pred exec_new_reorder_terms_B {
+    all arbitrary_new_reorder_terms_B : new_reorder_terms_B | {
+        some t0,t1 : Timeslot | {
+            t1 in t0.(^next)
+            
+            t0 + t1  = sender.arbitrary_new_reorder_terms_B + receiver.arbitrary_new_reorder_terms_B
+            
+            t0.receiver = arbitrary_new_reorder_terms_B
+            t1.sender = arbitrary_new_reorder_terms_B
+            
+            inds[t0.data] = 0
+            some enc6 : elems[t0.data] | {
+                elems[t0.data] = enc6
+                enc6 in Ciphertext
+                learnt_term_by[getLTK[arbitrary_new_reorder_terms_B.new_reorder_terms_B_a,arbitrary_new_reorder_terms_B.new_reorder_terms_B_b],arbitrary_new_reorder_terms_B.agent,t0] => {
+                    getLTK[arbitrary_new_reorder_terms_B.new_reorder_terms_B_a,arbitrary_new_reorder_terms_B.new_reorder_terms_B_b] = (enc6).encryptionKey
+                    inds[((enc6).plaintext)] = 0 + 1
+                    some atom7,atom8 : elems[((enc6).plaintext)] {
+                        (((enc6).plaintext))[0] = atom7
+                        (((enc6).plaintext))[1] = atom8
+                        atom7 = arbitrary_new_reorder_terms_B.new_reorder_terms_B_n1
+                        atom8 = arbitrary_new_reorder_terms_B.new_reorder_terms_B_n2
+                    }
+                }
+            }
+            inds[t1.data] = 0
+            some enc9 : elems[t1.data] | {
+                elems[t1.data] = enc9
+                enc9 in Ciphertext
+                learnt_term_by[getLTK[arbitrary_new_reorder_terms_B.new_reorder_terms_B_a,arbitrary_new_reorder_terms_B.new_reorder_terms_B_b],arbitrary_new_reorder_terms_B.agent,t1] => {
+                    getLTK[arbitrary_new_reorder_terms_B.new_reorder_terms_B_a,arbitrary_new_reorder_terms_B.new_reorder_terms_B_b] = (enc9).encryptionKey
+                    inds[((enc9).plaintext)] = 0
+                    some atom10 : elems[((enc9).plaintext)] {
+                        (((enc9).plaintext))[0] = atom10
+                        atom10 = arbitrary_new_reorder_terms_B.new_reorder_terms_B_n1
+                    }
+                }
+            }
+        }
+    }
+}
+// end of predicate
+
+one sig skeleton_new_reorder_terms_0 {
+    skeleton_new_reorder_terms_0_a: one name,
+    skeleton_new_reorder_terms_0_b: one name,
+    skeleton_new_reorder_terms_0_n1: one text,
+    skeleton_new_reorder_terms_0_n2: one text
+}
+pred constrain_skeleton_new_reorder_terms_0 {
+    some skeleton_new_reorder_terms_0_strand0 : new_reorder_terms_A | {
+        skeleton_new_reorder_terms_0.skeleton_new_reorder_terms_0_a = skeleton_new_reorder_terms_0_strand0.new_reorder_terms_A_a
+        skeleton_new_reorder_terms_0.skeleton_new_reorder_terms_0_b = skeleton_new_reorder_terms_0_strand0.new_reorder_terms_A_b
+        skeleton_new_reorder_terms_0.skeleton_new_reorder_terms_0_n1 = skeleton_new_reorder_terms_0_strand0.new_reorder_terms_A_n1
+        skeleton_new_reorder_terms_0.skeleton_new_reorder_terms_0_n2 = skeleton_new_reorder_terms_0_strand0.new_reorder_terms_A_n2
+    }
+
+    not ( getLTK[skeleton_new_reorder_terms_0.skeleton_new_reorder_terms_0_a,skeleton_new_reorder_terms_0.skeleton_new_reorder_terms_0_b] in baseKnown[Attacker]  )
+    no aStrand : strand | {
+        originates[aStrand,getLTK[skeleton_new_reorder_terms_0.skeleton_new_reorder_terms_0_a,skeleton_new_reorder_terms_0.skeleton_new_reorder_terms_0_b]]
+        or
+        generates[aStrand,getLTK[skeleton_new_reorder_terms_0.skeleton_new_reorder_terms_0_a,skeleton_new_reorder_terms_0.skeleton_new_reorder_terms_0_b]]
+    }
+    
+    not ( skeleton_new_reorder_terms_0.skeleton_new_reorder_terms_0_n1 in baseKnown[Attacker]  )
+    one aStrand : strand | {
+        originates[aStrand,skeleton_new_reorder_terms_0.skeleton_new_reorder_terms_0_n1]
+        or
+        generates[aStrand,skeleton_new_reorder_terms_0.skeleton_new_reorder_terms_0_n1]
+    }
+    
+    not ( skeleton_new_reorder_terms_0.skeleton_new_reorder_terms_0_n2 in baseKnown[Attacker]  )
+    one aStrand : strand | {
+        originates[aStrand,skeleton_new_reorder_terms_0.skeleton_new_reorder_terms_0_n2]
+        or
+        generates[aStrand,skeleton_new_reorder_terms_0.skeleton_new_reorder_terms_0_n2]
+    }
+    
+}
+one sig skeleton_new_reorder_terms_1 {
+    skeleton_new_reorder_terms_1_a: one name,
+    skeleton_new_reorder_terms_1_b: one name,
+    skeleton_new_reorder_terms_1_n1: one text,
+    skeleton_new_reorder_terms_1_n2: one text
+}
+pred constrain_skeleton_new_reorder_terms_1 {
+    some skeleton_new_reorder_terms_1_strand0 : new_reorder_terms_B | {
+        skeleton_new_reorder_terms_1.skeleton_new_reorder_terms_1_a = skeleton_new_reorder_terms_1_strand0.new_reorder_terms_B_a
+        skeleton_new_reorder_terms_1.skeleton_new_reorder_terms_1_b = skeleton_new_reorder_terms_1_strand0.new_reorder_terms_B_b
+        skeleton_new_reorder_terms_1.skeleton_new_reorder_terms_1_n1 = skeleton_new_reorder_terms_1_strand0.new_reorder_terms_B_n1
+        skeleton_new_reorder_terms_1.skeleton_new_reorder_terms_1_n2 = skeleton_new_reorder_terms_1_strand0.new_reorder_terms_B_n2
+    }
+
+    not ( getLTK[skeleton_new_reorder_terms_1.skeleton_new_reorder_terms_1_a,skeleton_new_reorder_terms_1.skeleton_new_reorder_terms_1_b] in baseKnown[Attacker]  )
+    no aStrand : strand | {
+        originates[aStrand,getLTK[skeleton_new_reorder_terms_1.skeleton_new_reorder_terms_1_a,skeleton_new_reorder_terms_1.skeleton_new_reorder_terms_1_b]]
+        or
+        generates[aStrand,getLTK[skeleton_new_reorder_terms_1.skeleton_new_reorder_terms_1_a,skeleton_new_reorder_terms_1.skeleton_new_reorder_terms_1_b]]
+    }
+    
+    not ( skeleton_new_reorder_terms_1.skeleton_new_reorder_terms_1_n1 in baseKnown[Attacker]  )
+    one aStrand : strand | {
+        originates[aStrand,skeleton_new_reorder_terms_1.skeleton_new_reorder_terms_1_n1]
+        or
+        generates[aStrand,skeleton_new_reorder_terms_1.skeleton_new_reorder_terms_1_n1]
+    }
+    
+    not ( skeleton_new_reorder_terms_1.skeleton_new_reorder_terms_1_n2 in baseKnown[Attacker]  )
+    one aStrand : strand | {
+        originates[aStrand,skeleton_new_reorder_terms_1.skeleton_new_reorder_terms_1_n2]
+        or
+        generates[aStrand,skeleton_new_reorder_terms_1.skeleton_new_reorder_terms_1_n2]
+    }
+    
+}
+#lang forge 
+
+
+
+option run_sterling "../../crypto_viz_seq.js"
+
+
+new_reorder_terms_pov : run {
+    wellformed 
+
+    exec_new_reorder_terms_A
+    exec_new_reorder_terms_B
+
+    new_reorder_terms_A.agent != new_reorder_terms_B.agent
+    new_reorder_terms_A.agent != AttackerStrand.agent
+    new_reorder_terms_B.agent != AttackerStrand.agent
+
+    new_reorder_terms_A.new_reorder_terms_A_a = new_reorder_terms_A.agent
+    new_reorder_terms_A.new_reorder_terms_A_b = new_reorder_terms_B.agent
+
+    new_reorder_terms_B.new_reorder_terms_B_a = new_reorder_terms_A.agent
+    new_reorder_terms_B.new_reorder_terms_B_b = new_reorder_terms_B.agent
+
+    new_reorder_terms_A.new_reorder_terms_A_n1 != new_reorder_terms_A.new_reorder_terms_A_n2 
+    new_reorder_terms_B.new_reorder_terms_B_n1 != new_reorder_terms_B.new_reorder_terms_B_n2 
+
+    constrain_skeleton_new_reorder_terms_0
+    constrain_skeleton_new_reorder_terms_1
+}for 
+    exactly 4 Timeslot,25 mesg,
+    exactly 1 KeyPairs,exactly 3 Key,exactly 0 akey,exactly 3 skey,
+    exactly 0 PrivateKey,exactly 0 PublicKey,
+
+    exactly 3 name,exactly 6 text,exactly 10 Ciphertext,
+    exactly 1 new_reorder_terms_A,exactly 1 new_reorder_terms_B,
+    5 Int
+for {next is linear}

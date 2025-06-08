@@ -19,7 +19,7 @@ option core_minimization rce
 two_nonce_init_pov : run {
     wellformed
 
-    exec_two_nonce_init
+exec_two_nonce_init
     exec_two_nonce_resp
 
     constrain_skeleton_two_nonce_0
