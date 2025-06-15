@@ -10,12 +10,12 @@ class VarType(Enum):
     AKEY = 3
 @dataclass
 class Variable:
-    variable_name: str
-    variable_type: VarType
+    var_name: str
+    var_type: VarType
     def __str__(self) -> str:
-        return self.variable_name
+        return self.var_name
     def __repr__(self) -> str:
-        return f"{self.variable_name}:{self.variable_type}"
+        return f"{self.var_type}:{self.var_type}"
 
 VarMap = Dict[str,Variable]
 
@@ -43,14 +43,14 @@ KeyTerm = LtkTerm | PubkTerm | PrivkTerm | Variable
 
 @dataclass
 class EncTerm:
-    data: List["Message"]
+    data: List["NonCatTerm"]
     key: KeyTerm
     def __repr__(self):
         data_str = ' '.join([f"{msg}" for msg in self.data])
         return f"(enc {data_str} {self.key})"
 @dataclass
 class CatTerm:
-    data: List["Message"]
+    data: List["NonCatTerm"]
     def __repr__(self):
         data_str = ' '.join([f"{msg}" for msg in self.data])
         return f"(cat {data_str})"
@@ -58,6 +58,7 @@ class SendRecv(Enum):
     SEND = 0
     RECV = 1
 Message = Variable | EncTerm | CatTerm | KeyTerm
+NonCatTerm = KeyTerm | EncTerm
 IndvTrace = Tuple[SendRecv,Message]
 MessageTrace = List[IndvTrace]
 
@@ -71,14 +72,14 @@ def trace_to_str(send_recv_msg:Tuple[SendRecv,Message]):
 def var_declarations_to_str(var_map_str:VarMap):
     type_to_var_name:Dict[VarType,List[str]] = {}
     for var_name,variable in var_map_str.items():
-        var_type = variable.variable_type
+        var_type = variable.var_type
         if var_type not in type_to_var_name:
             type_to_var_name[var_type] = []
         type_to_var_name[var_type].append(var_name)
 
     one_type_var_declarations_arr = []
-    for var_type,variable_names in type_to_var_name.items():
-        all_var_names = ' '.join(variable_names)
+    for var_type,var_names in type_to_var_name.items():
+        all_var_names = ' '.join(var_names)
         one_type_var_declarations_arr.append(f"({all_var_names} {var_type})")
     return ' '.join(one_type_var_declarations_arr)
 @dataclass
@@ -111,7 +112,7 @@ class Strand:
     trace_len: int
     var_map: VarMap
     def __repr__(self):
-        var_to_var_map_str = ' '.join([ f"({variable_name} {variable.variable_name})" for variable_name,variable in self.var_map.items()])
+        var_to_var_map_str = ' '.join([ f"({var_name} {variable.var_name})" for var_name,variable in self.var_map.items()])
         return f"(defstrand {self.role_name} {self.trace_len} {var_to_var_map_str})"
     def __str__(self):
         return self.__repr__()
@@ -206,8 +207,8 @@ def match_var_and_type(var_name:str,var_dict:VarMap,var_type:VarType) -> None:
     if var_name not in var_dict:
         raise ParseException(f"{var_name} is not in {var_dict}")
     variable = var_dict[var_name]
-    if variable.variable_type != var_type:
-        raise ParseException(f"{var_name} has type {variable.variable_type} doesn't match {var_type}")
+    if variable.var_type != var_type:
+        raise ParseException(f"{var_name} has type {variable.var_type} doesn't match {var_type}")
 def str_to_vartype(var_type_str:str):
     """convert string of vartype to VarType Enum object,
     used for parsing var name in variable declarations"""
@@ -220,3 +221,14 @@ def str_to_vartype(var_type_str:str):
     if var_type_str in var_type_str_to_type_dict:
         return var_type_str_to_type_dict[var_type_str]
     raise ParseException(f"Error unknown message type {var_type_str} seen")
+def vartype_to_str(var_type:VarType):
+    """convert vartype to string used when transcribing"""
+    var_type_to_str = {
+        VarType.NAME : NAME_STR,
+        VarType.TEXT : TEXT_STR,
+        VarType.SKEY : SKEY_STR,
+        VarType.AKEY : AKEY_STR
+    }
+    return var_type_to_str[var_type]
+
+

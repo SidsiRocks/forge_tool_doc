@@ -63,8 +63,8 @@ def parse_key_term(s_expr,var_map:VarMap) -> KeyTerm:
     if is_symbol_type(s_expr):
         var_name = get_str_from_symbol(s_expr,"variable name")
         variable = get_var(var_name,var_map)
-        if variable.variable_type not in [VarType.AKEY,VarType.SKEY]:
-            raise ParseException(f"Expected key term to be of type AKEY/SKEY not {variable.variable_type}")
+        if variable.var_type not in [VarType.AKEY,VarType.SKEY]:
+            raise ParseException(f"Expected key term to be of type AKEY/SKEY not {variable.var_type}")
         return variable
     key_category = get_str_from_symbol(s_expr[0],"pubk/privk/ltk")
     if key_category not in KEY_CATEGORIES:
@@ -103,11 +103,11 @@ def parse_message_term(s_expr,var_dict:VarMap) -> Message:
             raise ParseException(f"expected at least 3 terms for an s expreesion enc,data,key but length is {len(s_expr)}")
         data = [parse_message_term(subterm_sexpr,var_dict) for subterm_sexpr in s_expr[1:-1]]
         key = parse_key_term(s_expr[-1],var_dict)
-        condensed_data:List[Message] = []
+        condensed_data:List[NonCatTerm] = []
         for msg_subterm in data:
             match msg_subterm:
-                case CatTerm(data=data):
-                    condensed_data.extend(data)
+                case CatTerm(cat_data):
+                    condensed_data.extend(cat_data)
                 case other_subterm:
                     condensed_data.append(other_subterm)
         return EncTerm(data=condensed_data,key=key)
@@ -115,11 +115,11 @@ def parse_message_term(s_expr,var_dict:VarMap) -> Message:
         if len(s_expr) < 2:
             raise ParseException(f"Cannot have empty message")
         data:List[Message] = [parse_message_term(subterm_sexp,var_dict) for subterm_sexp in s_expr[1:]]
-        condensed_data:List[Message] = []
+        condensed_data:List[NonCatTerm] = []
         for msg_subterm in data:
             match msg_subterm:
-                case CatTerm(data=data):
-                    condensed_data.extend(data)
+                case CatTerm(cat_data):
+                    condensed_data.extend(cat_data)
                 case other_subterm:
                     condensed_data.append(other_subterm)
         return CatTerm(data=condensed_data)
