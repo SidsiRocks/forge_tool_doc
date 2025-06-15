@@ -16,7 +16,7 @@ def invert_key(msg_term:Message):
     if msg_term.msg_type == MsgType.ATOM_TERM:
         if msg_term.msg_data.var_type not in [VarType.AKEY,VarType.SKEY]:
             raise ParseException("Expected a Key to invert")
-    #TODO: have to handle akey variable being passed in 
+    #TODO: have to handle akey variable being passed in
     if msg_term.msg_type == MsgType.ATOM_TERM:
         if msg_term.msg_data.var_type == VarType.SKEY:
             return msg_term
@@ -30,8 +30,8 @@ def invert_key(msg_term:Message):
         return Message(MsgType.PRIVK_TERM,msg_term.msg_data)
 
 def msg_type_to_str(msg_type:MsgType):
-    f"""Convert the msg type enum values to corresponding 
-    strings seen in the racket code example 
+    f"""Convert the msg type enum values to corresponding
+    strings seen in the racket code example
     {MsgType.ATOM_TERM} -> {ATOM_MSG_STR}"""
     msg_type_to_str_dict = {
         MsgType.ATOM_TERM : ATOM_MSG_STR,
@@ -53,8 +53,8 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
     """Function to transcribe the protocol object returned by the parser
     contains nested functions to parse sub components like roles,signatures"""
 
-    #to ensure human readability nested code needs to have correct level of 
-    #indentation the space_lvl variable keeps track of the current level of 
+    #to ensure human readability nested code needs to have correct level of
+    #indentation the space_lvl variable keeps track of the current level of
     #indetnation and the print_to_file function adds the indentation along
     #with text passed as argument
     space_lvl = 0
@@ -62,17 +62,17 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
     # ex: some atom5,atom6 : t0.data { t0.data = atom5 + atom6}
     #need distinct number suffix not previously used msg_num_avl stores the last
     #used number suffix
-    msg_num_avl = 0 
+    msg_num_avl = 0
     def get_msg_num():
         """returns fresh number to used as a suffix to a quantification variable"""
         nonlocal msg_num_avl
         msg_num_avl += 1
         return msg_num_avl
     def start_block():
-        nonlocal space_lvl 
+        nonlocal space_lvl
         space_lvl += 1
     def end_block():
-        nonlocal space_lvl 
+        nonlocal space_lvl
         space_lvl -= 1
     def print_to_file(txt:str,add_space = True):
         """helper function to print txt argument with correct level of indentation
@@ -83,7 +83,7 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
         print(txt,end="",file=file)
     def transcribe_role_vars_to_sig(role_obj:Role,role_sig_name:str):
         """transcribes role object in racket file to corresponding sig (signature
-        with name role_sig_name and fields corresponding to variable declaration 
+        with name role_sig_name and fields corresponding to variable declaration
         in var clause) in generated racket file"""
         print_to_file(f"sig {role_sig_name} extends strand{{\n")
         start_block()
@@ -103,7 +103,7 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
             cur_num = str(get_msg_num())
             return msg_type_to_str(msg_obj.msg_type)+cur_num
         def write_msg_constraint(msg_obj:Message,msg_var_name:str,arbit_role_name:str,role_sig_name:str,time_indx:int):
-            """for a particular message in the trace write appropiate constraints for the timeslot 
+            """for a particular message in the trace write appropiate constraints for the timeslot
             it belongs to"""
             def transcribe_key_term(msg_obj:Message,arbit_role_name:str):
                 if msg_obj.msg_type == MsgType.LTK_TERM:
@@ -113,7 +113,7 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
                     name2_full_str = f"{arbit_role_name}.{role_sig_name}_{name2_str}"
                     return f"getLTK[{name1_full_str},{name2_full_str}]"
                 elif msg_obj.msg_type == MsgType.PUBK_TERM:
-                    name_var = msg_obj.msg_data[0].msg_data                
+                    name_var = msg_obj.msg_data[0].msg_data
                     #print_to_file(f"((Keypairs.owners).({arbit_role_name}.{role_sig_name}_{name_var.var_name})).(KeyPairs.pairs) = {msg_var_name}\n")
                     return f"getPUBK[{arbit_role_name}.{role_sig_name}_{name_var.var_name}]"
                 elif msg_obj.msg_type == MsgType.PRIVK_TERM:
@@ -148,7 +148,7 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
                         print_to_file(f"({msg_var_name})[{indx}] = {sub_term_name}\n")
                 cat_sub_term_names = [get_msg_var_name(msg_sub_term) for msg_sub_term in msg_obj.msg_data]
                 write_indices_header(msg_var_name,len(cat_sub_term_names))
-                write_sub_term_header(msg_var_name,cat_sub_term_names)    
+                write_sub_term_header(msg_var_name,cat_sub_term_names)
                 write_data_constraint(msg_var_name,cat_sub_term_names)
                 for sub_term_name,sub_term_obj in zip(cat_sub_term_names,msg_obj.msg_data):
                     write_msg_constraint(sub_term_obj,sub_term_name,arbit_role_name,role_sig_name,time_indx)
@@ -161,7 +161,7 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
                 def write_enc_footer():
                     pass
 
-                key_term = msg_obj.msg_data[-1]                
+                key_term = msg_obj.msg_data[-1]
                 inv_key_term = invert_key(key_term)
                 transcribed_key = transcribe_key_term(key_term,arbit_role_name)
                 inv_transcr_key = transcribe_key_term(inv_key_term,arbit_role_name)
@@ -223,12 +223,12 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
             print_to_file(f"}}\n")
             print_to_file(f"// end of predicate\n")
         def arbit_role_header(arbit_role_name):
-            """adds the beginning block of quantification over all agents 
+            """adds the beginning block of quantification over all agents
             of a particular role """
             print_to_file(f"all {arbit_role_name} : {role_sig_name} | {{\n")
             start_block()
         def arbit_role_footer():
-            """adds the end of the block of code which quantifies over all 
+            """adds the end of the block of code which quantifies over all
             agents of a particular role"""
             end_block()
             print_to_file(f"}}\n")
@@ -241,19 +241,19 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
             print_to_file(f"t{trace_len-1} : Timeslot | {{\n",add_space=False)
             start_block()
         def timeslot_constraints(trace_len):
-            """adds constraints for the timeslots in the existential qualification 
+            """adds constraints for the timeslots in the existential qualification
             to be in linear order"""
             for i in range(trace_len-1):
                 print_to_file(f"t{i+1} in t{i}.(^next)\n")
         def only_sends_in_timelost_constraint(arbit_role_name,trace_len):
-            """adds constraint so agent can only send/receive in the timeslots 
+            """adds constraint so agent can only send/receive in the timeslots
             mentioned in the protocol defintion"""
             print_to_file("t0 ")
             for i in range(1,trace_len):
                 print_to_file(f"+ t{i} ",add_space=False)
             print_to_file(f" = sender.{arbit_role_name} + receiver.{arbit_role_name}\n",add_space=False)
         def send_recv_constraints(arbit_role_name,msg_trace:List[Tuple[SendRecv,Message]]):
-            """adds constraints on the timeslot so that the appropiate agent is 
+            """adds constraints on the timeslot so that the appropiate agent is
             sending/receiving messages"""
             for indx,(send_recv,_) in enumerate(msg_trace):
                 if send_recv == SendRecv.SEND_TRACE:
@@ -261,7 +261,7 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
                 if send_recv == SendRecv.RECV_TRACE:
                     print_to_file(f"t{indx}.receiver = {arbit_role_name}\n")
         def timeslot_footer():
-            """adds the end of the block performing existential quantification 
+            """adds the end of the block performing existential quantification
             over the timeslots"""
             end_block()
             print_to_file(f"}}\n")
@@ -298,7 +298,7 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
 fresh_skelet_num = -1
 def get_new_skelet_num():
     global fresh_skelet_num
-    fresh_skelet_num += 1    
+    fresh_skelet_num += 1
     return fresh_skelet_num
 def transcribe_skelet(skelet_obj:Skeleton,file:io.TextIOWrapper):
     fresh_strand_num = -1
@@ -315,7 +315,7 @@ def transcribe_skelet(skelet_obj:Skeleton,file:io.TextIOWrapper):
             print(space_lvl*space_str,end="",file=file)
         print(txt,end="",file=file)
     def start_block():
-        nonlocal space_lvl 
+        nonlocal space_lvl
         space_lvl += 1
     def end_block():
         nonlocal space_lvl
@@ -363,7 +363,7 @@ def transcribe_skelet(skelet_obj:Skeleton,file:io.TextIOWrapper):
                 cur_var = cur_msg.msg_data
                 cur_var_name = cur_var.var_name
                 sig_name     = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}"
-                sig_var_name = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}_{cur_var_name}" 
+                sig_var_name = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}_{cur_var_name}"
                 return f"{sig_name}.{sig_var_name}"
             elif cur_type == MsgType.LTK_TERM:
                 name_1,name_2 = cur_msg.msg_data
@@ -379,7 +379,7 @@ def transcribe_skelet(skelet_obj:Skeleton,file:io.TextIOWrapper):
                 cur_var_name = name_var_term.var_name
 
                 sig_name     = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}"
-                sig_var_name = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}_{cur_var_name}" 
+                sig_var_name = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}_{cur_var_name}"
                 return f"getPRIVK[{sig_name}.{sig_var_name}]"
             elif cur_type == MsgType.PUBK_TERM:
                 name_term = cur_msg.msg_data[0]
@@ -387,7 +387,7 @@ def transcribe_skelet(skelet_obj:Skeleton,file:io.TextIOWrapper):
                 cur_var_name = name_var_term.var_name
 
                 sig_name     = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}"
-                sig_var_name = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}_{cur_var_name}" 
+                sig_var_name = f"skeleton_{skel_obj.prot_name}_{cur_skelet_num}_{cur_var_name}"
                 return f"getPUBK[{sig_name}.{sig_var_name}]"
         def transcr_non_orig(skel_obj:Skeleton,cur_constr:Constraint,cur_skelet_num:int):
             cur_constr_var_name = get_var_name_constr(skel_obj,cur_constr,cur_skelet_num)
@@ -395,7 +395,7 @@ def transcribe_skelet(skelet_obj:Skeleton,file:io.TextIOWrapper):
             strand_name = "aStrand"
 
             print_to_file(f"no {strand_name} : strand | {{\n")
-            
+
             start_block()
             originates(strand_name,cur_constr_var_name)
             print_to_file("or\n")
@@ -419,12 +419,12 @@ def transcribe_skelet(skelet_obj:Skeleton,file:io.TextIOWrapper):
             print_to_file(f"}}\n")
         for cur_constr in skel_obj.orig_constr:
             if cur_constr.constr_type == ConstrType.NON_ORIG:
-                transcr_non_orig(skel_obj,cur_constr,cur_skelet_num) 
+                transcr_non_orig(skel_obj,cur_constr,cur_skelet_num)
             if cur_constr.constr_type == ConstrType.UNIQ_ORIG:
                 transcr_uniq_orig(skel_obj,cur_constr,cur_skelet_num)
             print_to_file(f"\n")
     def write_constrain_pred(skel_obj:Skeleton,cur_skelet_num:int):
-        print_to_file(f"pred constrain_skeleton_{skel_obj.prot_name}_{cur_skelet_num} {{\n") 
+        print_to_file(f"pred constrain_skeleton_{skel_obj.prot_name}_{cur_skelet_num} {{\n")
         start_block()
         for cur_strand in skel_obj.strand_list:
             cur_strand_num = get_fresh_strand_num()
@@ -432,7 +432,7 @@ def transcribe_skelet(skelet_obj:Skeleton,file:io.TextIOWrapper):
         transcribe_constraints(skel_obj,cur_skelet_num)
         end_block()
         print_to_file(f"}}\n")
-    
+
     this_skel_num = get_new_skelet_num()
     print(f"assigning this_skel_num:{this_skel_num}")
     write_skel_sig(skelet_obj,cur_skelet_num=this_skel_num)
@@ -456,7 +456,7 @@ if __name__ == "__main__":
         print(f"Debug len s_expr is: {len(s_expr)}")
         tmp =  parse_file(s_expr)
         if type(tmp) == type([]):
-            prot_obj,skel_obj_arr = tmp 
+            prot_obj,skel_obj_arr = tmp
         else:
             prot_obj = tmp
     with open(args.out_file_path,'w') as out_file:

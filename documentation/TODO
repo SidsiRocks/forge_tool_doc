@@ -85,3 +85,6 @@ Presesntaion
 (enc n1 (cat n2 n3) n4) to (enc n1 n2 n3 n4) currently would not 
 
 1) While sending message to recognise ciphertext don't need to know inverse key, need to know while receiving add this later
+
+Summer TODO:
+1) Have to add more test cases for parsing, will take a while but expect test system in place.
