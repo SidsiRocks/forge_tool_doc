@@ -106,13 +106,18 @@ class Protocol:
                 f"{' '.join([f"{role}" for role in self.role_arr])})")
     def __str__(self):
         return self.__repr__()
+    def role_obj_of_name(self,role_name:str):
+        for role in self.role_arr:
+            if role.role_name == role_name:
+                return role
+        return None
 @dataclass
 class Strand:
     role_name: str
     trace_len: int
-    var_map: VarMap
+    skeleton_to_strand_var_map: VarMap
     def __repr__(self):
-        var_to_var_map_str = ' '.join([ f"({var_name} {variable.var_name})" for var_name,variable in self.var_map.items()])
+        var_to_var_map_str = ' '.join([ f"({var_name} {variable.var_name})" for var_name,variable in self.skeleton_to_strand_var_map.items()])
         return f"(defstrand {self.role_name} {self.trace_len} {var_to_var_map_str})"
     def __str__(self):
         return self.__repr__()
@@ -136,12 +141,12 @@ Constraint = Strand | NonOrig | UniqOrig
 @dataclass
 class Skeleton:
     protocol_name: str
-    vars_list: VarMap
+    skeleton_vars_dict: VarMap
     constraints_list: List[Constraint]
     def __repr__(self):
         constraints_str = '\n'.join([f"{constraint}" for constraint in self.constraints_list])
         return (f"(defskeleton {self.protocol_name}"
-                f"(vars {var_declarations_to_str(self.vars_list)})"
+                f"(vars {var_declarations_to_str(self.skeleton_vars_dict)})"
                 f"{constraints_str})")
 """list of strings appearing in CPSA syntax collected here so prevent
 repetion and avoid inconsistencies"""
@@ -203,6 +208,9 @@ def get_str_from_symbol(s_expr:sexpdata.Symbol,data_name:str) -> str:
     if not is_symbol_type(s_expr):
         raise s_expr_instead_of_str(data_name,s_expr)
     return str(s_expr)
+def get_int_from_symbol(s_expr:sexpdata.Symbol,data_name:str) -> int:
+    if type(s_expr) != int:
+        raise ParseException(f"Expected type int here not type {type(s_expr)} for {data_name}")
 def match_var_and_type(var_name:str,var_dict:VarMap,var_type:VarType) -> None:
     if var_name not in var_dict:
         raise ParseException(f"{var_name} is not in {var_dict}")
@@ -230,5 +238,3 @@ def vartype_to_str(var_type:VarType):
         VarType.AKEY : AKEY_STR
     }
     return var_type_to_str[var_type]
-
-
