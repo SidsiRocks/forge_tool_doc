@@ -1,6 +1,6 @@
 # Forge Tool Documentation
-## Protocol Implementations 
-The protocol implementation is stored in the prot_impl directory currently contatining the following protocol implementations 
+## Protocol Implementations
+The protocol implementation is stored in the prot_impl directory currently contatining the following protocol implementations
 
 - Needham Schroeder (in two_nonce.rkt and two_nonce.frg respectively)
 
