@@ -1,6 +1,7 @@
 import sexpdata
 import argparse
 import parser
+import new_transcribe
 
 
 def get_root_s_expr_lst(txt: str):
@@ -49,6 +50,8 @@ if __name__ == "__main__":
     argument_parser.add_argument('cpsa_file_path')
     argument_parser.add_argument("--forge_file_path")
     args = argument_parser.parse_args()
+    base_file_path = "./base_with_seq.frg"
+    extra_func_path = "./extra_funcs.frg"
     cpsa_file_path = args.cpsa_file_path
     forge_file_path = args.forge_file_path if args.forge_file_path is not None else "protocol.frg"
 
@@ -58,3 +61,13 @@ if __name__ == "__main__":
     skeletons = [
         parser.parse_skeleton(s_expr, protocol) for s_expr in s_expr_lst[1:]
     ]
+    with open(forge_file_path, 'w') as forge_file:
+        transcribe_obj = new_transcribe.Transcribe_obj(forge_file)
+        with open(base_file_path) as base_file:
+            transcribe_obj.import_file(base_file)
+        with open(extra_func_path) as extra_func_file:
+            transcribe_obj.import_file(extra_func_file)
+        new_transcribe.transcribe_protocol(protocol, transcribe_obj)
+        for skel_indx, skeleton in enumerate(skeletons):
+            new_transcribe.transcribe_skeleton(skeleton, protocol,
+                                               transcribe_obj, skel_indx)

@@ -1,4 +1,3 @@
-from sys import set_coroutine_origin_tracking_depth
 from type_and_helpers import *
 import sexpdata
 
@@ -182,6 +181,8 @@ def parse_trace(s_expr, var_map: VarMap) -> MessageTrace:
 
 
 def parse_role(s_expr) -> Role:
+    """parses role clause present in a protocol clause.
+    Ex: (defrole role_name (vars (a b name) ..) (trace (send ...) (recv ...)))"""
     if len(s_expr) != 4:
         raise ParseException(
             f"Expected 'defrole',role_name,variables list and trace of sends and receives but length of s expr is {len(s_expr)}"
@@ -195,6 +196,9 @@ def parse_role(s_expr) -> Role:
 
 
 def parse_protocol(s_expr) -> Protocol:
+    """parses protocol clause used to define protocol for which run
+    would be found.
+    Ex: (defprotocol prot_name basic (defrole ..) ...)"""
     if len(s_expr) < 4:
         raise ParseException(
             f"Expected 'defprotocol',protocol name,'basic' and atleast one role but size of s_expr is = {len(s_expr)}"
@@ -240,9 +244,9 @@ def parse_strand(s_expr, prot_obj: Protocol,
         skel_var_name, strand_var = parse_var_mapping(elm, skeleton_vars_dict,
                                                       role_in_prot)
         skeleton_to_strand_var_map[skel_var_name] = strand_var
-    Strand(role_name=role_name,
-           trace_len=trace_len,
-           skeleton_to_strand_var_map=skeleton_to_strand_var_map)
+    return Strand(role_name=role_name,
+                  trace_len=trace_len,
+                  skeleton_to_strand_var_map=skeleton_to_strand_var_map)
 
 
 def parse_base_term(s_expr, var_map: Dict[str, Variable]) -> BaseTerm:
@@ -287,6 +291,8 @@ def parse_uniq_orig(s_expr, skeleton_vars_dict: VarMap) -> UniqOrig:
 
 #TODO: think about making list array naming consistent
 def parse_skeleton(s_expr, prot_obj: Protocol) -> Skeleton:
+    """parses skeleton clause used to impose constraint on protocol runs generated
+    Ex: (defskeleton prot_name (vars (. .) ..) (defstrand ..) (non-orig ..) (uniq-orig ..))"""
     if type(s_expr) == sexpdata.Symbol:
         raise ParseException(
             "Expected s expression not string literal for skeleton")
@@ -295,7 +301,6 @@ def parse_skeleton(s_expr, prot_obj: Protocol) -> Skeleton:
     skeleton_vars_dict = parse_vars_clause(s_expr[2])
 
     constraints_list = []
-    strand_list = []
     for sub_expr in s_expr[3:]:
         if type(s_expr) == sexpdata.Symbol:
             raise ParseException(
@@ -304,7 +309,7 @@ def parse_skeleton(s_expr, prot_obj: Protocol) -> Skeleton:
         clause_type = get_str_from_symbol(sub_expr[0], "clause type")
         if clause_type == DEF_STRAND_STR:
             cur_strand = parse_strand(sub_expr, prot_obj, skeleton_vars_dict)
-            strand_list.append(cur_strand)
+            constraints_list.append(cur_strand)
         elif clause_type == NON_ORIG_STR:
             constraints_list.append(
                 parse_non_orig(sub_expr, skeleton_vars_dict))

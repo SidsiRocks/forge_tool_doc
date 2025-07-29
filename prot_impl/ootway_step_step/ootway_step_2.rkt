@@ -1,13 +1,13 @@
 #lang forge/domains/crypto
 (defprotocol ootway_rees basic
-    (defrole A 
+    (defrole A
         (vars (a b s name) (m na nb text) (kab skey))
         (trace
             (send (cat m a b (enc na m a b (ltk a s))))
             (recv (cat m (enc na kab (ltk a s))))
         )
     )
-    (defrole B 
+    (defrole B
         (vars (a b s name) (m na nb text) (kab skey))
         (trace
             (recv (cat m a b (enc na m a b (ltk a s))))

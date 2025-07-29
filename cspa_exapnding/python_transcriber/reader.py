@@ -518,8 +518,7 @@ def parse_uniq_orig(s_expr,var_dict:Dict[str,Variable],constr_list:List[Constrai
         cur_constr = Constraint(ConstrType.UNIQ_ORIG,cur_base_term)
         constr_list.append(cur_constr)
 
-def parse_skeleton(s_expr,prot_obj:Protocol) -> Skeleton:
-    """parses a skeleton clause containing the variable declrations, strand declarations,
+def parse_skeleton(s_expr,prot_obj:Protocol) -> Skeleton: """parses a skeleton clause containing the variable declrations, strand declarations,
     non-orig and uniq-orig constraints 
     Ex: (defskeleton (vars ...) (defstrand ...) (non-orig ..) ..)"""
     if type(s_expr) == sexpdata.Symbol:
@@ -545,7 +544,7 @@ def parse_skeleton(s_expr,prot_obj:Protocol) -> Skeleton:
         elif clasue_type == UNIQ_ORIG_STR:
             parse_uniq_orig(sub_expr,vars_dict,constraints_lst)
     return Skeleton(prot_name,vars_dict,strand_arr,constraints_lst)
-##TODO: Just wrote parse_skeleton function also have to test it
+##TODO: Just wrote _skeleton function also have to test it
 def parse_file(s_expr):
     """helper function to handle the cases where the file contains only protocol clause
     or protocol and skeleton clause"""
