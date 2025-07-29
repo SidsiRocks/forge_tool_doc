@@ -8,6 +8,14 @@ class VarType(Enum):
     TEXT = 1
     SKEY = 2
     AKEY = 3
+    def __str__(self) -> str:
+        vartype_to_str_dict = {
+            VarType.NAME : NAME_STR,
+            VarType.TEXT : TEXT_STR,
+            VarType.SKEY : SKEY_STR,
+            VarType.AKEY : AKEY_STR
+        }
+        return vartype_to_str_dict[self]
 @dataclass
 class Variable:
     var_name: str
@@ -68,7 +76,7 @@ def trace_to_str(send_recv_msg:Tuple[SendRecv,Message]):
         case SendRecv.SEND:
             return f"(send {message})"
         case SendRecv.RECV:
-            return f"(send {message})"
+            return f"(recv {message})"
 def var_declarations_to_str(var_map_str:VarMap):
     type_to_var_name:Dict[VarType,List[str]] = {}
     for var_name,variable in var_map_str.items():
@@ -102,7 +110,7 @@ class Protocol:
     protocol_name: str
     role_arr: List[Role]
     def __repr__(self):
-        return (f"(defprotocol {self.protocol_name}"
+        return (f"(defprotocol {self.protocol_name} basic"
                 f"{' '.join([f"{role}" for role in self.role_arr])})")
     def __str__(self):
         return self.__repr__()
@@ -208,9 +216,10 @@ def get_str_from_symbol(s_expr:sexpdata.Symbol,data_name:str) -> str:
     if not is_symbol_type(s_expr):
         raise s_expr_instead_of_str(data_name,s_expr)
     return str(s_expr)
-def get_int_from_symbol(s_expr:sexpdata.Symbol,data_name:str) -> int:
+def get_int_from_symbol(s_expr,data_name:str) -> int:
     if type(s_expr) != int:
         raise ParseException(f"Expected type int here not type {type(s_expr)} for {data_name}")
+    return s_expr
 def match_var_and_type(var_name:str,var_dict:VarMap,var_type:VarType) -> None:
     if var_name not in var_dict:
         raise ParseException(f"{var_name} is not in {var_dict}")
@@ -231,10 +240,4 @@ def str_to_vartype(var_type_str:str):
     raise ParseException(f"Error unknown message type {var_type_str} seen")
 def vartype_to_str(var_type:VarType):
     """convert vartype to string used when transcribing"""
-    var_type_to_str = {
-        VarType.NAME : NAME_STR,
-        VarType.TEXT : TEXT_STR,
-        VarType.SKEY : SKEY_STR,
-        VarType.AKEY : AKEY_STR
-    }
-    return var_type_to_str[var_type]
+    return f"{var_type}"

@@ -1,6 +1,6 @@
 #lang forge/domains/crypto
-;; How did this work outside of the directory
-;; is forge implementation in PATH have to see
+;; How did this work outside of the directory\n
+;; is forge implementation in PATH have to see\n
 (defprotocol two_nonce basic
     (defrole resp 
         (vars (a b name) (n1 n2 text))

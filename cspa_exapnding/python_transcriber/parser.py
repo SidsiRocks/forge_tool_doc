@@ -35,7 +35,7 @@ def parse_vars_list(s_expr, var_map: VarMap) -> None:
     for elm in s_expr[:-1]:
         cur_var_str = get_str_from_symbol(elm, "variable name")
         cur_var = Variable(cur_var_str, data_type)
-        if cur_var in var_map:
+        if cur_var_str in var_map:
             raise ParseException(f"Repeated variable name {cur_var_str}")
         var_map[cur_var_str] = cur_var
 
@@ -216,8 +216,8 @@ def parse_var_mapping(s_expr, skeleton_vars_dict: VarMap, role_obj: Role):
         raise ParseException(
             f"Exepcted only two symbols in var mapping strand variable name and skeleton variable name"
         )
-    skel_var_name = s_expr[0]
-    strand_var_name = s_expr[1]
+    skel_var_name = get_str_from_symbol(s_expr[0], "skeleton variable name")
+    strand_var_name = get_str_from_symbol(s_expr[1], "strand variable name")
     strand_var = get_var(strand_var_name, role_obj.var_map)
     _ = get_var(skel_var_name, skeleton_vars_dict)
     return skel_var_name, strand_var
@@ -252,7 +252,8 @@ def parse_strand(s_expr, prot_obj: Protocol,
 def parse_base_term(s_expr, var_map: Dict[str, Variable]) -> BaseTerm:
     """parses only base terms like a variable name,public key,private key, long term key. Not concatenated or encrypted terms, used to restrict what terms can be passed in to non-orig and uniq-orig"""
     if type(s_expr) == sexpdata.Symbol:
-        return get_var(s_expr, var_map)
+        var_name = get_str_from_symbol(s_expr, "variable name")
+        return get_var(var_name, var_map)
     if len(s_expr) == 0:
         raise ParseException(
             f"Empty s-expression expected ltk,pubk,privk clause")
@@ -282,7 +283,7 @@ def parse_uniq_orig(s_expr, skeleton_vars_dict: VarMap) -> UniqOrig:
     if len(s_expr) < 2:
         raise ParseException(
             "expected non-orig and variable clause in the s-expr")
-    match_type_and_str(s_expr[0], NON_ORIG_STR)
+    match_type_and_str(s_expr[0], UNIQ_ORIG_STR)
     base_terms = [
         parse_base_term(s_expr, skeleton_vars_dict) for s_expr in s_expr[1:]
     ]

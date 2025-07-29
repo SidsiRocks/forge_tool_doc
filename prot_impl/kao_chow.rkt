@@ -1,13 +1,15 @@
 #lang forge/domains/crypto
 ;; since tuples are not ordered here could lead to incorrect
 ;; executions if a and b or na and kab are exchanged in some way
+;; TODO this file is probably not following kao chow specification
+;; correctly delete this file or implement specification correctly
 (defprotocol kao_chow basic 
     (defrole A 
         (vars (a b s name) (na nb text))
         (trace
             (send (cat a b na))
             (recv (cat 
-                    (enc (cat a b na (ltk a b)) (ltk a s)) 
+                    (enc (a b na (ltk a b)) (ltk a s)) 
                     (enc na (ltk a b)) 
                     nb)
                   )
@@ -18,14 +20,14 @@
         (vars (b a s name) (na nb text))  
         (trace
             (recv (cat 
-                    (enc (cat a b na (ltk a b)) (ltk a s)) 
-                    (enc (cat a b na (ltk a b)) (ltk b s))))
+                    (enc (a b na (ltk a b)) (ltk a s)) 
+                    (enc (a b na (ltk a b)) (ltk b s))))
             (send (cat 
-                    (enc (cat a b na (ltk a b)) (ltk a s)) 
+                    (enc (a b na (ltk a b)) (ltk a s)) 
                     (enc na (ltk a b)) 
                     nb)
             )
-            (recv nb (ltk a b))
+            (recv (enc nb (ltk a b)))
         )
     )  
     (defrole S 
@@ -33,8 +35,8 @@
         (trace
             (recv (cat a b na))
             (send (cat 
-                    (enc (cat a b na (ltk a b)) (ltk a s)) 
-                    (enc (cat a b na (ltk a b)) (ltk b s))))
+                    (enc (a b na (ltk a b)) (ltk a s)) 
+                    (enc (a b na (ltk a b)) (ltk b s))))
         )
     )
 )
