@@ -1,7 +1,7 @@
 import argparse
 import parser
 import re
-
+import io
 import sexpdata
 
 import new_transcribe
@@ -43,6 +43,34 @@ def load_cspa_as_s_expr_new(file):
         result.append(sexpdata.loads(elm))
     return result
 
+#TODO: should strip lang and ipen has not been tested att all and might not be useful
+# consider removing later
+File = io.TextIOWrapper
+def main(cpsa_file:File,destination_forge_file:File,base_file:File,extra_func_file:File,run_forge_file:File,should_strip_lang_and_open:bool):
+    s_expr_lst = load_cspa_as_s_expr_new(cpsa_file)
+    protocol = parser.parse_protocol(s_expr_lst[0])
+    skeletons = [
+        parser.parse_skeleton(s_expr, protocol) for s_expr in s_expr_lst[1:]
+    ]
+    transcribe_obj = new_transcribe.Transcribe_obj(destination_forge_file)
+    transcribe_obj.import_file(base_file)
+    transcribe_obj.import_file(extra_func_file)
+    new_transcribe.transcribe_protocol(protocol, transcribe_obj)
+    for skel_indx, skeleton in enumerate(skeletons):
+        new_transcribe.transcribe_skeleton(skeleton, protocol,
+                                           transcribe_obj, skel_indx)
+    if should_strip_lang_and_open:
+        open_regex = re.compile(r"[\s]*open\".*\"[\s]*\n")
+        lang_forge_regex = re.compile(r"[\s]*#lang[\s]*forge[\s]*\n")
+        for line in run_forge_file:
+            matches_open_regex = re.match(open_regex, line) is not None
+            matches_lang_regex = re.match(lang_forge_regex,
+                                          line) is not None
+            if matches_open_regex or matches_lang_regex:
+                continue
+            transcribe_obj.print_to_file(line)
+    else:
+        transcribe_obj.import_file(run_forge_file)
 
 #TODO: Currently have to run this file from the directory where it is located
 # becuase of how path of base_with_seq.frg etc. is written can change to write
@@ -68,33 +96,8 @@ if __name__ == "__main__":
     should_strip_lang_and_open = args.strip_lang_open_from_run_file
 
     with open(cpsa_file_path) as cpsa_file:
-        s_expr_lst = load_cspa_as_s_expr_new(cpsa_file)
-    #Assuming first s_expr is always a protocol and rest all are skeletons
-    protocol = parser.parse_protocol(s_expr_lst[0])
-    skeletons = [
-        parser.parse_skeleton(s_expr, protocol) for s_expr in s_expr_lst[1:]
-    ]
-    with open(destination_forge_file, 'w') as forge_file:
-        transcribe_obj = new_transcribe.Transcribe_obj(forge_file)
-        with open(base_file_path) as base_file:
-            transcribe_obj.import_file(base_file)
-        with open(extra_func_path) as extra_func_file:
-            transcribe_obj.import_file(extra_func_file)
-        new_transcribe.transcribe_protocol(protocol, transcribe_obj)
-        for skel_indx, skeleton in enumerate(skeletons):
-            new_transcribe.transcribe_skeleton(skeleton, protocol,
-                                               transcribe_obj, skel_indx)
-        if should_strip_lang_and_open:
-            with open(run_forge_file_path) as f:
-                open_regex = re.compile(r"[\s]*open\".*\"[\s]*\n")
-                lang_forge_regex = re.compile(r"[\s]*#lang[\s]*forge[\s]*\n")
-                for line in f:
-                    matches_open_regex = re.match(open_regex, line) is not None
-                    matches_lang_regex = re.match(lang_forge_regex,
-                                                  line) is not None
-                    if matches_open_regex or matches_lang_regex:
-                        continue
-                    transcribe_obj.print_to_file(line)
-        else:
-            with open(run_forge_file_path) as run_forge_file:
-                transcribe_obj.import_file(run_forge_file)
+        with open(destination_forge_file, 'w') as destination_forge_file:
+            with open(base_file_path) as base_file:
+                with open(extra_func_path) as extra_func_file:
+                    with open(run_forge_file_path) as run_forge_file:
+                        main(cpsa_file,destination_forge_file,base_file,extra_func_file,run_forge_file,should_strip_lang_and_open)

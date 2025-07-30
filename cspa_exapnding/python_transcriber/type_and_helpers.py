@@ -199,7 +199,7 @@ def unexpected_str_error(expected_str:str,unexpected_str:str) -> ParseException:
     return ParseException(f"Expected '{expected_str}' string at beginning of s expression not {unexpected_str}")
 
 def is_symbol_type(symbl) -> bool:
-    return type(symbl) == sexpdata.Symbol or type(symbl) == str
+    return isinstance(symbl,sexpdata.Symbol) or isinstance(symbl,str)
 
 def match_type_and_str(s_expr,expected_str:str) -> None:
     """helper function to check that an s-expr is a specific string like defprotocol"""
@@ -217,7 +217,7 @@ def get_str_from_symbol(s_expr:sexpdata.Symbol,data_name:str) -> str:
         raise s_expr_instead_of_str(data_name,s_expr)
     return str(s_expr)
 def get_int_from_symbol(s_expr,data_name:str) -> int:
-    if type(s_expr) != int:
+    if not isinstance(s_expr,int):
         raise ParseException(f"Expected type int here not type {type(s_expr)} for {data_name}")
     return s_expr
 def match_var_and_type(var_name:str,var_dict:VarMap,var_type:VarType) -> None:

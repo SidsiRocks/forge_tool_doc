@@ -1,7 +1,7 @@
 import parser
 import sexpdata
 import subprocess
-from main import get_root_s_expr_lst, load_cspa_as_s_expr_new
+from main import get_root_s_expr_lst
 
 
 #TODO: current approach for tests is one or two string examples and

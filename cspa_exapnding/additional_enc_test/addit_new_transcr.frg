@@ -350,14 +350,12 @@ pred exec_addit_enc_B {
         (t0.data)[0] = sub_term_0
         (t0.data)[1] = sub_term_1
         sub_term_0 = arbitrary_B_addit_enc.addit_enc_B_a
+        inds[(sub_term_1).plaintext] = 0
         some atom_1 : elems[(sub_term_1).plaintext] | {
-          inds[(sub_term_1).plaintext] = 0
-          some atom_1 : elems[(sub_term_1).plaintext] | {
-            (sub_term_1).plaintext[0] = atom_1
-            atom_1 = arbitrary_B_addit_enc.addit_enc_B_n1
-          }
-          (sub_term_1).encryptionKey = getPUBK[arbitrary_B_addit_enc.addit_enc_B_b]
+          (sub_term_1).plaintext[0] = atom_1
+          atom_1 = arbitrary_B_addit_enc.addit_enc_B_n1
         }
+        (sub_term_1).encryptionKey = getPUBK[arbitrary_B_addit_enc.addit_enc_B_b]
       }
       
       t1.sender = arbitrary_B_addit_enc
@@ -366,14 +364,12 @@ pred exec_addit_enc_B {
         (t1.data)[0] = sub_term_0
         (t1.data)[1] = sub_term_1
         sub_term_0 = arbitrary_B_addit_enc.addit_enc_B_b
+        inds[(sub_term_1).plaintext] = 0
         some atom_2 : elems[(sub_term_1).plaintext] | {
-          inds[(sub_term_1).plaintext] = 0
-          some atom_2 : elems[(sub_term_1).plaintext] | {
-            (sub_term_1).plaintext[0] = atom_2
-            atom_2 = arbitrary_B_addit_enc.addit_enc_B_n2
-          }
-          (sub_term_1).encryptionKey = getPUBK[arbitrary_B_addit_enc.addit_enc_B_a]
+          (sub_term_1).plaintext[0] = atom_2
+          atom_2 = arbitrary_B_addit_enc.addit_enc_B_n2
         }
+        (sub_term_1).encryptionKey = getPUBK[arbitrary_B_addit_enc.addit_enc_B_a]
       }
       
     }
@@ -396,14 +392,12 @@ pred exec_addit_enc_A {
         (t0.data)[0] = sub_term_0
         (t0.data)[1] = sub_term_1
         sub_term_0 = arbitrary_A_addit_enc.addit_enc_A_a
+        inds[(sub_term_1).plaintext] = 0
         some atom_3 : elems[(sub_term_1).plaintext] | {
-          inds[(sub_term_1).plaintext] = 0
-          some atom_3 : elems[(sub_term_1).plaintext] | {
-            (sub_term_1).plaintext[0] = atom_3
-            atom_3 = arbitrary_A_addit_enc.addit_enc_A_n1
-          }
-          (sub_term_1).encryptionKey = getPUBK[arbitrary_A_addit_enc.addit_enc_A_b]
+          (sub_term_1).plaintext[0] = atom_3
+          atom_3 = arbitrary_A_addit_enc.addit_enc_A_n1
         }
+        (sub_term_1).encryptionKey = getPUBK[arbitrary_A_addit_enc.addit_enc_A_b]
       }
       
       t1.receiver = arbitrary_A_addit_enc
@@ -412,14 +406,12 @@ pred exec_addit_enc_A {
         (t1.data)[0] = sub_term_0
         (t1.data)[1] = sub_term_1
         sub_term_0 = arbitrary_A_addit_enc.addit_enc_A_b
+        inds[(sub_term_1).plaintext] = 0
         some atom_4 : elems[(sub_term_1).plaintext] | {
-          inds[(sub_term_1).plaintext] = 0
-          some atom_4 : elems[(sub_term_1).plaintext] | {
-            (sub_term_1).plaintext[0] = atom_4
-            atom_4 = arbitrary_A_addit_enc.addit_enc_A_n2
-          }
-          (sub_term_1).encryptionKey = getPUBK[arbitrary_A_addit_enc.addit_enc_A_a]
+          (sub_term_1).plaintext[0] = atom_4
+          atom_4 = arbitrary_A_addit_enc.addit_enc_A_n2
         }
+        (sub_term_1).encryptionKey = getPUBK[arbitrary_A_addit_enc.addit_enc_A_a]
       }
       
     }
