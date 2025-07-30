@@ -22,9 +22,9 @@
         )    
     )
 )
-;(defskeleton three_agent
-;    (vars (a b s name) (n1 text))
-;    (defstrand S 2 (a a) (b b) (s s) (n1 n1))
-;    (non-orig (privk a) (privk b) (privk s))
-;    (uniq-orig n1)
-;)
+;;(defskeleton three_agent
+;;    (vars (a b s name) (n1 text))
+;;    (defstrand S 2 (a a) (b b) (s s) (n1 n1))
+;;    (non-orig (privk a) (privk b) (privk s))
+;;    (uniq-orig n1)
+;;)

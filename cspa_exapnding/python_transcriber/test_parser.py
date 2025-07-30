@@ -4,6 +4,10 @@ import subprocess
 from main import get_root_s_expr_lst, load_cspa_as_s_expr_new
 
 
+#TODO: current approach for tests is one or two string examples and
+# all existing example files, can maybe improve approach for testing
+# so that behaviour is better documented? This is still suitable for
+# figuring out if some code change has broken things
 def get_pp_sexp(sexp_str):
     return subprocess.getoutput(f"echo \"{sexp_str}\" | sexp pp")
 
@@ -117,3 +121,13 @@ def test_ns_parsing():
 
 def test_nspk_parsing():
     helper_for_test_rkt_file(r"../../../forge_tool_doc/prot_impl/nspk.rkt")
+
+
+def test_ootway_rees_paring():
+    helper_for_test_rkt_file(
+        r"../../../forge_tool_doc/prot_impl/ootway_rees.rkt")
+
+
+def test_three_agent_parsing():
+    helper_for_test_rkt_file(
+        r"../../../forge_tool_doc/prot_impl/three_agent_test.rkt")

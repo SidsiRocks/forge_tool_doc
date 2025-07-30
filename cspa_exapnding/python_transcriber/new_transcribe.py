@@ -1,6 +1,8 @@
-from abc import abstractmethod
-from type_and_helpers import *
 import io
+from abc import abstractmethod
+from typing import override
+
+from type_and_helpers import *
 
 
 class Transcribe_obj:
@@ -30,47 +32,63 @@ class Transcribe_obj:
         for line in other_forge_file:
             self.print_to_file(line)
 
-    def write_sig(self, sig_name: str, field_name_type: List[Tuple[str, str]]):
-        self.print_to_file(f"sig {sig_name}{{")
+#TODO: can change signature modifier to use an enum instead of a plain string
+# like below
+
+    def write_sig(self, sig_name: str, parent_sig_name: None | str,
+                  field_name_type: List[Tuple[str,
+                                              str]], sig_modifier: str | None):
+        parent_sig_name = "" if parent_sig_name is None else f"extends {parent_sig_name} "
+        sig_modifier = "" if sig_modifier is None else sig_modifier + " "
+        self.print_to_file(
+            f"{sig_modifier}sig {sig_name} {parent_sig_name}{{\n")
         self.start_block()
-        for field_name, field_type in field_name_type:
-            self.print_to_file(f"{field_name} : {field_type}")
+        for field_name, field_type in field_name_type[:-1]:
+            self.print_to_file(f"{field_name} : {field_type},\n")
+        field_name, field_type = field_name_type[-1]
+        self.print_to_file(f"{field_name} : {field_type}\n")
+
         self.end_block()
-        self.print_to_file(f"}}")
+        self.print_to_file(f"}}\n")
 
     def start_predicate(self, pred_name: str):
-        self.print_to_file(f"pred {pred_name} {{")
+        self.print_to_file(f"pred {pred_name} {{\n")
         self.start_block()
 
     def end_predicate(self):
-        self.print_to_file(f"}}")
         self.end_block()
+        self.print_to_file(f"}}\n")
 
     def start_some_predicate(self, var_names: List[str], set_name: str):
         variables_str = ','.join(var_names)
-        self.print_to_file(f"some {variables_str} : {set_name} | {{")
+        self.print_to_file(f"some {variables_str} : {set_name} | {{\n")
         self.start_block()
 
     def start_all_predicate(self, var_names: List[str], set_name: str):
         variables_str = ",".join(var_names)
-        self.print_to_file(f"all {variables_str} : {set_name} | {{")
+        self.print_to_file(f"all {variables_str} : {set_name} | {{\n")
         self.start_block()
 
     def start_one_predicate(self, var_names: List[str], set_name: str):
         variables_str = ",".join(var_names)
-        self.print_to_file(f"all {variables_str} : {set_name} | {{")
+        self.print_to_file(f"all {variables_str} : {set_name} | {{\n")
         self.start_block()
 
     def start_no_predicate(self, var_names: List[str], set_name: str):
         variables_str = ",".join(var_names)
-        self.print_to_file(f"no {variables_str} : {set_name} | {{")
+        self.print_to_file(f"no {variables_str} : {set_name} | {{\n")
         self.start_block()
+
+
+#TODO: would be very helpful to write using context operations,
+# i.e with as
 
     def write_seq_data(self, seq_expr: str, seq_elms: List[str]):
         indices_strs = "+".join([str(i) for i in range(len(seq_elms))])
-        self.print_to_file(f"inds[{seq_expr}] = {indices_strs}")
+        self.print_to_file(f"inds[{seq_expr}] = {indices_strs}\n")
+        self.start_some_predicate(seq_elms, f"elems[{seq_expr}]")
         for indx, elm in enumerate(seq_elms):
-            self.print_to_file(f"{seq_expr}[{indx}] = {elm}")
+            self.print_to_file(f"{seq_expr}[{indx}] = {elm}\n")
 
     def role_var_name_in_prot_pred(self, role_name, prot_name):
         return f"arbitrary_{role_name}_{prot_name}"
@@ -116,7 +134,7 @@ class SigContext:
         pass
 
     @abstractmethod
-    def get_privk_str(self, privk_str: PrivkTerm) -> str:
+    def get_privk_str(self, privk_term: PrivkTerm) -> str:
         pass
 
     @abstractmethod
@@ -132,6 +150,7 @@ class RoleTranscribeContext(SigContext):
     transcr: Transcribe_obj
     role: Role
 
+    @override
     def acess_variable(self, var_name: str):
         if var_name not in self.role.var_map:
             raise ParseException(
@@ -139,6 +158,7 @@ class RoleTranscribeContext(SigContext):
             )
         return f"{self.role_var_name}.{self.get_role_var_name(var_name)}"
 
+    @override
     def get_role_var_name(self, var_name: str):
         if var_name not in self.role.var_map:
             raise ParseException(
@@ -146,28 +166,35 @@ class RoleTranscribeContext(SigContext):
             )
         return f"{self.role_sig_name}_{var_name}"
 
-    def get_transrc(self):
+    @override
+    def get_transcr(self) -> Transcribe_obj:
         return self.transcr
 
+    @override
     def get_ltk_str(self, ltk_term: LtkTerm) -> str:
         acess_agent_1_var = self.acess_variable(ltk_term.agent1_name)
         acess_agent_2_var = self.acess_variable(ltk_term.agent2_name)
         return f"getLTK[{acess_agent_1_var},{acess_agent_2_var}]"
 
+    @override
     def get_pubk_str(self, pubk_term: PubkTerm) -> str:
         return f"getPUBK[{self.acess_variable(pubk_term.agent_name)}]"
 
+    @override
     def get_privk_str(self, privk_term: PrivkTerm) -> str:
         return f"getPRIVK[{self.acess_variable(privk_term.agent_name)}]"
 
+    @override
     def get_base_term_str(self, base_term: BaseTerm) -> str:
         match base_term:
             case LtkTerm(_) as ltk:
-                return get_ltk_str(ltk)
+                return self.get_ltk_str(ltk)
             case PubkTerm(_) as pubk:
-                return get_pubk_str(pubk)
+                return self.get_pubk_str(pubk)
             case PrivkTerm(_) as privk:
-                return get_privk_str(privk)
+                return self.get_privk_str(privk)
+            case Variable(_) as var:
+                return self.acess_variable(var.var_name)
 
 
 @dataclass
@@ -177,6 +204,7 @@ class SkeletonTranscribeContext(SigContext):
     skeleton: Skeleton
     skel_num: int
 
+    @override
     def acess_variable(self, var_name):
         if var_name not in self.skeleton.skeleton_vars_dict:
             raise ParseException(
@@ -184,6 +212,7 @@ class SkeletonTranscribeContext(SigContext):
             )
         return f"{self.skeleton_sig_name}.{self.get_skeleton_var_name(var_name)}"
 
+    @override
     def get_skeleton_var_name(self, var_name: str):
         if var_name not in self.skeleton.skeleton_vars_dict:
             raise ParseException(
@@ -191,25 +220,38 @@ class SkeletonTranscribeContext(SigContext):
             )
         return f"{self.skeleton_sig_name}_{var_name}"
 
+    @override
     def get_ltk_str(self, ltk_term: LtkTerm) -> str:
         acess_agent_1_var = self.acess_variable(ltk_term.agent1_name)
         acess_agent_2_var = self.acess_variable(ltk_term.agent2_name)
         return f"getLTK[{acess_agent_1_var},{acess_agent_2_var}]"
 
+    @override
     def get_pubk_str(self, pubk_term: PubkTerm) -> str:
         return f"getPUBK[{self.acess_variable(pubk_term.agent_name)}]"
 
+    @override
     def get_privk_str(self, privk_term: PrivkTerm) -> str:
         return f"getPRIVK[{self.acess_variable(privk_term.agent_name)}]"
 
+
+#TODO: can remove some code duplication here
+
+    @override
     def get_base_term_str(self, base_term: BaseTerm) -> str:
         match base_term:
             case LtkTerm(_) as ltk:
-                return get_ltk_str(ltk)
+                return self.get_ltk_str(ltk)
             case PubkTerm(_) as pubk:
-                return get_pubk_str(pubk)
+                return self.get_pubk_str(pubk)
             case PrivkTerm(_) as privk:
-                return get_privk_str(privk)
+                return self.get_privk_str(privk)
+            case Variable(_) as var:
+                return self.acess_variable(var.var_name)
+
+    @override
+    def get_transcr(self) -> Transcribe_obj:
+        return self.transcr
 
 
 def transcribe_role_to_sig(role: Role, role_sig_name: str,
@@ -217,14 +259,17 @@ def transcribe_role_to_sig(role: Role, role_sig_name: str,
     field_name_type = [(f"{role_sig_name}_{var_name}",
                         f"one {vartype_to_str(var.var_type)}")
                        for var_name, var in role.var_map.items()]
-    transcr.write_sig(role_sig_name, field_name_type)
+    parent_sig_name = "strand"
+    transcr.write_sig(role_sig_name, parent_sig_name, field_name_type, None)
 
 
 def transcribe_var(elm_expr: str, var: Variable, sig_context: SigContext):
     sig_context.get_transcr().print_to_file(
-        f"{elm_expr} = {sig_context.acess_variable(var.var_name)}")
+        f"{elm_expr} = {sig_context.acess_variable(var.var_name)}\n")
 
 
+#TODO: can add comments to show what different parts of transcription correspond to
+# perhaps
 def transcribe_enc(elm_expr: str, enc_term: EncTerm, sig_context: SigContext):
     #TODO: have to add semantics of when encrypted terms can be deciphered or not
     #one naive method would be only writing data and key constraints only when the
@@ -234,11 +279,13 @@ def transcribe_enc(elm_expr: str, enc_term: EncTerm, sig_context: SigContext):
     data_atom_names = [
         f"atom_{transcr.get_fresh_num()}" for _ in range(len(enc_term.data))
     ]
-    data_expr = f"({elm_expr}).data"
+    data_expr = f"({elm_expr}).plaintext"
     transcr.start_some_predicate(data_atom_names, f"elems[{data_expr}]")
     transcr.write_seq_data(data_expr, data_atom_names)
-    for indx, data_atom_name in enumerate(data_atom_names):
-        transcribe_non_cat(data_atom_name, enc_term, sig_context)
+    for data_atom_name, data_term in zip(data_atom_names, enc_term.data):
+        transcribe_non_cat(data_atom_name, data_term, sig_context)
+    transcr.end_predicate()
+    #ending predicate started in write_seq_data (might not be correct position may have to change this)
     key_expr = f"({elm_expr}).encryptionKey"
     match enc_term.key:
         case PubkTerm(_) as pubk:
@@ -252,19 +299,19 @@ def transcribe_enc(elm_expr: str, enc_term: EncTerm, sig_context: SigContext):
 
 def transcribe_ltk(elm_expr: str, ltk_term: LtkTerm, sig_context: SigContext):
     sig_context.get_transcr().print_to_file(
-        f"{elm_expr} = {sig_context.get_ltk_str(ltk_term)}")
+        f"{elm_expr} = {sig_context.get_ltk_str(ltk_term)}\n")
 
 
 def transcribe_pubk(elm_expr: str, pubk_term: PubkTerm,
                     role_context: SigContext):
     role_context.get_transcr().print_to_file(
-        f"{elm_expr} = {role_context.get_pubk_str(pubk_term)}")
+        f"{elm_expr} = {role_context.get_pubk_str(pubk_term)}\n")
 
 
 def transcribe_privk(elm_expr: str, privk_term: PrivkTerm,
                      role_context: SigContext):
     role_context.get_transcr().print_to_file(
-        f"{elm_expr} = {role_context.get_privk_str(privk_term)}")
+        f"{elm_expr} = {role_context.get_privk_str(privk_term)}\n")
 
 
 def transcribe_non_cat(elm_expr: str, msg: NonCatTerm,
@@ -289,23 +336,27 @@ def transcribe_indv_trace(role: Role, indx: int,
     role_var_name = role_context.role_var_name
     match send_recv:
         case SendRecv.SEND:
-            transcr.print_to_file(f"t{indx}.sender = {role_var_name}")
+            transcr.print_to_file(f"t{indx}.sender = {role_var_name}\n")
         case SendRecv.RECV:
-            transcr.print_to_file(f"t{indx}.receiver = {role_var_name}")
+            transcr.print_to_file(f"t{indx}.receiver = {role_var_name}\n")
     match mesg:
         case CatTerm(_) as cat:
             sub_term_names = [f"sub_term_{i}" for i in range(len(cat.data))]
             transcr.write_seq_data(f"(t{indx}.data)", sub_term_names)
             for sub_term_name, sub_term in zip(sub_term_names, cat.data):
                 transcribe_non_cat(sub_term_name, sub_term, role_context)
+            transcr.end_predicate()
+            #ending predicate started in write_seq_data (might not be correct position may have to change this)
+
         case non_cat_mesg:
             atom_name = f"atom_{transcr.get_fresh_num()}"
             transcr.write_seq_data(f"(t{indx}.data)", [atom_name])
             transcribe_non_cat(atom_name, non_cat_mesg, role_context)
+            transcr.end_predicate()
+            #ending predicate started in write_seq_data (might not be correct position may have to change this)
 
 
-def transcribe_trace(role: Role, role_var_name: str,
-                     role_context: RoleTranscribeContext):
+def transcribe_trace(role: Role, role_context: RoleTranscribeContext):
     trace_len = len(role.trace)
     timeslot_names = [f"t{i}" for i in range(trace_len)]
     transcr = role_context.transcr
@@ -313,11 +364,13 @@ def transcribe_trace(role: Role, role_var_name: str,
     for i in range(trace_len - 1):
         transcr.print_to_file(f"t{i+1} in t{i}.(^next)\n")
     all_timeslots_set = "+".join(timeslot_names)
+    role_var_name = role_context.role_var_name
     transcr.print_to_file(
         f"{all_timeslots_set} = sender.{role_var_name} + receiver.{role_var_name}\n"
     )
     for i, (_, _) in enumerate(role.trace):
         transcribe_indv_trace(role, i, role_context)
+        role_context.get_transcr().print_to_file("\n")
     transcr.end_predicate()
 
 
@@ -326,8 +379,8 @@ def transcribe_role(role: Role, role_context: RoleTranscribeContext):
     transcr = role_context.transcr
     transcribe_role_to_sig(role, role_sig_name, transcr)
     transcr.start_predicate(f"exec_{role_sig_name}")
-    transcr.start_all_predicate([f"arbitrary_{role_sig_name}"], role_sig_name)
-    transcribe_trace(role, f"arbitrary_{role_sig_name}", role_context)
+    transcr.start_all_predicate([role_context.role_var_name], role_sig_name)
+    transcribe_trace(role, role_context)
     transcr.end_predicate()
     transcr.end_predicate()
 
@@ -351,7 +404,7 @@ def transcribe_skeleton_to_sig(skeleton: Skeleton, skeleton_sig_name: str,
          f"one {vartype_to_str(var.var_type)}")
         for var_name, var in skeleton.skeleton_vars_dict.items()
     ]
-    transcr.write_sig(skeleton_sig_name, field_name_type)
+    transcr.write_sig(skeleton_sig_name, None, field_name_type, "one")
 
 
 #TODO: conisder using a context object for writing skeleton variable names as well
@@ -367,7 +420,7 @@ def transcribe_strand(strand: Strand,
             strand_var.var_name)
         skelton_var_str = skelton_transcr_context.acess_variable(
             skelton_var_name)
-        transcr.print_to_file(f"{strand_var_str} = {skelton_var_str}")
+        transcr.print_to_file(f"{strand_var_str} = {skelton_var_str}\n")
     transcr.end_predicate()
 
 
@@ -380,7 +433,7 @@ def transcribe_non_orig(non_orig: NonOrig,
         base_term_str = skeleton_transcr_context.get_base_term_str(base_term)
         transcr.start_no_predicate(["aStrand"], "strand")
         transcr.print_to_file(
-            f"originates[aStrand,{base_term_str}] or generates [aStrand,{base_term_str}]"
+            f"originates[aStrand,{base_term_str}] or generates [aStrand,{base_term_str}]\n"
         )
         transcr.end_predicate()
 
@@ -392,7 +445,7 @@ def transcribe_uniq_orig(uniq_orig: UniqOrig,
         base_term_str = skeleton_transcr_context.get_base_term_str(base_term)
         transcr.start_one_predicate(["aStrand"], "strand")
         transcr.print_to_file(
-            f"originates[aStrand,{base_term_str}] or generates [aStrand,{base_term_str}]"
+            f"originates[aStrand,{base_term_str}] or generates [aStrand,{base_term_str}]\n"
         )
         transcr.end_predicate()
 

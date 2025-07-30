@@ -7,7 +7,7 @@
             (send (cat b (enc n2 (pubk a))))
         )
     )
-  (defrole A 
+  (defrole A
         (vars (a b name) (n1 n2 text))
         (trace
             (send (cat a (enc n1 (pubk b))))
