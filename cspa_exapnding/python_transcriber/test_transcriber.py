@@ -1,13 +1,17 @@
-from main import main
+from main import main,path_rel_to_script
 import io
+
+#TODO: figure out how to improve diff output here
+# currently as the strings being compared are large the current way diff is
+# displaced is not very useful
 def test_addit_enc_transcr():
-    cpsa_file_path = "../additional_enc_test/addit_enc.rkt"
-    base_file_path = "./base_with_seq.frg"
-    extra_func_file_path = "./extra_funcs.frg"
-    run_forge_file_path = "../additional_enc_test/addit_enc_run.frg"
+    cpsa_file_path = path_rel_to_script( "../additional_enc_test/addit_enc.rkt" )
+    base_file_path = path_rel_to_script("./base_with_seq.frg")
+    extra_func_file_path = path_rel_to_script( "./extra_funcs.frg" )
+    run_forge_file_path = path_rel_to_script( "../additional_enc_test/addit_enc_run.frg" )
 
     destination_forge_file = io.StringIO()
-    reference_transcription_file = "../additional_enc_test/addit_new_transcr.frg"
+    reference_transcription_file = path_rel_to_script( "../additional_enc_test/addit_new_transcr.frg" )
 
     with open(cpsa_file_path) as cpsa_file:
         with open(base_file_path) as base_file:

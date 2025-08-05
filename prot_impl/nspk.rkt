@@ -1,5 +1,5 @@
 #lang forge/domains/crypto
-
+;; TODO i think is alternative version of nspk look into this later
 (defprotocol nspk basic 
     (defrole A
         (vars (a b s name) (na nb text))

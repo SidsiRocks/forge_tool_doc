@@ -1,6 +1,4 @@
-#lang forge
-open "duplic_terms.rkt"
-option run_sterling "../../crypto_viz.js"
+option run_sterling "../../../crypto_viz_seq.js"
 
 duplic_terms_exmpl : run {
     wellformed 

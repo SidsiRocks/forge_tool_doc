@@ -1,6 +1,7 @@
 from reader import *
 from typing import *
 import io
+from pathlib import Path
 space_str = " "*4
 
 ENC_MSG_STR = "enc"
@@ -437,6 +438,10 @@ def transcribe_skelet(skelet_obj:Skeleton,file:io.TextIOWrapper):
     print(f"assigning this_skel_num:{this_skel_num}")
     write_skel_sig(skelet_obj,cur_skelet_num=this_skel_num)
     write_constrain_pred(skelet_obj,cur_skelet_num=this_skel_num)
+
+def path_rel_to_script(path):
+    script_path = Path(__file__).parent
+    return (script_path / path).resolve()
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
@@ -446,8 +451,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    base_file_path = "./base_with_seq.frg"
-    extra_func_path = "./extra_funcs.frg"
+    base_file_path = path_rel_to_script( "./base_with_seq.frg" )
+    extra_func_path = path_rel_to_script( "./extra_funcs.frg" )
 
     prot_obj = None
     skel_obj_arr = None

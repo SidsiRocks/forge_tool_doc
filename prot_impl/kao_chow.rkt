@@ -3,39 +3,39 @@
 ;; executions if a and b or na and kab are exchanged in some way
 ;; TODO this file is probably not following kao chow specification
 ;; correctly delete this file or implement specification correctly
-(defprotocol kao_chow basic 
-    (defrole A 
+(defprotocol kao_chow basic
+    (defrole A
         (vars (a b s name) (na nb text))
         (trace
             (send (cat a b na))
-            (recv (cat 
-                    (enc (a b na (ltk a b)) (ltk a s)) 
-                    (enc na (ltk a b)) 
+            (recv (cat
+                    (enc (a b na (ltk a b)) (ltk a s))
+                    (enc na (ltk a b))
                     nb)
                   )
             (send (enc nb (ltk a b)))
         )
     )
-    (defrole B 
-        (vars (b a s name) (na nb text))  
+    (defrole B
+        (vars (b a s name) (na nb text))
         (trace
-            (recv (cat 
-                    (enc (a b na (ltk a b)) (ltk a s)) 
+            (recv (cat
+                    (enc (a b na (ltk a b)) (ltk a s))
                     (enc (a b na (ltk a b)) (ltk b s))))
-            (send (cat 
-                    (enc (a b na (ltk a b)) (ltk a s)) 
-                    (enc na (ltk a b)) 
+            (send (cat
+                    (enc (a b na (ltk a b)) (ltk a s))
+                    (enc na (ltk a b))
                     nb)
             )
             (recv (enc nb (ltk a b)))
         )
-    )  
-    (defrole S 
+    )
+    (defrole S
         (vars (s a b name) (na nb text))
         (trace
             (recv (cat a b na))
-            (send (cat 
-                    (enc (a b na (ltk a b)) (ltk a s)) 
+            (send (cat
+                    (enc (a b na (ltk a b)) (ltk a s))
                     (enc (a b na (ltk a b)) (ltk b s))))
         )
     )

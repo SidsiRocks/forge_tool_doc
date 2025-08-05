@@ -1,16 +1,11 @@
 import io
 from abc import abstractmethod
+from sys import set_coroutine_origin_tracking_depth
 from typing import List, Tuple, override
 from enum import Enum
 
 from type_and_helpers import *
 
-"""
-    def start_some_predicate(self, var_names: List[str], set_name: str):
-        variables_str = ','.join(var_names)
-        self.print_to_file(f"some {variables_str} : {set_name} | {{\n")
-        self.start_block()
-"""
 
 class Transcribe_obj:
 
@@ -41,7 +36,6 @@ class Transcribe_obj:
 
 #TODO: can change signature modifier to use an enum instead of a plain string
 # like below
-
     def write_sig(self, sig_name: str, parent_sig_name: None | str,
                   field_name_type: List[Tuple[str,
                                               str]], sig_modifier: str | None):
@@ -58,34 +52,17 @@ class Transcribe_obj:
         self.end_block()
         self.print_to_file("}\n")
 
-    def start_some_predicate(self, var_names: List[str], set_name: str):
-        variables_str = ','.join(var_names)
-        self.print_to_file(f"some {variables_str} : {set_name} | {{\n")
-        self.start_block()
-
-
-    def end_predicate(self):
-        self.end_block()
-        self.print_to_file(f"}}\n")
-
-#TODO: would be very helpful to write using context operations,
-# i.e with as
-
-    #def write_seq_data(self, seq_expr: str, seq_elms: List[str]):
-    #    indices_strs = "+".join([str(i) for i in range(len(seq_elms))])
-    #    self.print_to_file(f"inds[{seq_expr}] = {indices_strs}\n")
-    #    self.start_some_predicate(seq_elms, f"elems[{seq_expr}]")
-    #    for indx, elm in enumerate(seq_elms):
-    #        self.print_to_file(f"{seq_expr}[{indx}] = {elm}\n")
-
-    def write_seq_constraint(self,seq_expr:str,seq_exprs:List[str],seq_terms:List[NonCatTerm],sig_context:"SigContext"):
+    def write_seq_constraint(self, seq_expr: str, seq_exprs: List[str],
+                             seq_terms: List[NonCatTerm],
+                             sig_context: "SigContext"):
         indices_str = "+".join([str(i) for i in range(len(seq_exprs))])
         self.print_to_file(f"inds[{seq_expr}] = {indices_str}\n")
-        with QuantifierPredicate(QuantiferEnum.SOME,seq_exprs,f"elems[{seq_expr}]",self):
-            for indx,elm in enumerate(seq_exprs):
+        with QuantifierPredicate(QuantiferEnum.SOME, seq_exprs,
+                                 f"elems[{seq_expr}]", self):
+            for indx, elm in enumerate(seq_exprs):
                 self.print_to_file(f"{seq_expr}[{indx}] = {elm}\n")
-            for seq_expr,seq_term in zip(seq_exprs,seq_terms):
-                transcribe_non_cat(seq_expr,seq_term,sig_context)
+            for seq_expr, seq_term in zip(seq_exprs, seq_terms):
+                transcribe_non_cat(seq_expr, seq_term, sig_context)
 
     def role_var_name_in_prot_pred(self, role_name, prot_name):
         return f"arbitrary_{role_name}_{prot_name}"
@@ -105,44 +82,58 @@ class Transcribe_obj:
                                          transcr=self,
                                          skeleton=skeleton,
                                          skel_num=skel_num)
+
+
 class QuantiferEnum(Enum):
     SOME = 0
     ALL = 1
     ONE = 2
     NO = 3
+
     def __str__(self) -> str:
         enum_to_str = {
-            QuantiferEnum.SOME : "some",
-            QuantiferEnum.ALL : "all",
-            QuantiferEnum.ONE : "one",
-            QuantiferEnum.NO : "no"
+            QuantiferEnum.SOME: "some",
+            QuantiferEnum.ALL: "all",
+            QuantiferEnum.ONE: "one",
+            QuantiferEnum.NO: "no"
         }
         return enum_to_str[self]
+
     def __repr__(self) -> str:
         return self.__str__()
+
+
 @dataclass
 class PredicateContext:
-    pred_name:str
-    transcr:Transcribe_obj
+    pred_name: str
+    transcr: Transcribe_obj
+
     def __enter__(self):
         self.transcr.print_to_file(f"pred {self.pred_name} {{\n")
         self.transcr.start_block()
-    def __exit__(self,exc_type, exc_value, traceback):
+
+    def __exit__(self, exc_type, exc_value, traceback):
         self.transcr.end_block()
         self.transcr.print_to_file(f"}}\n")
+
+
 @dataclass
 class QuantifierPredicate:
-    quantifer_enum:QuantiferEnum
-    var_names:List[str]
-    set_name:str
-    transcr:Transcribe_obj
+    quantifer_enum: QuantiferEnum
+    var_names: List[str]
+    set_name: str
+    transcr: Transcribe_obj
+
     def __enter__(self):
         variables_str = ','.join(self.var_names)
-        self.transcr.print_to_file(f"{self.quantifer_enum} {variables_str} : {self.set_name} | {{\n")
+        self.transcr.print_to_file(
+            f"{self.quantifer_enum} {variables_str} : {self.set_name} | {{\n")
         self.transcr.start_block()
-    def __exit__(self,exc_type, exc_value, traceback):
+
+    def __exit__(self, exc_type, exc_value, traceback):
         self.transcr.end_block()
         self.transcr.print_to_file(f"}}\n")
+
 
 @dataclass
 class SigContext:
@@ -264,6 +255,7 @@ class SkeletonTranscribeContext(SigContext):
 
 
 #TODO: can remove some code duplication here
+#TODO: cleaning up comments also
 
     @override
     def get_base_term_str(self, base_term: BaseTerm) -> str:
@@ -290,12 +282,6 @@ def transcribe_role_to_sig(role: Role, role_sig_name: str,
     parent_sig_name = "strand"
     transcr.write_sig(role_sig_name, parent_sig_name, field_name_type, None)
 
-
-def transcribe_var(elm_expr: str, var: Variable, sig_context: SigContext):
-    sig_context.get_transcr().print_to_file(
-        f"{elm_expr} = {sig_context.acess_variable(var.var_name)}\n")
-
-
 #TODO: can add comments to show what different parts of transcription correspond to
 # perhaps
 def transcribe_enc(elm_expr: str, enc_term: EncTerm, sig_context: SigContext):
@@ -308,48 +294,23 @@ def transcribe_enc(elm_expr: str, enc_term: EncTerm, sig_context: SigContext):
         f"atom_{transcr.get_fresh_num()}" for _ in range(len(enc_term.data))
     ]
     data_expr = f"({elm_expr}).plaintext"
-    transcr.write_seq_constraint(data_expr,data_atom_names,enc_term.data,sig_context)
-    #ending predicate started in write_seq_data (might not be correct position may have to change this)
+    transcr.write_seq_constraint(data_expr, data_atom_names, enc_term.data,
+                                 sig_context)
     key_expr = f"({elm_expr}).encryptionKey"
-    match enc_term.key:
-        case PubkTerm(_) as pubk:
-            transcribe_pubk(key_expr, pubk, sig_context)
-        case PrivkTerm(_) as privk:
-            transcribe_privk(key_expr, privk, sig_context)
-        case LtkTerm(_) as ltk:
-            transcribe_ltk(key_expr, ltk, sig_context)
+    transcribe_base_term(key_expr,enc_term.key,sig_context)
 
-
-def transcribe_ltk(elm_expr: str, ltk_term: LtkTerm, sig_context: SigContext):
-    sig_context.get_transcr().print_to_file(
-        f"{elm_expr} = {sig_context.get_ltk_str(ltk_term)}\n")
-
-
-def transcribe_pubk(elm_expr: str, pubk_term: PubkTerm,
-                    role_context: SigContext):
-    role_context.get_transcr().print_to_file(
-        f"{elm_expr} = {role_context.get_pubk_str(pubk_term)}\n")
-
-
-def transcribe_privk(elm_expr: str, privk_term: PrivkTerm,
-                     role_context: SigContext):
-    role_context.get_transcr().print_to_file(
-        f"{elm_expr} = {role_context.get_privk_str(privk_term)}\n")
-
+def transcribe_base_term(elm_expr:str,msg:BaseTerm,role_context:SigContext):
+    constraint_expr = f"{elm_expr} = {role_context.get_base_term_str(msg)}\n"
+    role_context.get_transcr().print_to_file(constraint_expr)
 
 def transcribe_non_cat(elm_expr: str, msg: NonCatTerm,
                        role_context: SigContext):
     match msg:
-        case Variable(_, _) as var:
-            transcribe_var(elm_expr, var, role_context)
-        case LtkTerm(_, _) as ltk:
-            transcribe_ltk(elm_expr, ltk, role_context)
-        case PubkTerm(_) as pubk:
-            transcribe_pubk(elm_expr, pubk, role_context)
-        case PrivkTerm(_) as privk:
-            transcribe_privk(elm_expr, privk, role_context)
         case EncTerm(_, _) as enc_term:
             transcribe_enc(elm_expr, enc_term, role_context)
+        case base_term:
+            transcribe_base_term(elm_expr,msg,role_context)
+
 
 
 def transcribe_indv_trace(role: Role, indx: int,
@@ -365,27 +326,21 @@ def transcribe_indv_trace(role: Role, indx: int,
     match mesg:
         case CatTerm(_) as cat:
             sub_term_names = [f"sub_term_{i}" for i in range(len(cat.data))]
-            #transcr.write_seq_data(f"(t{indx}.data)", sub_term_names)
-            #for sub_term_name, sub_term in zip(sub_term_names, cat.data):
-            #    transcribe_non_cat(sub_term_name, sub_term, role_context)
-            #transcr.end_predicate()
-            transcr.write_seq_constraint(f"(t{indx}.data)",sub_term_names,cat.data,role_context)
-            #ending predicate started in write_seq_data (might not be correct position may have to change this)
+            transcr.write_seq_constraint(f"(t{indx}.data)", sub_term_names,
+                                         cat.data, role_context)
 
         case non_cat_mesg:
             atom_name = f"atom_{transcr.get_fresh_num()}"
-            #transcr.write_seq_data(f"(t{indx}.data)", [atom_name])
-            #transcribe_non_cat(atom_name, non_cat_mesg, role_context)
-            #transcr.end_predicate()
-            transcr.write_seq_constraint(f"(t{indx}.data)",[atom_name],[non_cat_mesg],role_context)
-            #ending predicate started in write_seq_data (might not be correct position may have to change this)
+            transcr.write_seq_constraint(f"(t{indx}.data)", [atom_name],
+                                         [non_cat_mesg], role_context)
 
 
 def transcribe_trace(role: Role, role_context: RoleTranscribeContext):
     trace_len = len(role.trace)
     timeslot_names = [f"t{i}" for i in range(trace_len)]
     transcr = role_context.transcr
-    with QuantifierPredicate(QuantiferEnum.SOME,timeslot_names,"Timeslot",transcr):
+    with QuantifierPredicate(QuantiferEnum.SOME, timeslot_names, "Timeslot",
+                             transcr):
         for i in range(trace_len - 1):
             transcr.print_to_file(f"t{i+1} in t{i}.(^next)\n")
             all_timeslots_set = "+".join(timeslot_names)
@@ -402,9 +357,12 @@ def transcribe_role(role: Role, role_context: RoleTranscribeContext):
     role_sig_name = role_context.role_sig_name
     transcr = role_context.transcr
     transcribe_role_to_sig(role, role_sig_name, transcr)
-    with PredicateContext(transcr=transcr,pred_name=f"exec_{role_sig_name}"):
-        with QuantifierPredicate(QuantiferEnum.ALL,[role_context.role_var_name],role_sig_name,transcr):
+    with PredicateContext(transcr=transcr, pred_name=f"exec_{role_sig_name}"):
+        with QuantifierPredicate(QuantiferEnum.ALL,
+                                 [role_context.role_var_name], role_sig_name,
+                                 transcr):
             transcribe_trace(role, role_context)
+
 
 def transcribe_protocol(protocol: Protocol, transcr: Transcribe_obj):
     """Function to transcribe the protocol object returned by the parser
@@ -428,13 +386,15 @@ def transcribe_skeleton_to_sig(skeleton: Skeleton, skeleton_sig_name: str,
     transcr.write_sig(skeleton_sig_name, None, field_name_type, "one")
 
 
-#TODO: conisder using a context object for writing skeleton variable names as well
 def transcribe_strand(strand: Strand,
                       skelton_transcr_context: SkeletonTranscribeContext,
                       role_transcr_context: RoleTranscribeContext):
     transcr = skelton_transcr_context.transcr
-    with QuantifierPredicate(QuantiferEnum.SOME,[role_transcr_context.role_var_name],role_transcr_context.role_sig_name,transcr):
-        for skelton_var_name, strand_var in strand.skeleton_to_strand_var_map.items():
+    with QuantifierPredicate(QuantiferEnum.SOME,
+                             [role_transcr_context.role_var_name],
+                             role_transcr_context.role_sig_name, transcr):
+        for skelton_var_name, strand_var in strand.skeleton_to_strand_var_map.items(
+        ):
             strand_var_str = role_transcr_context.acess_variable(
                 strand_var.var_name)
             skelton_var_str = skelton_transcr_context.acess_variable(
@@ -442,14 +402,14 @@ def transcribe_strand(strand: Strand,
             transcr.print_to_file(f"{strand_var_str} = {skelton_var_str}\n")
 
 
-#TODO: maybe using with for start and ending predicates so that the code is clearer
 #TODO: Can simplifly functions related to transcribing publick key privk and others since they are very small
 def transcribe_non_orig(non_orig: NonOrig,
                         skeleton_transcr_context: SkeletonTranscribeContext):
     transcr = skeleton_transcr_context.transcr
     for base_term in non_orig.terms:
         base_term_str = skeleton_transcr_context.get_base_term_str(base_term)
-        with QuantifierPredicate(QuantiferEnum.NO,["aStrand"],"strand",transcr):
+        with QuantifierPredicate(QuantiferEnum.NO, ["aStrand"], "strand",
+                                 transcr):
             transcr.print_to_file(
                 f"originates[aStrand,{base_term_str}] or generates [aStrand,{base_term_str}]\n"
             )
@@ -460,7 +420,8 @@ def transcribe_uniq_orig(uniq_orig: UniqOrig,
     transcr = skeleton_transcr_context.transcr
     for base_term in uniq_orig.terms:
         base_term_str = skeleton_transcr_context.get_base_term_str(base_term)
-        with QuantifierPredicate(QuantiferEnum.ONE,["aStrand"],"strand",transcr):
+        with QuantifierPredicate(QuantiferEnum.ONE, ["aStrand"], "strand",
+                                 transcr):
             transcr.print_to_file(
                 f"originates[aStrand,{base_term_str}] or generates [aStrand,{base_term_str}]\n"
             )
@@ -470,8 +431,9 @@ def transcribe_skeleton_to_predicate(skeleton: Skeleton, skel_num: int,
                                      skeleton_pred_name: str,
                                      transcr: Transcribe_obj,
                                      protocol: Protocol):
-    with PredicateContext(skeleton_pred_name,transcr):
-        skel_transcr_context = transcr.create_skeleton_context(skeleton, skel_num)
+    with PredicateContext(skeleton_pred_name, transcr):
+        skel_transcr_context = transcr.create_skeleton_context(
+            skeleton, skel_num)
         strand_num = 0
         for constranint in skeleton.constraints_list:
             match constranint:
@@ -481,9 +443,10 @@ def transcribe_skeleton_to_predicate(skeleton: Skeleton, skel_num: int,
                         raise ParseException(f"there is a problem here")
                     role_context = transcr.create_role_context(
                         role, protocol,
-                        transcr.role_var_name_in_skel_pred(strand.role_name,
-                                                           skel_num, strand_num))
-                    transcribe_strand(strand, skel_transcr_context, role_context)
+                        transcr.role_var_name_in_skel_pred(
+                            strand.role_name, skel_num, strand_num))
+                    transcribe_strand(strand, skel_transcr_context,
+                                      role_context)
                     strand_num += 1
                 case NonOrig(_) as non_orig:
                     transcribe_non_orig(non_orig, skel_transcr_context)

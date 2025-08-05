@@ -46,7 +46,9 @@ fun getLTK[name_a: name, name_b: name]: lone skey {
 
 /** Get the inverse key for a given key (if any) */
 fun getInv[k: Key]: one Key {
-  (k in PublicKey => ((KeyPairs.pairs).k) else (k.(KeyPairs.pairs)))
+  (k in PublicKey => ((KeyPairs.pairs).k) else none)
+  +
+  (k in PrivateKey => (k.(KeyPairs.pairs)) else none)
   +
   (k in skey => k else none)
 }
@@ -61,8 +63,8 @@ sig Timeslot {
   -- <=1 actual "message tuple" sent/received per timeslot
   sender: one strand,
   receiver: one strand,  
-  data: set mesg,
-
+  -- data: set mesg, 
+  data: pfunc Int -> mesg,
   -- relation is: Tick x Microtick x learned-mesg
   -- Only one agent per tick is receiving, so always know which agent's workspace it is
   workspace: set Timeslot -> mesg
@@ -88,7 +90,8 @@ sig Ciphertext extends mesg {
    -- encrypted with this key
    encryptionKey: one Key,
    -- result in concating plaintexts
-   plaintext: set mesg
+   //plaintext: set mesg
+   plaintext: pfunc Int -> mesg
 }
 
 -- Non-name base value (e.g., nonces)
@@ -113,9 +116,10 @@ fun baseKnown[a: name]: set mesg {
 pred wellformed {
   -- Design choice: only one message event per timeslot;
   --   assume we have a shared notion of time
-    
+  all m: Timeslot | isSeqOf[m.data,mesg]
+  all t: Ciphertext | isSeqOf[t.plaintext,mesg]
   -- You cannot send a message with no data
-  all m: Timeslot | some m.data
+  all m: Timeslot | some elems[m.data]
 
   -- someone cannot send a message to themselves
   all m: Timeslot | m.sender not in m.receiver
@@ -125,7 +129,7 @@ pred wellformed {
   all d: mesg | all t, microt: Timeslot | let a = t.receiver.agent | d in (workspace[t])[microt] iff {
     -- Base case:
     -- received the data in the clear just now 
-    {d in t.data and no microt.~next}
+    {d in elems[t.data] and no microt.~next}
     or
     -- Inductive case:
     -- breaking down a ciphertext we learned *previously*, or that we've produced from 
@@ -137,7 +141,7 @@ pred wellformed {
     { 
       --d not in ((a.workspace)[t])[Timeslot - microt.^next] and -- first time appearing
       {some superterm : Ciphertext | {      
-      d in superterm.plaintext and     
+      d in elems[superterm.plaintext] and     
       superterm in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a] and
       getInv[superterm.encryptionKey] in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a]
     }}}
@@ -171,7 +175,7 @@ pred wellformed {
     -- NOTE WELL: if ever allow an agent to send/receive at same time, need rewrite 
     {d in Ciphertext and 
 	   d.encryptionKey in (a.learned_times).(Timeslot - t.^next) and        
-	   d.plaintext in (a.learned_times).(Timeslot - t.^next)
+	   elems[d.plaintext] in (a.learned_times).(Timeslot - t.^next)
      {a not in t.receiver.agent} -- non-reception
     }
     or
@@ -187,16 +191,20 @@ pred wellformed {
   all a: name | all d: text | lone t: Timeslot | d in (a.generated_times).t
 
   -- Messages comprise only values known by the sender
-  all m: Timeslot | m.data in (((m.sender).agent).learned_times).(Timeslot - m.^next) 
+  all m: Timeslot | elems[m.data] in (((m.sender).agent).learned_times).(Timeslot - m.^next) 
   -- Always send or receive to the adversary
   all m: Timeslot | m.sender = AttackerStrand or m.receiver = AttackerStrand 
 
   -- plaintext relation is acyclic  
   --  NOTE WELL: if ever add another type of mesg that contains data, add with + inside ^.
-  all d: mesg | d not in d.^(plaintext)
+  //old_plainw ould be unique so some or all doesn't
+  let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
+    all d: mesg | d not in d.^(old_plain)
+  }
   
   -- Disallow empty ciphertexts
-  all c: Ciphertext | some c.plaintext
+  -- might not need elemes here just some works
+  all c: Ciphertext | some elems[c.plaintext]
 
   (KeyPairs.pairs).PublicKey = PrivateKey -- total
   PrivateKey.(KeyPairs.pairs) = PublicKey -- total
@@ -246,8 +254,11 @@ pred wellformed {
 /** Definition of subterms for some set of terms */
 fun subterm[supers: set mesg]: set mesg {
   -- VITAL: if you add a new subterm relation, needs to be added here, too!
-  supers +
-  supers.^(plaintext) -- union on new subterm relations inside parens
+  -- do cross check that it actually returns the correct thing and not an empty set
+  -- or something
+  let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
+    supers + supers.^(old_plain) -- union on new subterm relations inside parens
+  }
 }
 
 /** When does a strand 'originate' some term? 
@@ -261,12 +272,12 @@ pred originates[s: strand, d: mesg] {
   --   whenever n' precedes n on the same strand, t is not subterm of n'
 
   some m: sender.s | { -- messages sent by strand s (positive term)     
-      d in subterm[m.data] -- d is a sub-term of m     
+      d in subterm[elems[m.data]] -- d is a sub-term of m     
       all m2: (sender.s + receiver.s) - m | { -- everything else on the strand
           -- ASSUME: messages are sent/received in same timeslot
           {m2 in m.^(~(next))}
           implies          
-          {d not in subterm[m2.data]}
+          {d not in subterm[elems[m2.data]]}
       }
   }
 }
@@ -318,85 +329,105 @@ fun getPRIVK[name_a:name] : lone Key{
 fun getPUBK[name_a:name] : lone Key {
     (KeyPairs.owners.(name_a)).(KeyPairs.pairs)
 }
-
-
-sig simple_enc_A extends strand{
-    simple_enc_A_a: one name,
-    simple_enc_A_b: one name,
-    simple_enc_A_n1: one text,
-    simple_enc_A_n2: one text
+pred learnt_term_by[m:mesg,a:name,t:Timeslot] {
+    m in (a.learned_times).(Timeslot - t.^next)
 }
 
-// predicate follows below
-pred exec_simple_enc_A {
-    all arbitrary_simple_enc_A : simple_enc_A | {
-        some t0,t1 : Timeslot | {
-            t0 in t1.(^next)
-            
-            t0 + t1  = sender.arbitrary_simple_enc_A + receiver.arbitrary_simple_enc_A
-            
-            t0.sender = arbitrary_simple_enc_A
-            t1.receiver = arbitrary_simple_enc_A
-            
-            some enc1 : t0.data | {
-                t0.data = enc1
-                getPUBK[arbitrary_simple_enc_A.simple_enc_A_b] = (enc1).encryptionKey
-                ((enc1).plaintext) = arbitrary_simple_enc_A.simple_enc_A_n1
-            }
-            some enc2 : t1.data | {
-                t1.data = enc2
-                getPUBK[arbitrary_simple_enc_A.simple_enc_A_a] = (enc2).encryptionKey
-                ((enc2).plaintext) = arbitrary_simple_enc_A.simple_enc_A_n2
-            }
+sig addit_enc_B extends strand {
+  addit_enc_B_a : one name,
+  addit_enc_B_b : one name,
+  addit_enc_B_n1 : one text,
+  addit_enc_B_n2 : one text
+}
+pred exec_addit_enc_B {
+  all arbitrary_B_addit_enc : addit_enc_B | {
+    some t0,t1 : Timeslot | {
+      t1 in t0.(^next)
+      t0+t1 = sender.arbitrary_B_addit_enc + receiver.arbitrary_B_addit_enc
+      t0.receiver = arbitrary_B_addit_enc
+      inds[(t0.data)] = 0+1
+      some sub_term_0,sub_term_1 : elems[(t0.data)] | {
+        (t0.data)[0] = sub_term_0
+        (t0.data)[1] = sub_term_1
+        sub_term_0 = arbitrary_B_addit_enc.addit_enc_B_a
+        inds[(sub_term_1).plaintext] = 0
+        some atom_1 : elems[(sub_term_1).plaintext] | {
+          (sub_term_1).plaintext[0] = atom_1
+          atom_1 = arbitrary_B_addit_enc.addit_enc_B_n1
         }
-    }
-}
-// end of predicate
-
-sig simple_enc_B extends strand{
-    simple_enc_B_a: one name,
-    simple_enc_B_b: one name,
-    simple_enc_B_n1: one text,
-    simple_enc_B_n2: one text
-}
-
-// predicate follows below
-pred exec_simple_enc_B {
-    all arbitrary_simple_enc_B : simple_enc_B | {
-        some t0,t1 : Timeslot | {
-            t0 in t1.(^next)
-            
-            t0 + t1  = sender.arbitrary_simple_enc_B + receiver.arbitrary_simple_enc_B
-            
-            t0.receiver = arbitrary_simple_enc_B
-            t1.sender = arbitrary_simple_enc_B
-            
-            some enc3 : t0.data | {
-                t0.data = enc3
-                getPUBK[arbitrary_simple_enc_B.simple_enc_B_b] = (enc3).encryptionKey
-                ((enc3).plaintext) = arbitrary_simple_enc_B.simple_enc_B_n1
-            }
-            some enc4 : t1.data | {
-                t1.data = enc4
-                getPUBK[arbitrary_simple_enc_B.simple_enc_B_a] = (enc4).encryptionKey
-                ((enc4).plaintext) = arbitrary_simple_enc_B.simple_enc_B_n2
-            }
+        (sub_term_1).encryptionKey = getPUBK[arbitrary_B_addit_enc.addit_enc_B_b]
+      }
+      
+      t1.sender = arbitrary_B_addit_enc
+      inds[(t1.data)] = 0+1
+      some sub_term_0,sub_term_1 : elems[(t1.data)] | {
+        (t1.data)[0] = sub_term_0
+        (t1.data)[1] = sub_term_1
+        sub_term_0 = arbitrary_B_addit_enc.addit_enc_B_b
+        inds[(sub_term_1).plaintext] = 0
+        some atom_2 : elems[(sub_term_1).plaintext] | {
+          (sub_term_1).plaintext[0] = atom_2
+          atom_2 = arbitrary_B_addit_enc.addit_enc_B_n2
         }
+        (sub_term_1).encryptionKey = getPUBK[arbitrary_B_addit_enc.addit_enc_B_a]
+      }
+      
     }
+  }
 }
-// end of predicate
-
-option run_sterling "../../crypto_viz.js"
-simple_test_run : run {
-  wellformed
-  exec_simple_enc_A
-  exec_simple_enc_B
+sig addit_enc_A extends strand {
+  addit_enc_A_a : one name,
+  addit_enc_A_b : one name,
+  addit_enc_A_n1 : one text,
+  addit_enc_A_n2 : one text
+}
+pred exec_addit_enc_A {
+  all arbitrary_A_addit_enc : addit_enc_A | {
+    some t0,t1 : Timeslot | {
+      t1 in t0.(^next)
+      t0+t1 = sender.arbitrary_A_addit_enc + receiver.arbitrary_A_addit_enc
+      t0.sender = arbitrary_A_addit_enc
+      inds[(t0.data)] = 0+1
+      some sub_term_0,sub_term_1 : elems[(t0.data)] | {
+        (t0.data)[0] = sub_term_0
+        (t0.data)[1] = sub_term_1
+        sub_term_0 = arbitrary_A_addit_enc.addit_enc_A_a
+        inds[(sub_term_1).plaintext] = 0
+        some atom_3 : elems[(sub_term_1).plaintext] | {
+          (sub_term_1).plaintext[0] = atom_3
+          atom_3 = arbitrary_A_addit_enc.addit_enc_A_n1
+        }
+        (sub_term_1).encryptionKey = getPUBK[arbitrary_A_addit_enc.addit_enc_A_b]
+      }
+      
+      t1.receiver = arbitrary_A_addit_enc
+      inds[(t1.data)] = 0+1
+      some sub_term_0,sub_term_1 : elems[(t1.data)] | {
+        (t1.data)[0] = sub_term_0
+        (t1.data)[1] = sub_term_1
+        sub_term_0 = arbitrary_A_addit_enc.addit_enc_A_b
+        inds[(sub_term_1).plaintext] = 0
+        some atom_4 : elems[(sub_term_1).plaintext] | {
+          (sub_term_1).plaintext[0] = atom_4
+          atom_4 = arbitrary_A_addit_enc.addit_enc_A_n2
+        }
+        (sub_term_1).encryptionKey = getPUBK[arbitrary_A_addit_enc.addit_enc_A_a]
+      }
+      
+    }
+  }
+}
+option run_sterling "../../crypto_viz_seq.js"
+addit_enc_run : run {
+    wellformed 
+    exec_addit_enc_A
+    exec_addit_enc_B
 }
 for 
-  exactly 4 Timeslot,16 mesg,
-  exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,
-  exactly 0 skey,exactly 3 PublicKey,exactly 3 PrivateKey,
-  exactly 3 name,exactly 2 text,exactly 2 Ciphertext,
-  exactly 1 simple_enc_A,exactly 1 simple_enc_B,
-  1 Int
+    exactly 4 Timeslot,16 mesg,
+    exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,
+    exactly 0 skey,exactly 3 PublicKey,exactly 3 PrivateKey,
+    exactly 3 name,exactly 2 text,exactly 2 Ciphertext,
+    exactly 1 addit_enc_A,exactly 1 addit_enc_B,
+    3 Int
 for {next is linear}

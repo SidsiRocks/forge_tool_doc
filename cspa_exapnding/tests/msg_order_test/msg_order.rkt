@@ -1,6 +1,6 @@
 #lang forge/domains/crypto
 (defprotocol msg_order basic
-    (defrole A 
+    (defrole A
         (vars (n1 n2 n3 text) (b name))
         (trace
             (send (cat n1 n2))
@@ -13,5 +13,5 @@
             (recv (cat n1 n2))
             (send (cat b n2))
         )
-    ) 
+    )
 )

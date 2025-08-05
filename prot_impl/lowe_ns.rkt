@@ -1,14 +1,14 @@
 #lang forge/domains/crypto
 
 (defprotocol lowe_ns basic
-    (defrole init 
+    (defrole init
         (vars (a b name) (n1 n2 text))
         (trace
             (send (enc n1 a (pubk b)))
             (recv (enc n1 n2 (pubk a)))
             (send (enc n2 (pubk b)))
         ))
-    (defrole resp 
+    (defrole resp
         (vars (a b name) (n1 n2 text))
         (trace
             (recv (enc n1 a (pubk b)))

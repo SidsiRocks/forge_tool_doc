@@ -1,7 +1,4 @@
-#lang forge 
-open "enc_term.rkt"
-
-option run_sterling "../../crypto_viz.js"
+option run_sterling "../../../crypto_viz_seq.js"
 
 enc_term_exmpl : run {
     wellformed

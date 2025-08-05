@@ -2,7 +2,7 @@
 
 open "new_reorder_terms.rkt"
 
-option run_sterling "../../crypto_viz.js"
+option run_sterling "../../../crypto_viz.js"
 
 
 new_reorder_terms_pov : run {
