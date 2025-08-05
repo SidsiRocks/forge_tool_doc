@@ -1,90 +1,41 @@
-- What primitives does base.frg 
+- What primitives does base.frg
 - add signatures (cross check if it is there)
 - add hashes ()
 - no key cycles
 - adding pairs
 - adding timestamps
+* TODO Extend tool with signature and hashes
+* TODO fix the problem with encryption related terms
+* TODO implementing timestamps
+* TODO check documentation is up to date and correct
+* TODO text should be able to contain multiple terms
+Example in otway rees protocol symmetric key K_ab has to be confusable
+with the sequence of terms M,A,B.
+For the other protocol example sent in teams need something similar
+To fix these below TODOs
+** TODO implement 'bytes' datatype containing sequence of messages
+*** TODO possibly update visualizer to make this work
+*** TODO enc. term when key not known is arbitrary bytes
+* TODO Final goal
+ * model a protocol with singatures hashing and encryption
+ * state correspondence property (example mutual authentication)
+ * maybe state correspondence property using a template
+* TODO maybe change to give constraint using a json file
+* TODO just like added test for parser add manual tests for running the file
+*** TODO see if can get output of forge run in command line to run automated tests
 
+* TODO figure out what trace and equivalence based predicates would look like
+** TODO maybe better interface for stating predicates as well?
+ * The only thing ensuring that attacker can't generate the same nonces as the
+   other agents is a uniq-orig statement, can probably add separate constraint
+   which says a nonce can never be genrated agian transcription for skeleton
+   blocks of code is complete, still have to do proper checks (seems to be
+   working with two_nonce.rkt have to check in more detail later)
+ * consider if want to add code for transcribing skeleton to transcribe.py,
+   currently code for that only in transcribe_seq.py
+ * added code for checking if strand knows the encryption key, have to check
+   this more (two nonce working, have to check if will give arbitrary ciphertext
+   when key is not known)
+ * While sending message to recognise ciphertext don't need to know inverse key,
+   need to know while receiving add this later
 
-- RECENT TODO
-- documentationf or transcriber, for changes to base.frg
-- encrypted terms matching only when inverse key is known
-- run file constraints uses sensible defaults, and some json file like interface for giving constraints
-- visualizer updates
-
-- visualizer not handling encypted terms correctly have to fix
-
-
-- report should be ready by april 29 30 by latest official 28th
-
-
-- FOR LATER
-- what the predicates for a trace based property and equivalence basedd property,
-- bettter interface/language for stating additional predicates
-- for the otway rees protocol attack detection need agents shouldn't be able to distinguish between the following  {Na,Kab}Kas
-  {Na,M,A,B}Kas have to somehow make agent take M,A,B as Kab.
-
-- IMP NOTE
-- The only thing ensuring that attacker can't generate the same nonces as the other agents is 
-  a uniq-orig statement, can probably add separate constraint which says a nonce can never be genrated agian
-  transcription for skeleton blocks of code is complete, still have to do proper checks (seems to be working with two_nonce.rkt have to check in more detail later)
-- consider if want to add code for transcribing skeleton to transcribe.py, currently only in 
-  transcribe_seq.py
-- added code for checking if strand knows the encryption key, have to check this more (two nonce working, have to check if will give arbitrary ciphertext when key is not known)
-Plan for handling encrypted terms properly,
-we add constraint that enc in Ciphertext
-and old constraint on keys and plaintext
-only if the key is in the known values for that strand
-
-inds[t2.data] = 0
-some enc13 : elems[t2.data] | {
-    elems[t2.data] = enc13
-    (a.learned_times).(Timeslot - t.^next)
-    getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_b] = (enc13).encryptionKey
-    inds[((enc13).plaintext)] = 0
-    some atom14 : elems[((enc13).plaintext)] {
-        (((enc13).plaintext))[0] = atom14
-        atom14 = arbitrary_two_nonce_resp.two_nonce_resp_n2
-    }
-}
-
-Doubts to ask about report:
-1) any other sections/points to add 
-2) anything to mention in further work, work done 
-
-
-Improve formatting
-1) put code in figure doesn't span pages [done]
-2) some images small make them larger to be legible [done]
-3) put labels on figure refer to it correctly [done]
-4) explain arrow notation in section of how tool models protocols [done]
-5) explain modify to visualizer [done]
-6) explain change to workflow becuase of new tool (mention this is section) [done]
-7) diff btwn tool []
-8) link modifications to shortcomnings noticed []
-9) fix single and double quotes to have right orientation 
-10) add small section about creating documentation [done]
-11) add link to github repository (imp that it is there in my presentation)[done]
-
-12) add a bibliography (so that all links are numbers)
-13) when showing differences between old and new tool mention what parts of code are causing those differences
-14) in furthur work add imporving UX for specifying protocol [done]
-15) mention that protocol descriptions taken from spore [done]
-16) linkt to repo in presentation
-
-Presesntaion
-1) can be brief of how forge works
-2) can be brief on inference system
-3) focus on changes made
-
-4) quick intro of security protocols need verification, this is a tool for that (?maybe mention symbloic verification?)
-5) in present. also focus on section 3 and 4(changes to code and how it manifests in the tool)
-
-
-- Cannot have enc terms inside an enc term currently, not needed as enc already supports having multiple terms, have to translate something like
-(enc n1 (cat n2 n3) n4) to (enc n1 n2 n3 n4) currently would not 
-
-1) While sending message to recognise ciphertext don't need to know inverse key, need to know while receiving add this later
-
-Summer TODO:
-1) Have to add more test cases for parsing, will take a while but expect test system in place.
