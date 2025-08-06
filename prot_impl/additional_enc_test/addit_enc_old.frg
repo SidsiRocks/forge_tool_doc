@@ -1,4 +1,6 @@
-option run_sterling "../../crypto_viz_seq.js"
+#lang forge
+open "addit_enc.rkt"
+option run_sterling "../../crypto_viz.js"
 addit_enc_run : run {
     wellformed 
     exec_addit_enc_A
@@ -11,4 +13,4 @@ for
     exactly 3 name,exactly 2 text,exactly 2 Ciphertext,
     exactly 1 addit_enc_A,exactly 1 addit_enc_B,
     3 Int
-for {next is linear}
+for {next is linear}    

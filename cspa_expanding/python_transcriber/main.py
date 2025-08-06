@@ -46,8 +46,12 @@ def load_cspa_as_s_expr_new(file):
 
 #TODO: should strip lang and ipen has not been tested att all and might not be useful
 # consider removing later
+def re_match_full_str(re_expr:re.Pattern,txt:str):
+    match_obj = re.match(re_expr,txt)
+    return (match_obj is not None) and (match_obj.span()[1] == len(txt))
+
 File = io.TextIOWrapper
-def main(cpsa_file:File,destination_forge_file:File,base_file:File,extra_func_file:File,run_forge_file:File,should_strip_lang_and_open:bool):
+def main(cpsa_file:File,destination_forge_file:File,base_file:File,extra_func_file:File,run_forge_file:File,should_strip_lang_and_open:bool,visualization_script_path:str):
     s_expr_lst = load_cspa_as_s_expr_new(cpsa_file)
     protocol = parser.parse_protocol(s_expr_lst[0])
     skeletons = [
@@ -61,13 +65,16 @@ def main(cpsa_file:File,destination_forge_file:File,base_file:File,extra_func_fi
         new_transcribe.transcribe_skeleton(skeleton, protocol,
                                            transcribe_obj, skel_indx)
     if should_strip_lang_and_open:
-        open_regex = re.compile(r"[\s]*open\".*\"[\s]*\n")
+        # TODO add support for comments also here
+        open_regex = re.compile(r"[\s]*open[\s]*\".*\"[\s]*\n")
         lang_forge_regex = re.compile(r"[\s]*#lang[\s]*forge[\s]*\n")
+        option_regex = r"[\s]*option[\s]*run_sterling[\s]*\".*\"[\s]*\n"
+        option_regex = re.compile(option_regex)
         for line in run_forge_file:
-            matches_open_regex = re.match(open_regex, line) is not None
-            matches_lang_regex = re.match(lang_forge_regex,
-                                          line) is not None
-            if matches_open_regex or matches_lang_regex:
+            if re_match_full_str(open_regex,line) or re_match_full_str(lang_forge_regex,line):
+                continue
+            if re_match_full_str(option_regex,line):
+                transcribe_obj.print_to_file(f"option run_sterling \"{visualization_script_path}\"\n")
                 continue
             transcribe_obj.print_to_file(line)
     else:
@@ -91,18 +98,23 @@ if __name__ == "__main__":
     argument_parser.add_argument("--destination_forge_file_path")
     argument_parser.add_argument("--strip_lang_open_from_run_file",
                                  action='store_true')
+    argument_parser.add_argument("--visualization_script_path",type=str)
     args = argument_parser.parse_args()
     base_file_path = path_rel_to_script( "./base_with_seq.frg" )
     extra_func_path = path_rel_to_script( "./extra_funcs.frg" )
     cpsa_file_path = args.cpsa_file_path
     run_forge_file_path = args.run_forge_file_path
-    destination_forge_file = args.destination_forge_file_path if args.destination_forge_file_path is not None else "protocol.frg"
+    destination_forge_file_name = args.destination_forge_file_path if args.destination_forge_file_path is not None else "protocol.frg"
 
     should_strip_lang_and_open = args.strip_lang_open_from_run_file
+    visualization_script = args.visualization_script_path
+    if should_strip_lang_and_open and visualization_script is None:
+        raise RuntimeError(f"expected visualization script path if using strip file option should_strip_lang_and_open = {should_strip_lang_and_open} visualization_script = {visualization_script}")
 
     with open(cpsa_file_path) as cpsa_file:
-        with open(destination_forge_file, 'w') as destination_forge_file:
+        with open(destination_forge_file_name, 'w') as destination_forge_file:
             with open(base_file_path) as base_file:
                 with open(extra_func_path) as extra_func_file:
                     with open(run_forge_file_path) as run_forge_file:
-                        main(cpsa_file,destination_forge_file,base_file,extra_func_file,run_forge_file,should_strip_lang_and_open)
+                        main(cpsa_file,destination_forge_file,base_file,extra_func_file,run_forge_file,should_strip_lang_and_open,visualization_script)
+                        print(f"finish transcribing to {destination_forge_file_name}")

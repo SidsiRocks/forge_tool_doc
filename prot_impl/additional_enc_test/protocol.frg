@@ -333,112 +333,90 @@ pred learnt_term_by[m:mesg,a:name,t:Timeslot] {
     m in (a.learned_times).(Timeslot - t.^next)
 }
 
-sig addit_enc_B extends strand{
-    addit_enc_B_a: one name,
-    addit_enc_B_b: one name,
-    addit_enc_B_n1: one text,
-    addit_enc_B_n2: one text
+sig addit_enc_B extends strand {
+  addit_enc_B_a : one name,
+  addit_enc_B_b : one name,
+  addit_enc_B_n1 : one text,
+  addit_enc_B_n2 : one text
 }
-
-// predicate follows below
 pred exec_addit_enc_B {
-    all arbitrary_addit_enc_B : addit_enc_B | {
-        some t0,t1 : Timeslot | {
-            t1 in t0.(^next)
-            
-            t0 + t1  = sender.arbitrary_addit_enc_B + receiver.arbitrary_addit_enc_B
-            
-            t0.receiver = arbitrary_addit_enc_B
-            t1.sender = arbitrary_addit_enc_B
-            
-            inds[t0.data] = 0 + 1
-            some atom1,enc2 : elems[t0.data] {
-                (t0.data)[0] = atom1
-                (t0.data)[1] = enc2
-                atom1 = arbitrary_addit_enc_B.addit_enc_B_a
-                enc2 in Ciphertext
-                learnt_term_by[getPRIVK[arbitrary_addit_enc_B.addit_enc_B_b],arbitrary_addit_enc_B.agent,t0] => {
-                    getPUBK[arbitrary_addit_enc_B.addit_enc_B_b] = (enc2).encryptionKey
-                    inds[((enc2).plaintext)] = 0
-                    some atom3 : elems[((enc2).plaintext)] {
-                        (((enc2).plaintext))[0] = atom3
-                        atom3 = arbitrary_addit_enc_B.addit_enc_B_n1
-                    }
-                }
-            }
-            inds[t1.data] = 0 + 1
-            some atom4,enc5 : elems[t1.data] {
-                (t1.data)[0] = atom4
-                (t1.data)[1] = enc5
-                atom4 = arbitrary_addit_enc_B.addit_enc_B_b
-                enc5 in Ciphertext
-                learnt_term_by[getPRIVK[arbitrary_addit_enc_B.addit_enc_B_a],arbitrary_addit_enc_B.agent,t1] => {
-                    getPUBK[arbitrary_addit_enc_B.addit_enc_B_a] = (enc5).encryptionKey
-                    inds[((enc5).plaintext)] = 0
-                    some atom6 : elems[((enc5).plaintext)] {
-                        (((enc5).plaintext))[0] = atom6
-                        atom6 = arbitrary_addit_enc_B.addit_enc_B_n2
-                    }
-                }
-            }
+  all arbitrary_B_addit_enc : addit_enc_B | {
+    some t0,t1 : Timeslot | {
+      t1 in t0.(^next)
+      t0+t1 = sender.arbitrary_B_addit_enc + receiver.arbitrary_B_addit_enc
+      t0.receiver = arbitrary_B_addit_enc
+      inds[(t0.data)] = 0+1
+      some sub_term_0,sub_term_1 : elems[(t0.data)] | {
+        (t0.data)[0] = sub_term_0
+        (t0.data)[1] = sub_term_1
+        sub_term_0 = arbitrary_B_addit_enc.addit_enc_B_a
+        inds[(sub_term_1).plaintext] = 0
+        some atom_1 : elems[(sub_term_1).plaintext] | {
+          (sub_term_1).plaintext[0] = atom_1
+          atom_1 = arbitrary_B_addit_enc.addit_enc_B_n1
         }
+        (sub_term_1).encryptionKey = getPUBK[arbitrary_B_addit_enc.addit_enc_B_b]
+      }
+      
+      t1.sender = arbitrary_B_addit_enc
+      inds[(t1.data)] = 0+1
+      some sub_term_0,sub_term_1 : elems[(t1.data)] | {
+        (t1.data)[0] = sub_term_0
+        (t1.data)[1] = sub_term_1
+        sub_term_0 = arbitrary_B_addit_enc.addit_enc_B_b
+        inds[(sub_term_1).plaintext] = 0
+        some atom_2 : elems[(sub_term_1).plaintext] | {
+          (sub_term_1).plaintext[0] = atom_2
+          atom_2 = arbitrary_B_addit_enc.addit_enc_B_n2
+        }
+        (sub_term_1).encryptionKey = getPUBK[arbitrary_B_addit_enc.addit_enc_B_a]
+      }
+      
     }
+  }
 }
-// end of predicate
-
-sig addit_enc_A extends strand{
-    addit_enc_A_a: one name,
-    addit_enc_A_b: one name,
-    addit_enc_A_n1: one text,
-    addit_enc_A_n2: one text
+sig addit_enc_A extends strand {
+  addit_enc_A_a : one name,
+  addit_enc_A_b : one name,
+  addit_enc_A_n1 : one text,
+  addit_enc_A_n2 : one text
 }
-
-// predicate follows below
 pred exec_addit_enc_A {
-    all arbitrary_addit_enc_A : addit_enc_A | {
-        some t0,t1 : Timeslot | {
-            t1 in t0.(^next)
-            
-            t0 + t1  = sender.arbitrary_addit_enc_A + receiver.arbitrary_addit_enc_A
-            
-            t0.sender = arbitrary_addit_enc_A
-            t1.receiver = arbitrary_addit_enc_A
-            
-            inds[t0.data] = 0 + 1
-            some atom7,enc8 : elems[t0.data] {
-                (t0.data)[0] = atom7
-                (t0.data)[1] = enc8
-                atom7 = arbitrary_addit_enc_A.addit_enc_A_a
-                enc8 in Ciphertext
-                learnt_term_by[getPRIVK[arbitrary_addit_enc_A.addit_enc_A_b],arbitrary_addit_enc_A.agent,t0] => {
-                    getPUBK[arbitrary_addit_enc_A.addit_enc_A_b] = (enc8).encryptionKey
-                    inds[((enc8).plaintext)] = 0
-                    some atom9 : elems[((enc8).plaintext)] {
-                        (((enc8).plaintext))[0] = atom9
-                        atom9 = arbitrary_addit_enc_A.addit_enc_A_n1
-                    }
-                }
-            }
-            inds[t1.data] = 0 + 1
-            some atom10,enc11 : elems[t1.data] {
-                (t1.data)[0] = atom10
-                (t1.data)[1] = enc11
-                atom10 = arbitrary_addit_enc_A.addit_enc_A_b
-                enc11 in Ciphertext
-                learnt_term_by[getPRIVK[arbitrary_addit_enc_A.addit_enc_A_a],arbitrary_addit_enc_A.agent,t1] => {
-                    getPUBK[arbitrary_addit_enc_A.addit_enc_A_a] = (enc11).encryptionKey
-                    inds[((enc11).plaintext)] = 0
-                    some atom12 : elems[((enc11).plaintext)] {
-                        (((enc11).plaintext))[0] = atom12
-                        atom12 = arbitrary_addit_enc_A.addit_enc_A_n2
-                    }
-                }
-            }
+  all arbitrary_A_addit_enc : addit_enc_A | {
+    some t0,t1 : Timeslot | {
+      t1 in t0.(^next)
+      t0+t1 = sender.arbitrary_A_addit_enc + receiver.arbitrary_A_addit_enc
+      t0.sender = arbitrary_A_addit_enc
+      inds[(t0.data)] = 0+1
+      some sub_term_0,sub_term_1 : elems[(t0.data)] | {
+        (t0.data)[0] = sub_term_0
+        (t0.data)[1] = sub_term_1
+        sub_term_0 = arbitrary_A_addit_enc.addit_enc_A_a
+        inds[(sub_term_1).plaintext] = 0
+        some atom_3 : elems[(sub_term_1).plaintext] | {
+          (sub_term_1).plaintext[0] = atom_3
+          atom_3 = arbitrary_A_addit_enc.addit_enc_A_n1
         }
+        (sub_term_1).encryptionKey = getPUBK[arbitrary_A_addit_enc.addit_enc_A_b]
+      }
+      
+      t1.receiver = arbitrary_A_addit_enc
+      inds[(t1.data)] = 0+1
+      some sub_term_0,sub_term_1 : elems[(t1.data)] | {
+        (t1.data)[0] = sub_term_0
+        (t1.data)[1] = sub_term_1
+        sub_term_0 = arbitrary_A_addit_enc.addit_enc_A_b
+        inds[(sub_term_1).plaintext] = 0
+        some atom_4 : elems[(sub_term_1).plaintext] | {
+          (sub_term_1).plaintext[0] = atom_4
+          atom_4 = arbitrary_A_addit_enc.addit_enc_A_n2
+        }
+        (sub_term_1).encryptionKey = getPUBK[arbitrary_A_addit_enc.addit_enc_A_a]
+      }
+      
     }
+  }
 }
-// end of predicate
-
 option run_sterling "../../crypto_viz_seq.js"
 addit_enc_run : run {
     wellformed 
@@ -452,4 +430,4 @@ for
     exactly 3 name,exactly 2 text,exactly 2 Ciphertext,
     exactly 1 addit_enc_A,exactly 1 addit_enc_B,
     3 Int
-for {next is linear}
+for {next is linear}    
