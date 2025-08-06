@@ -1,4 +1,7 @@
-option run_sterling "../../crypto_viz_seq.js"
+#lang forge 
+
+open "two_nonce.rkt"
+option run_sterling "../../crypto_viz.js"
 
 pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
@@ -48,7 +51,7 @@ exec_two_nonce_init
 
     exactly 3 name,exactly 6 text,exactly 10 Ciphertext,
     exactly 1 two_nonce_init,exactly 1 two_nonce_resp,
-    4 Int
+    1 Int
 for {next is linear}
 
 //run {} for 3

@@ -57,77 +57,62 @@ def helper_for_test_rkt_file(rkt_file_path):
 #TODO: add other tests using the ideas from here
 def test_addit_enc_parsing():
     helper_for_test_rkt_file(
-        r"../../../forge_tool_doc/cspa_exapnding/additional_enc_test/addit_enc.rkt"
+        r"../../prot_impl/additional_enc_test/addit_enc.rkt"
     )
 
 
 def test_duplic_terms_parsing():
     helper_for_test_rkt_file(
-        r"../../../forge_tool_doc/cspa_exapnding/diff_btwn_tools/duplic_terms.rkt"
+        r"../../prot_impl/duplic_term/duplic_terms.rkt"
     )
 
 
 def test_enc_terms_parsing():
     helper_for_test_rkt_file(
-        r"../../../forge_tool_doc/cspa_exapnding/diff_btwn_tools/enc_term.rkt")
+        r"../../prot_impl/enc_term/enc_term.rkt")
 
 
 def test_new_reorder_terms_parsing():
     helper_for_test_rkt_file(
-        r"../../../forge_tool_doc/cspa_exapnding/diff_btwn_tools/new_reorder_terms.rkt"
+        r"../../prot_impl/new_reorder_terms/new_reorder_terms.rkt"
     )
 
+def test_nspk_parsing():
+    helper_for_test_rkt_file(
+        r"../../prot_impl/nspk/nspk.rkt"
+    )
+
+def test_ootway_rees_parsing():
+    helper_for_test_rkt_file(
+        r"../../prot_impl/ootway_rees/ootway_rees.rkt"
+    )
 
 def test_reorder_terms_parsing():
     helper_for_test_rkt_file(
-        r"../../../forge_tool_doc/cspa_exapnding/diff_btwn_tools/reorder_terms.rkt"
+        r"../../prot_impl/reorder_terms/reorder_terms.rkt"
     )
 
+def test_simple_parsing():
+    helper_for_test_rkt_file(
+        r"../../prot_impl/simple/simple.rkt"
+    )
 
 def test_simple_enc_parsing():
     helper_for_test_rkt_file(
-        r"../../../forge_tool_doc/cspa_exapnding/simple_enc_test/simple_enc.rkt"
+        r"../../prot_impl/simple_enc/simple_enc.rkt"
     )
 
-
-def test_small_test_parsing():
+def test_simple_nonce_parsing():
     helper_for_test_rkt_file(
-        r"../../../forge_tool_doc/cspa_exapnding/small_test/small_test.rkt")
-
-
-def test_msg_order_parsing():
-    helper_for_test_rkt_file(
-        r"../../../forge_tool_doc/cspa_exapnding/tests/msg_order_test/msg_order.rkt"
+        r"../../prot_impl/simple_nonce/simple_nonce.rkt"
     )
 
+def test_three_agent_test_parsing():
+    helper_for_test_rkt_file(
+        r"../../prot_impl/three_agent_test/three_agent_test.rkt"
+    )
 
 def test_two_nonce_parsing():
     helper_for_test_rkt_file(
-        r"../../../forge_tool_doc/cspa_exapnding/two_nonce/two_nonce.rkt")
-
-
-def test_two_nonce_temp_parsing():
-    helper_for_test_rkt_file(
-        r"../../../forge_tool_doc/cspa_exapnding/two_nonce/two_nonce_temp.rkt")
-
-
-def test_lowe_ns_parsing():
-    helper_for_test_rkt_file(r"../../../forge_tool_doc/prot_impl/lowe_ns.rkt")
-
-
-def test_ns_parsing():
-    helper_for_test_rkt_file(r"../../../forge_tool_doc/prot_impl/ns.rkt")
-
-
-def test_nspk_parsing():
-    helper_for_test_rkt_file(r"../../../forge_tool_doc/prot_impl/nspk.rkt")
-
-
-def test_ootway_rees_paring():
-    helper_for_test_rkt_file(
-        r"../../../forge_tool_doc/prot_impl/ootway_rees.rkt")
-
-
-def test_three_agent_parsing():
-    helper_for_test_rkt_file(
-        r"../../../forge_tool_doc/prot_impl/three_agent_test.rkt")
+        r"../../prot_impl/two_nonce/two_nonce.rkt"
+    )

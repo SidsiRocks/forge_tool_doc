@@ -46,7 +46,9 @@ fun getLTK[name_a: name, name_b: name]: lone skey {
 
 /** Get the inverse key for a given key (if any) */
 fun getInv[k: Key]: one Key {
-  (k in PublicKey => ((KeyPairs.pairs).k) else (k.(KeyPairs.pairs)))
+  (k in PublicKey => ((KeyPairs.pairs).k) else none)
+  +
+  (k in PrivateKey => (k.(KeyPairs.pairs)) else none)
   +
   (k in skey => k else none)
 }
@@ -331,87 +333,232 @@ pred learnt_term_by[m:mesg,a:name,t:Timeslot] {
     m in (a.learned_times).(Timeslot - t.^next)
 }
 
-sig duplic_terms_A extends strand{
-    duplic_terms_A_n1: one text,
-    duplic_terms_A_n2: one text
+sig two_nonce_init extends strand{
+    two_nonce_init_a: one name,
+    two_nonce_init_b: one name,
+    two_nonce_init_n1: one text,
+    two_nonce_init_n2: one text
 }
 
 // predicate follows below
-pred exec_duplic_terms_A {
-    all arbitrary_duplic_terms_A : duplic_terms_A | {
-        some t0,t1 : Timeslot | {
+pred exec_two_nonce_init {
+    all arbitrary_two_nonce_init : two_nonce_init | {
+        some t0,t1,t2 : Timeslot | {
             t1 in t0.(^next)
+            t2 in t1.(^next)
             
-            t0 + t1  = sender.arbitrary_duplic_terms_A + receiver.arbitrary_duplic_terms_A
+            t0 + t1 + t2  = sender.arbitrary_two_nonce_init + receiver.arbitrary_two_nonce_init
             
-            t0.sender = arbitrary_duplic_terms_A
-            t1.receiver = arbitrary_duplic_terms_A
+            t0.sender = arbitrary_two_nonce_init
+            t1.receiver = arbitrary_two_nonce_init
+            t2.sender = arbitrary_two_nonce_init
             
             inds[t0.data] = 0
-            some atom1 : elems[t0.data] {
-                (t0.data)[0] = atom1
-                atom1 = arbitrary_duplic_terms_A.duplic_terms_A_n1
+            some enc1 : elems[t0.data] | {
+                elems[t0.data] = enc1
+                enc1 in Ciphertext
+                learnt_term_by[getPRIVK[arbitrary_two_nonce_init.two_nonce_init_b],arbitrary_two_nonce_init.agent,t0] => {
+                    getPUBK[arbitrary_two_nonce_init.two_nonce_init_b] = (enc1).encryptionKey
+                    inds[((enc1).plaintext)] = 0
+                    some atom2 : elems[((enc1).plaintext)] {
+                        (((enc1).plaintext))[0] = atom2
+                        atom2 = arbitrary_two_nonce_init.two_nonce_init_n1
+                    }
+                }
             }
-            inds[t1.data] = 0 + 1
-            some atom2,atom3 : elems[t1.data] {
-                (t1.data)[0] = atom2
-                (t1.data)[1] = atom3
-                atom2 = arbitrary_duplic_terms_A.duplic_terms_A_n1
-                atom3 = arbitrary_duplic_terms_A.duplic_terms_A_n2
+            inds[t1.data] = 0
+            some enc3 : elems[t1.data] | {
+                elems[t1.data] = enc3
+                enc3 in Ciphertext
+                learnt_term_by[getPRIVK[arbitrary_two_nonce_init.two_nonce_init_a],arbitrary_two_nonce_init.agent,t1] => {
+                    getPUBK[arbitrary_two_nonce_init.two_nonce_init_a] = (enc3).encryptionKey
+                    inds[((enc3).plaintext)] = 0 + 1
+                    some atom4,atom5 : elems[((enc3).plaintext)] {
+                        (((enc3).plaintext))[0] = atom4
+                        (((enc3).plaintext))[1] = atom5
+                        atom4 = arbitrary_two_nonce_init.two_nonce_init_n1
+                        atom5 = arbitrary_two_nonce_init.two_nonce_init_n2
+                    }
+                }
+            }
+            inds[t2.data] = 0
+            some enc6 : elems[t2.data] | {
+                elems[t2.data] = enc6
+                enc6 in Ciphertext
+                learnt_term_by[getPRIVK[arbitrary_two_nonce_init.two_nonce_init_b],arbitrary_two_nonce_init.agent,t2] => {
+                    getPUBK[arbitrary_two_nonce_init.two_nonce_init_b] = (enc6).encryptionKey
+                    inds[((enc6).plaintext)] = 0
+                    some atom7 : elems[((enc6).plaintext)] {
+                        (((enc6).plaintext))[0] = atom7
+                        atom7 = arbitrary_two_nonce_init.two_nonce_init_n2
+                    }
+                }
             }
         }
     }
 }
 // end of predicate
 
-sig duplic_terms_B extends strand{
-    duplic_terms_B_n1: one text,
-    duplic_terms_B_n2: one text
+sig two_nonce_resp extends strand{
+    two_nonce_resp_a: one name,
+    two_nonce_resp_b: one name,
+    two_nonce_resp_n1: one text,
+    two_nonce_resp_n2: one text
 }
 
 // predicate follows below
-pred exec_duplic_terms_B {
-    all arbitrary_duplic_terms_B : duplic_terms_B | {
-        some t0,t1 : Timeslot | {
+pred exec_two_nonce_resp {
+    all arbitrary_two_nonce_resp : two_nonce_resp | {
+        some t0,t1,t2 : Timeslot | {
             t1 in t0.(^next)
+            t2 in t1.(^next)
             
-            t0 + t1  = sender.arbitrary_duplic_terms_B + receiver.arbitrary_duplic_terms_B
+            t0 + t1 + t2  = sender.arbitrary_two_nonce_resp + receiver.arbitrary_two_nonce_resp
             
-            t0.receiver = arbitrary_duplic_terms_B
-            t1.sender = arbitrary_duplic_terms_B
+            t0.receiver = arbitrary_two_nonce_resp
+            t1.sender = arbitrary_two_nonce_resp
+            t2.receiver = arbitrary_two_nonce_resp
             
-            inds[t0.data] = 0 + 1
-            some atom4,atom5 : elems[t0.data] {
-                (t0.data)[0] = atom4
-                (t0.data)[1] = atom5
-                atom4 = arbitrary_duplic_terms_B.duplic_terms_B_n1
-                atom5 = arbitrary_duplic_terms_B.duplic_terms_B_n2
+            inds[t0.data] = 0
+            some enc8 : elems[t0.data] | {
+                elems[t0.data] = enc8
+                enc8 in Ciphertext
+                learnt_term_by[getPRIVK[arbitrary_two_nonce_resp.two_nonce_resp_b],arbitrary_two_nonce_resp.agent,t0] => {
+                    getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_b] = (enc8).encryptionKey
+                    inds[((enc8).plaintext)] = 0
+                    some atom9 : elems[((enc8).plaintext)] {
+                        (((enc8).plaintext))[0] = atom9
+                        atom9 = arbitrary_two_nonce_resp.two_nonce_resp_n1
+                    }
+                }
             }
             inds[t1.data] = 0
-            some atom6 : elems[t1.data] {
-                (t1.data)[0] = atom6
-                atom6 = arbitrary_duplic_terms_B.duplic_terms_B_n2
+            some enc10 : elems[t1.data] | {
+                elems[t1.data] = enc10
+                enc10 in Ciphertext
+                learnt_term_by[getPRIVK[arbitrary_two_nonce_resp.two_nonce_resp_a],arbitrary_two_nonce_resp.agent,t1] => {
+                    getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_a] = (enc10).encryptionKey
+                    inds[((enc10).plaintext)] = 0 + 1
+                    some atom11,atom12 : elems[((enc10).plaintext)] {
+                        (((enc10).plaintext))[0] = atom11
+                        (((enc10).plaintext))[1] = atom12
+                        atom11 = arbitrary_two_nonce_resp.two_nonce_resp_n1
+                        atom12 = arbitrary_two_nonce_resp.two_nonce_resp_n2
+                    }
+                }
+            }
+            inds[t2.data] = 0
+            some enc13 : elems[t2.data] | {
+                elems[t2.data] = enc13
+                enc13 in Ciphertext
+                learnt_term_by[getPRIVK[arbitrary_two_nonce_resp.two_nonce_resp_b],arbitrary_two_nonce_resp.agent,t2] => {
+                    getPUBK[arbitrary_two_nonce_resp.two_nonce_resp_b] = (enc13).encryptionKey
+                    inds[((enc13).plaintext)] = 0
+                    some atom14 : elems[((enc13).plaintext)] {
+                        (((enc13).plaintext))[0] = atom14
+                        atom14 = arbitrary_two_nonce_resp.two_nonce_resp_n2
+                    }
+                }
             }
         }
     }
 }
 // end of predicate
 
+one sig skeleton_two_nonce_0 {
+    skeleton_two_nonce_0_a: one name,
+    skeleton_two_nonce_0_b: one name,
+    skeleton_two_nonce_0_n1: one text,
+    skeleton_two_nonce_0_n2: one text
+}
+pred constrain_skeleton_two_nonce_0 {
+    some skeleton_two_nonce_0_strand0 : two_nonce_init | {
+        skeleton_two_nonce_0.skeleton_two_nonce_0_a = skeleton_two_nonce_0_strand0.two_nonce_init_a
+        skeleton_two_nonce_0.skeleton_two_nonce_0_b = skeleton_two_nonce_0_strand0.two_nonce_init_b
+        skeleton_two_nonce_0.skeleton_two_nonce_0_n1 = skeleton_two_nonce_0_strand0.two_nonce_init_n1
+        skeleton_two_nonce_0.skeleton_two_nonce_0_n2 = skeleton_two_nonce_0_strand0.two_nonce_init_n2
+    }
+
+    not ( getPRIVK[skeleton_two_nonce_0.skeleton_two_nonce_0_a] in baseKnown[Attacker]  )
+    no aStrand : strand | {
+        originates[aStrand,getPRIVK[skeleton_two_nonce_0.skeleton_two_nonce_0_a]]
+        or
+        generates[aStrand,getPRIVK[skeleton_two_nonce_0.skeleton_two_nonce_0_a]]
+    }
+    
+    not ( getPRIVK[skeleton_two_nonce_0.skeleton_two_nonce_0_b] in baseKnown[Attacker]  )
+    no aStrand : strand | {
+        originates[aStrand,getPRIVK[skeleton_two_nonce_0.skeleton_two_nonce_0_b]]
+        or
+        generates[aStrand,getPRIVK[skeleton_two_nonce_0.skeleton_two_nonce_0_b]]
+    }
+    
+    not ( skeleton_two_nonce_0.skeleton_two_nonce_0_n1 in baseKnown[Attacker]  )
+    one aStrand : strand | {
+        originates[aStrand,skeleton_two_nonce_0.skeleton_two_nonce_0_n1]
+        or
+        generates[aStrand,skeleton_two_nonce_0.skeleton_two_nonce_0_n1]
+    }
+    
+    not ( skeleton_two_nonce_0.skeleton_two_nonce_0_n2 in baseKnown[Attacker]  )
+    one aStrand : strand | {
+        originates[aStrand,skeleton_two_nonce_0.skeleton_two_nonce_0_n2]
+        or
+        generates[aStrand,skeleton_two_nonce_0.skeleton_two_nonce_0_n2]
+    }
+    
+}
 option run_sterling "../../crypto_viz_seq.js"
 
-duplic_terms_exmpl : run {
-    wellformed 
+pred corrected_attacker_learns[d:mesg]{
+    d in Attacker.learned_times.Timeslot
+}
 
-    exec_duplic_terms_A
-    exec_duplic_terms_B 
+//option solver MiniSatProver
+//option logtranslation 2
+//option coregranularity 1
+//option engine_verbosity 3
+//option core_minimization rce
 
-    duplic_terms_A.agent != AttackerStrand.agent
-    duplic_terms_B.agent != AttackerStrand.agent
+//option solver "./run_z3.sh"
+
+two_nonce_init_pov : run {
+    wellformed
+
+exec_two_nonce_init
+    exec_two_nonce_resp
+
+    constrain_skeleton_two_nonce_0
+    
+    two_nonce_resp.agent != two_nonce_init.agent
+    //should not need restriction on a and b this time?
+
+    //this may prevent attack have to check
+    two_nonce_init.agent != AttackerStrand.agent
+    two_nonce_resp.agent != AttackerStrand.agent
+
+    //prevents responder from sending same nonce again
+    two_nonce_resp.two_nonce_resp_n1 != two_nonce_resp.two_nonce_resp_n2
+    //prevents attacker from sending duplicate n1,n2 in a run of protocol
+    two_nonce_init.two_nonce_init_n1 != two_nonce_init.two_nonce_init_n2
+    
+    //attacker_learns[AttackerStrand,two_nonce_resp.two_nonce_resp_n2]
+    
+    //finding attack where init beleives it is talking to resp 
+    //but attacker knows the nonce
+    two_nonce_init.two_nonce_init_b = two_nonce_resp.agent
+    corrected_attacker_learns[two_nonce_init.two_nonce_init_n2]
+    //same nonce problem seems to be resolved
+    //have to deal with initiator trying tot talk to attacker, may want to change that
+    //when planning to detect an attack
 }for 
-    exactly 4 Timeslot,10 mesg,
-    exactly 1 KeyPairs,exactly 0 Key,exactly 0 akey,exactly 0 skey,
-    exactly 0 PrivateKey,exactly 0 PublicKey,
-    exactly 3 name,exactly 5 text,exactly 0 Ciphertext,
-    exactly 1 duplic_terms_A,exactly 1 duplic_terms_B,
+    exactly 6 Timeslot,25 mesg,
+    exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,0 skey,
+    exactly 3 PrivateKey,exactly 3 PublicKey,
+
+    exactly 3 name,exactly 6 text,exactly 10 Ciphertext,
+    exactly 1 two_nonce_init,exactly 1 two_nonce_resp,
     4 Int
 for {next is linear}
+
+//run {} for 3

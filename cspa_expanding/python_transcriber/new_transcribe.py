@@ -77,8 +77,8 @@ class Transcribe_obj:
         return RoleTranscribeContext(role_sig_name, role_var_name, self, role)
 
     def create_skeleton_context(self, skeleton: Skeleton, skel_num: int):
-        skelton_sig_name = f"skelton_{skeleton.protocol_name}_{skel_num}"
-        return SkeletonTranscribeContext(skeleton_sig_name=skelton_sig_name,
+        skeleton_sig_name = f"skeleton_{skeleton.protocol_name}_{skel_num}"
+        return SkeletonTranscribeContext(skeleton_sig_name=skeleton_sig_name,
                                          transcr=self,
                                          skeleton=skeleton,
                                          skel_num=skel_num)
@@ -387,19 +387,19 @@ def transcribe_skeleton_to_sig(skeleton: Skeleton, skeleton_sig_name: str,
 
 
 def transcribe_strand(strand: Strand,
-                      skelton_transcr_context: SkeletonTranscribeContext,
+                      skeleton_transcr_context: SkeletonTranscribeContext,
                       role_transcr_context: RoleTranscribeContext):
-    transcr = skelton_transcr_context.transcr
+    transcr = skeleton_transcr_context.transcr
     with QuantifierPredicate(QuantiferEnum.SOME,
                              [role_transcr_context.role_var_name],
                              role_transcr_context.role_sig_name, transcr):
-        for skelton_var_name, strand_var in strand.skeleton_to_strand_var_map.items(
+        for skeleton_var_name, strand_var in strand.skeleton_to_strand_var_map.items(
         ):
             strand_var_str = role_transcr_context.acess_variable(
                 strand_var.var_name)
-            skelton_var_str = skelton_transcr_context.acess_variable(
-                skelton_var_name)
-            transcr.print_to_file(f"{strand_var_str} = {skelton_var_str}\n")
+            skeleton_var_str = skeleton_transcr_context.acess_variable(
+                skeleton_var_name)
+            transcr.print_to_file(f"{strand_var_str} = {skeleton_var_str}\n")
 
 
 #TODO: Can simplifly functions related to transcribing publick key privk and others since they are very small

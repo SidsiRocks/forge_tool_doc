@@ -51,7 +51,7 @@ def re_match_full_str(re_expr:re.Pattern,txt:str):
     return (match_obj is not None) and (match_obj.span()[1] == len(txt))
 
 File = io.TextIOWrapper
-def main(cpsa_file:File,destination_forge_file:File,base_file:File,extra_func_file:File,run_forge_file:File,should_strip_lang_and_open:bool,visualization_script_path:str):
+def main(cpsa_file:File,destination_forge_file:File,base_file:File,extra_func_file:File,run_forge_file:File,should_strip_lang_and_open:bool,visualization_script_path:str|None):
     s_expr_lst = load_cspa_as_s_expr_new(cpsa_file)
     protocol = parser.parse_protocol(s_expr_lst[0])
     skeletons = [

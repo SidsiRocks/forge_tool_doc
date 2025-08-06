@@ -1,4 +1,4 @@
-option run_sterling "../../../crypto_viz_seq.js"
+option run_sterling "../../crypto_viz_seq.js"
 
 duplic_terms_exmpl : run {
     wellformed 

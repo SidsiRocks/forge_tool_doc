@@ -1,4 +1,9 @@
-option run_sterling "../../../crypto_viz_seq.js"
+#lang forge 
+
+open "new_reorder_terms.rkt"
+
+option run_sterling "../../../crypto_viz.js"
+
 
 new_reorder_terms_pov : run {
     wellformed 

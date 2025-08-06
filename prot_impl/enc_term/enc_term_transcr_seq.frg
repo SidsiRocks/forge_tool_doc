@@ -452,13 +452,13 @@ one sig skeleton_enc_term_0 {
     skeleton_enc_term_0_n4: one text
 }
 pred constrain_skeleton_enc_term_0 {
-    some skeleton_enc_term_0_strand1 : enc_term_A | {
-        skeleton_enc_term_0.skeleton_enc_term_0_a = skeleton_enc_term_0_strand1.enc_term_A_a
-        skeleton_enc_term_0.skeleton_enc_term_0_b = skeleton_enc_term_0_strand1.enc_term_A_b
-        skeleton_enc_term_0.skeleton_enc_term_0_n1 = skeleton_enc_term_0_strand1.enc_term_A_n1
-        skeleton_enc_term_0.skeleton_enc_term_0_n2 = skeleton_enc_term_0_strand1.enc_term_A_n2
-        skeleton_enc_term_0.skeleton_enc_term_0_n3 = skeleton_enc_term_0_strand1.enc_term_A_n3
-        skeleton_enc_term_0.skeleton_enc_term_0_n4 = skeleton_enc_term_0_strand1.enc_term_A_n4
+    some skeleton_enc_term_0_strand0 : enc_term_A | {
+        skeleton_enc_term_0.skeleton_enc_term_0_a = skeleton_enc_term_0_strand0.enc_term_A_a
+        skeleton_enc_term_0.skeleton_enc_term_0_b = skeleton_enc_term_0_strand0.enc_term_A_b
+        skeleton_enc_term_0.skeleton_enc_term_0_n1 = skeleton_enc_term_0_strand0.enc_term_A_n1
+        skeleton_enc_term_0.skeleton_enc_term_0_n2 = skeleton_enc_term_0_strand0.enc_term_A_n2
+        skeleton_enc_term_0.skeleton_enc_term_0_n3 = skeleton_enc_term_0_strand0.enc_term_A_n3
+        skeleton_enc_term_0.skeleton_enc_term_0_n4 = skeleton_enc_term_0_strand0.enc_term_A_n4
     }
 
     not ( getPRIVK[skeleton_enc_term_0.skeleton_enc_term_0_a] in baseKnown[Attacker]  )
@@ -476,7 +476,7 @@ pred constrain_skeleton_enc_term_0 {
     }
     
 }
-option run_sterling "../../crypto_viz_seq.js"
+option run_sterling "../../../crypto_viz_seq.js"
 
 enc_term_exmpl : run {
     wellformed
