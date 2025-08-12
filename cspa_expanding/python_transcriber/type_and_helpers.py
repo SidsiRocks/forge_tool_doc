@@ -8,12 +8,14 @@ class VarType(Enum):
     TEXT = 1
     SKEY = 2
     AKEY = 3
+    MESG = 4
     def __str__(self) -> str:
         vartype_to_str_dict = {
             VarType.NAME : NAME_STR,
             VarType.TEXT : TEXT_STR,
             VarType.SKEY : SKEY_STR,
-            VarType.AKEY : AKEY_STR
+            VarType.AKEY : AKEY_STR,
+            VarType.MESG : MESG_STR
         }
         return vartype_to_str_dict[self]
 @dataclass
@@ -48,7 +50,6 @@ class PrivkTerm:
     def __repr__(self):
         return f"(privk {self.agent_name})"
 KeyTerm = LtkTerm | PubkTerm | PrivkTerm | Variable
-
 @dataclass
 class EncTerm:
     data: List["NonCatTerm"]
@@ -175,6 +176,7 @@ CAT_STR = "cat"
 LTK_STR = "ltk"
 PUBK_STR = "pubk"
 PRIVK_STR = "privk"
+MESG_STR = "mesg"
 NAME_STR = "name"
 TEXT_STR = "text"
 SKEY_STR = "skey"
@@ -233,7 +235,8 @@ def str_to_vartype(var_type_str:str):
         NAME_STR : VarType.NAME,
         TEXT_STR : VarType.TEXT,
         SKEY_STR : VarType.SKEY,
-        AKEY_STR : VarType.AKEY
+        AKEY_STR : VarType.AKEY,
+        MESG_STR : VarType.MESG
     }
     if var_type_str in var_type_str_to_type_dict:
         return var_type_str_to_type_dict[var_type_str]

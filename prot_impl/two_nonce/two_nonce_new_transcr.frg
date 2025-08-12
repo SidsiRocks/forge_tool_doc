@@ -360,6 +360,7 @@ pred exec_two_nonce_init {
       inds[(t1.data)] = 0
       some atom_3 : elems[(t1.data)] | {
         (t1.data)[0] = atom_3
+        learnt_term_by[getPRIVK[arbitrary_init_two_nonce.two_nonce_init_a],arbitrary_init_two_nonce.agent,t1]
         inds[(atom_3).plaintext] = 0+1
         some atom_4,atom_5 : elems[(atom_3).plaintext] | {
           (atom_3).plaintext[0] = atom_4
@@ -400,6 +401,7 @@ pred exec_two_nonce_init {
       inds[(t1.data)] = 0
       some atom_10 : elems[(t1.data)] | {
         (t1.data)[0] = atom_10
+        learnt_term_by[getPRIVK[arbitrary_init_two_nonce.two_nonce_init_a],arbitrary_init_two_nonce.agent,t1]
         inds[(atom_10).plaintext] = 0+1
         some atom_11,atom_12 : elems[(atom_10).plaintext] | {
           (atom_10).plaintext[0] = atom_11
@@ -440,6 +442,7 @@ pred exec_two_nonce_resp {
       inds[(t0.data)] = 0
       some atom_15 : elems[(t0.data)] | {
         (t0.data)[0] = atom_15
+        learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t0]
         inds[(atom_15).plaintext] = 0
         some atom_16 : elems[(atom_15).plaintext] | {
           (atom_15).plaintext[0] = atom_16
@@ -466,6 +469,7 @@ pred exec_two_nonce_resp {
       inds[(t2.data)] = 0
       some atom_20 : elems[(t2.data)] | {
         (t2.data)[0] = atom_20
+        learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t2]
         inds[(atom_20).plaintext] = 0
         some atom_21 : elems[(atom_20).plaintext] | {
           (atom_20).plaintext[0] = atom_21
@@ -480,6 +484,7 @@ pred exec_two_nonce_resp {
       inds[(t0.data)] = 0
       some atom_22 : elems[(t0.data)] | {
         (t0.data)[0] = atom_22
+        learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t0]
         inds[(atom_22).plaintext] = 0
         some atom_23 : elems[(atom_22).plaintext] | {
           (atom_22).plaintext[0] = atom_23
@@ -506,6 +511,7 @@ pred exec_two_nonce_resp {
       inds[(t2.data)] = 0
       some atom_27 : elems[(t2.data)] | {
         (t2.data)[0] = atom_27
+        learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t2]
         inds[(atom_27).plaintext] = 0
         some atom_28 : elems[(atom_27).plaintext] | {
           (atom_27).plaintext[0] = atom_28

@@ -6,6 +6,12 @@
 - adding timestamps
 * TODO Extend tool with signature and hashes
 * TODO fix the problem with encryption related terms
+** TODO add explanation in documentation
+even after fixing the problem of knowing the encryption term what would happen
+if we want to generate a scenario where an agent recieves an encrypted term which
+they know the key for but they shouldn't be decrypting it they are just passing it on?
+Can support this by marking the type as a simple 'text' instead of (enc ..) when
+stating that agents role maybe mention this in the documentation?
 * TODO implementing timestamps
 * TODO check documentation is up to date and correct
 * TODO text should be able to contain multiple terms
@@ -20,6 +26,9 @@ To fix these below TODOs
  * model a protocol with singatures hashing and encryption
  * state correspondence property (example mutual authentication)
  * maybe state correspondence property using a template
+
+* TODO can add manual test for transcribed forge code, add
+constraints for generating a desired run (like known attack) and see if that is generated
 * TODO maybe change to give constraint using a json file
 * TODO just like added test for parser add manual tests for running the file
 *** TODO see if can get output of forge run in command line to run automated tests
@@ -40,3 +49,12 @@ To fix these below TODOs
    need to know while receiving add this later
 
 * TODO add run files for simple,simple_enc good for testing updates to transcribe
+
+* Doubts
+** TODO evaulator giving type error when using functions
+When using getPUBK[name0] get error that type should be name not mesg, but
+getPUBK[two_nonce_resp0.agent] works eventhough  two_nonce_resp0.agent = name0
+** TODO getInv function not wokring
+When trying to use the getInv function get the below error
+[/home/sidsi_skilled/data-4/another_fedora_home_folder/Documents/LearnFolder/forge_tool_doc/prot_impl/two_nonce/two_nonce_new_transcr.frg:51:22 (span 20)] Join always results in an empty relation: Left argument of join "(KeyPairs.owners.arbitrary_init_two_nonce.two_nonce_init_a.KeyPairs.pairs)" is in ((PublicKey)). Right argument of join "(KeyPairs.pairs)" is in ((PrivateKey -> PublicKey))
+figure out alternate getInv currently settting the inverse at transcribe time

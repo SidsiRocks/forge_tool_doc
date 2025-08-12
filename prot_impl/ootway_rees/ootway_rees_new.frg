@@ -1,6 +1,6 @@
 #lang forge
 open "ootway_rees.rkt"
-option run_sterling "../crypto_viz.js"
+option run_sterling "../../crypto_viz.js"
 
 //option run_sterling off
 /*
@@ -78,5 +78,5 @@ ootway_prot_run : run {
     exactly 4 name,exactly 4 text,exactly 9 Ciphertext, //4 names a,b,s,attacker ; 4 texts m,na,nb,kab ; cipher texts 6 based on estimate ; 4 Ciphertext should also work
     exactly 1 ootway_rees_A,exactly 1 ootway_rees_B,
     exactly 1 ootway_rees_S,
-    1 Int
+    4 Int
 for {next is linear}

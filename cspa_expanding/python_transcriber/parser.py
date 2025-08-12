@@ -53,7 +53,6 @@ def parse_vars_clause(s_expr) -> VarMap:
         parse_vars_list(elm, var_map)
     return var_map
 
-
 def parse_key_term(s_expr, var_map: VarMap) -> KeyTerm:
     if is_symbol_type(s_expr):
         var_name = get_str_from_symbol(s_expr, "variable name")

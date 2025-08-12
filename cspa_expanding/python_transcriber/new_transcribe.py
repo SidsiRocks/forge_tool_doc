@@ -1,6 +1,5 @@
 import io
 from abc import abstractmethod
-from sys import set_coroutine_origin_tracking_depth
 from typing import List, Tuple, override
 from enum import Enum
 
@@ -53,8 +52,9 @@ class Transcribe_obj:
         self.print_to_file("}\n")
 
     def write_seq_constraint(self, seq_expr: str, seq_exprs: List[str],
-                             seq_terms: List[NonCatTerm],
-                             sig_context: "SigContext"):
+                             seq_terms: List[NonCatTerm],send_recv:SendRecv,
+                             timeslot_expr:str,
+                             sig_context: "RoleTranscribeContext"):
         indices_str = "+".join([str(i) for i in range(len(seq_exprs))])
         self.print_to_file(f"inds[{seq_expr}] = {indices_str}\n")
         with QuantifierPredicate(QuantiferEnum.SOME, seq_exprs,
@@ -62,8 +62,38 @@ class Transcribe_obj:
             for indx, elm in enumerate(seq_exprs):
                 self.print_to_file(f"{seq_expr}[{indx}] = {elm}\n")
             for seq_expr, seq_term in zip(seq_exprs, seq_terms):
-                transcribe_non_cat(seq_expr, seq_term, sig_context)
+                transcribe_non_cat(seq_expr, seq_term,send_recv ,timeslot_expr,sig_context)
 
+    def write_new_seq_constraint(self,seq_expr:str,seq_terms:List[NonCatTerm],send_recv:SendRecv,timeslot_expr:str,sig_context:"RoleTranscribeContext"):
+        indices_str = "+".join([str(i) for i in range(len(seq_terms))])
+        self.print_to_file(f"inds[{seq_expr}] = {indices_str}\n")
+        seq_term_exprs : List[str]= []
+        quantifier_term_exprs : List[str] = []
+        is_quantifer_expr : List[bool] = []
+        for indx,elm in enumerate(seq_terms):
+            match elm:
+                case EncTerm(_) as enc_term:
+                    seq_term_expr = "enc_" + str(self.get_fresh_num())
+                    seq_term_exprs.append(seq_term_expr)
+                    quantifier_term_exprs.append(seq_term_expr)
+                    is_quantifer_expr.append(True)
+                case _:
+                    seq_term_expr = f"{seq_expr}[{indx}]"
+                    seq_term_exprs.append(seq_term_expr)
+                    is_quantifer_expr.append(False)
+
+        def temp():
+            for indx,seq_term_expr in enumerate(seq_term_exprs):
+                if is_quantifer_expr[indx]:
+                    self.print_to_file(f"{seq_expr}[{indx}] = {seq_term_expr}\n")
+            for indx,(seq_term_expr,seq_term) in enumerate(zip(seq_term_exprs,seq_terms)):
+                transcribe_non_cat(f"{seq_expr}[{indx}]",seq_term,send_recv,timeslot_expr,sig_context)
+
+        if len(quantifier_term_exprs) != 0:
+            with QuantifierPredicate(QuantiferEnum.SOME,quantifier_term_exprs,f"elems[{seq_expr}]",self):
+                temp()
+        else:
+            temp()
     def role_var_name_in_prot_pred(self, role_name, prot_name):
         return f"arbitrary_{role_name}_{prot_name}"
 
@@ -82,7 +112,6 @@ class Transcribe_obj:
                                          transcr=self,
                                          skeleton=skeleton,
                                          skel_num=skel_num)
-
 
 class QuantiferEnum(Enum):
     SOME = 0
@@ -134,6 +163,16 @@ class QuantifierPredicate:
         self.transcr.end_block()
         self.transcr.print_to_file(f"}}\n")
 
+@dataclass
+class ImpliesPredicate:
+    pre_condition:str
+    transcr: Transcribe_obj
+    def __enter__(self):
+        self.transcr.print_to_file(f"{self.pre_condition} => {{\n")
+        self.transcr.start_block()
+    def __exit__(self,exc_type,exc_value,traceback):
+        self.transcr.end_block()
+        self.transcr.print_to_file(f"}}\n")
 
 @dataclass
 class SigContext:
@@ -160,6 +199,10 @@ class SigContext:
 
     @abstractmethod
     def get_base_term_str(self, base_term: BaseTerm) -> str:
+        pass
+
+    @abstractmethod
+    def get_inv_key(self,key_term:KeyTerm) -> str:
         pass
 
 
@@ -216,6 +259,36 @@ class RoleTranscribeContext(SigContext):
             case Variable(_) as var:
                 return self.acess_variable(var.var_name)
 
+    def get_agent(self):
+        return f"{self.role_var_name}.agent"
+
+    @override
+    def get_inv_key(self, key_term: KeyTerm) -> str:
+        match key_term:
+            case LtkTerm(_):
+                return self.get_base_term_str(key_term)
+            case PubkTerm(_) as pubk:
+                privk_term = PrivkTerm(pubk.agent_name)
+                return self.get_base_term_str(privk_term)
+            case PrivkTerm(_) as privk:
+                pubk_term = PubkTerm(privk.agent_name)
+                return self.get_base_term_str(pubk_term)
+            case Variable(_) as var:
+                if var.var_type not in [VarType.SKEY,VarType.AKEY]:
+                    raise ParseException(f"For KeyTerm expected variableof vartype SKEY or AKEY not {var.var_type} of {var}")
+                match var.var_type:
+                    case VarType.SKEY:
+                        return self.get_base_term_str(var)
+                    case VarType.AKEY:
+                        #TODO implement forge function to invert akey
+                        raise ParseException("have to add invert key function in forge to implement this function")
+                    case _:
+                        raise ParseException(f"For KeyTerm expected variableof vartype SKEY or AKEY not {var.var_type} of {var}")
+
+    # TODO maybe can use alias types for these things?
+    def get_learnt_term_constraint(self,term_str:str,timeslot_str:str):
+        role_agent_str = self.get_agent()
+        return f"learnt_term_by[{term_str},{role_agent_str},{timeslot_str}]"
 
 @dataclass
 class SkeletonTranscribeContext(SigContext):
@@ -284,34 +357,41 @@ def transcribe_role_to_sig(role: Role, role_sig_name: str,
 
 #TODO: can add comments to show what different parts of transcription correspond to
 # perhaps
-def transcribe_enc(elm_expr: str, enc_term: EncTerm, sig_context: SigContext):
-    #TODO: have to add semantics of when encrypted terms can be deciphered or not
-    #one naive method would be only writing data and key constraints only when the
-    #inverse key is known(this should only be when recieving the message though)
-    #if sending the message only need to know the original key not inverse key
+def transcribe_enc(elm_expr: str, enc_term: EncTerm,send_recv:SendRecv ,timeslot_expr:str,sig_context: RoleTranscribeContext):
     transcr = sig_context.get_transcr()
     data_atom_names = [
         f"atom_{transcr.get_fresh_num()}" for _ in range(len(enc_term.data))
     ]
     data_expr = f"({elm_expr}).plaintext"
-    transcr.write_seq_constraint(data_expr, data_atom_names, enc_term.data,
-                                 sig_context)
     key_expr = f"({elm_expr}).encryptionKey"
-    transcribe_base_term(key_expr,enc_term.key,sig_context)
+    # match send_recv:
+    #     case SendRecv.SEND:
+    #         transcr.write_seq_constraint(data_expr,data_atom_names,enc_term.data,send_recv,timeslot_expr,sig_context)
+    #         transcribe_base_term(key_expr,enc_term.key,send_recv,sig_context)
+    #     case SendRecv.RECV:
+    #         # when recieving if explicilty state the elements of encrypted term
+    #         # then we are stating that the inverse key is known so we can actually
+    #         # enforce those constraints
+    #         # TODO temporarily removing this to test otway rees will add this back later
+    #         #term_str = sig_context.get_inv_key(enc_term.key)
+    #         #transcr.print_to_file(f"learnt_term_by[{term_str},{sig_context.role_var_name}.agent,{timeslot_expr}]\n")
+    #         transcr.write_seq_constraint(data_expr,data_atom_names,enc_term.data,send_recv,timeslot_expr,sig_context)
+    #         transcribe_base_term(key_expr,enc_term.key,send_recv,sig_context)
+    transcr.write_new_seq_constraint(data_expr,enc_term.data,send_recv,timeslot_expr,sig_context)
+    transcribe_base_term(key_expr,enc_term.key,send_recv,sig_context)
 
-def transcribe_base_term(elm_expr:str,msg:BaseTerm,role_context:SigContext):
+
+def transcribe_base_term(elm_expr:str,msg:BaseTerm,send_recv:SendRecv,role_context:SigContext):
     constraint_expr = f"{elm_expr} = {role_context.get_base_term_str(msg)}\n"
     role_context.get_transcr().print_to_file(constraint_expr)
 
-def transcribe_non_cat(elm_expr: str, msg: NonCatTerm,
-                       role_context: SigContext):
+def transcribe_non_cat(elm_expr: str, msg: NonCatTerm,send_recv:SendRecv,timeslot_expr:str,
+                       role_context: RoleTranscribeContext):
     match msg:
         case EncTerm(_, _) as enc_term:
-            transcribe_enc(elm_expr, enc_term, role_context)
+            transcribe_enc(elm_expr, enc_term,send_recv,timeslot_expr, role_context)
         case base_term:
-            transcribe_base_term(elm_expr,msg,role_context)
-
-
+            transcribe_base_term(elm_expr,msg,send_recv,role_context)
 
 def transcribe_indv_trace(role: Role, indx: int,
                           role_context: RoleTranscribeContext):
@@ -325,33 +405,50 @@ def transcribe_indv_trace(role: Role, indx: int,
             transcr.print_to_file(f"t{indx}.receiver = {role_var_name}\n")
     match mesg:
         case CatTerm(_) as cat:
-            sub_term_names = [f"sub_term_{i}" for i in range(len(cat.data))]
-            transcr.write_seq_constraint(f"(t{indx}.data)", sub_term_names,
-                                         cat.data, role_context)
+            # sub_term_names = [f"sub_term_{i}" for i in range(len(cat.data))]
+            # transcr.write_seq_constraint(f"(t{indx}.data)", sub_term_names,
+            #                              cat.data,send_recv,f"t{indx}", role_context)
+            transcr.write_new_seq_constraint(f"(t{indx}.data)",cat.data,send_recv,f"t{indx}",role_context)
 
         case non_cat_mesg:
             atom_name = f"atom_{transcr.get_fresh_num()}"
-            transcr.write_seq_constraint(f"(t{indx}.data)", [atom_name],
-                                         [non_cat_mesg], role_context)
+            # transcr.write_seq_constraint(f"(t{indx}.data)", [atom_name],
+            #                              [non_cat_mesg],send_recv,f"t{indx}", role_context)
+            transcr.write_new_seq_constraint(f"(t{indx}.data)",[non_cat_mesg],send_recv,f"t{indx}",role_context)
 
 
 def transcribe_trace(role: Role, role_context: RoleTranscribeContext):
     trace_len = len(role.trace)
     timeslot_names = [f"t{i}" for i in range(trace_len)]
     transcr = role_context.transcr
-    with QuantifierPredicate(QuantiferEnum.SOME, timeslot_names, "Timeslot",
-                             transcr):
-        for i in range(trace_len - 1):
-            transcr.print_to_file(f"t{i+1} in t{i}.(^next)\n")
-            all_timeslots_set = "+".join(timeslot_names)
-            role_var_name = role_context.role_var_name
-            transcr.print_to_file(
-                f"{all_timeslots_set} = sender.{role_var_name} + receiver.{role_var_name}\n"
-            )
-            for i, (_, _) in enumerate(role.trace):
-                transcribe_indv_trace(role, i, role_context)
-                role_context.get_transcr().print_to_file("\n")
+    # with QuantifierPredicate(QuantiferEnum.SOME, timeslot_names, "Timeslot",
+    #                          transcr):
+    #     for i in range(trace_len - 1):
+    #         transcr.print_to_file(f"t{i+1} in t{i}.(^next)\n")
+    #         all_timeslots_set = "+".join(timeslot_names)
+    #         role_var_name = role_context.role_var_name
+    #         transcr.print_to_file(
+    #             f"{all_timeslots_set} = sender.{role_var_name} + receiver.{role_var_name}\n"
+    #         )
+    #         for i, (_, _) in enumerate(role.trace):
+    #             transcribe_indv_trace(role, i, role_context)
+    #             role_context.get_transcr().print_to_file("\n")
+    cur_set = "Timeslot"
+    for timeslot_name in timeslot_names:
+        transcr.print_to_file(f"some {timeslot_name} : {cur_set} {{\n")
+        transcr.start_block()
+        cur_set = f"{timeslot_name}.(^next)"
 
+    all_timeslots_set = "+".join(timeslot_names)
+    role_var_name = role_context.role_var_name
+    transcr.print_to_file(f"{all_timeslots_set} = sender.{role_var_name} + receiver.{role_var_name}\n")
+    for i in range(len(role.trace)):
+        transcribe_indv_trace(role,i,role_context)
+        role_context.get_transcr().print_to_file("\n")
+
+    for _ in timeslot_names:
+        transcr.end_block()
+        transcr.print_to_file(f"}}\n")
 
 def transcribe_role(role: Role, role_context: RoleTranscribeContext):
     role_sig_name = role_context.role_sig_name
