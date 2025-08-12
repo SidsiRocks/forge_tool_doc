@@ -367,6 +367,7 @@ pred exec_ootway_rees_A {
         some enc_6 : elems[(t1.data)] | {
           (t1.data)[1] = enc_6
           (t1.data)[0] = arbitrary_A_ootway_rees.ootway_rees_A_m
+          learnt_term_by[getLTK[arbitrary_A_ootway_rees.ootway_rees_A_a,arbitrary_A_ootway_rees.ootway_rees_A_s],arbitrary_A_ootway_rees.agent,t1]
           inds[(enc_6).plaintext] = 0+1
           (enc_6).plaintext[0] = arbitrary_A_ootway_rees.ootway_rees_A_na
           (enc_6).plaintext[1] = arbitrary_A_ootway_rees.ootway_rees_A_kab
@@ -423,6 +424,7 @@ pred exec_ootway_rees_B {
               (t2.data)[2] = enc_14
               (t2.data)[0] = arbitrary_B_ootway_rees.ootway_rees_B_m
               (t2.data)[1] = arbitrary_B_ootway_rees.ootway_rees_B_second_a_s_mesg
+              learnt_term_by[getLTK[arbitrary_B_ootway_rees.ootway_rees_B_b,arbitrary_B_ootway_rees.ootway_rees_B_s],arbitrary_B_ootway_rees.agent,t2]
               inds[(enc_14).plaintext] = 0+1
               (enc_14).plaintext[0] = arbitrary_B_ootway_rees.ootway_rees_B_nb
               (enc_14).plaintext[1] = arbitrary_B_ootway_rees.ootway_rees_B_kab
@@ -462,12 +464,14 @@ pred exec_ootway_rees_S {
           (t0.data)[0] = arbitrary_S_ootway_rees.ootway_rees_S_m
           (t0.data)[1] = arbitrary_S_ootway_rees.ootway_rees_S_a
           (t0.data)[2] = arbitrary_S_ootway_rees.ootway_rees_S_b
+          learnt_term_by[getLTK[arbitrary_S_ootway_rees.ootway_rees_S_a,arbitrary_S_ootway_rees.ootway_rees_S_s],arbitrary_S_ootway_rees.agent,t0]
           inds[(enc_17).plaintext] = 0+1+2+3
           (enc_17).plaintext[0] = arbitrary_S_ootway_rees.ootway_rees_S_na
           (enc_17).plaintext[1] = arbitrary_S_ootway_rees.ootway_rees_S_m
           (enc_17).plaintext[2] = arbitrary_S_ootway_rees.ootway_rees_S_a
           (enc_17).plaintext[3] = arbitrary_S_ootway_rees.ootway_rees_S_b
           (enc_17).encryptionKey = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_a,arbitrary_S_ootway_rees.ootway_rees_S_s]
+          learnt_term_by[getLTK[arbitrary_S_ootway_rees.ootway_rees_S_b,arbitrary_S_ootway_rees.ootway_rees_S_s],arbitrary_S_ootway_rees.agent,t0]
           inds[(enc_18).plaintext] = 0+1+2+3
           (enc_18).plaintext[0] = arbitrary_S_ootway_rees.ootway_rees_S_nb
           (enc_18).plaintext[1] = arbitrary_S_ootway_rees.ootway_rees_S_m
