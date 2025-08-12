@@ -51,49 +51,32 @@ class Transcribe_obj:
         self.end_block()
         self.print_to_file("}\n")
 
-    def write_seq_constraint(self, seq_expr: str, seq_exprs: List[str],
-                             seq_terms: List[NonCatTerm],send_recv:SendRecv,
-                             timeslot_expr:str,
-                             sig_context: "RoleTranscribeContext"):
-        indices_str = "+".join([str(i) for i in range(len(seq_exprs))])
-        self.print_to_file(f"inds[{seq_expr}] = {indices_str}\n")
-        with QuantifierPredicate(QuantiferEnum.SOME, seq_exprs,
-                                 f"elems[{seq_expr}]", self):
-            for indx, elm in enumerate(seq_exprs):
-                self.print_to_file(f"{seq_expr}[{indx}] = {elm}\n")
-            for seq_expr, seq_term in zip(seq_exprs, seq_terms):
-                transcribe_non_cat(seq_expr, seq_term,send_recv ,timeslot_expr,sig_context)
-
     def write_new_seq_constraint(self,seq_expr:str,seq_terms:List[NonCatTerm],send_recv:SendRecv,timeslot_expr:str,sig_context:"RoleTranscribeContext"):
         indices_str = "+".join([str(i) for i in range(len(seq_terms))])
         self.print_to_file(f"inds[{seq_expr}] = {indices_str}\n")
+
         seq_term_exprs : List[str]= []
-        quantifier_term_exprs : List[str] = []
-        is_quantifer_expr : List[bool] = []
+        quantifier_variables : List[Tuple[int,str]] = []
         for indx,elm in enumerate(seq_terms):
             match elm:
-                case EncTerm(_) as enc_term:
+                case EncTerm(_):
                     seq_term_expr = "enc_" + str(self.get_fresh_num())
                     seq_term_exprs.append(seq_term_expr)
-                    quantifier_term_exprs.append(seq_term_expr)
-                    is_quantifer_expr.append(True)
+                    quantifier_variables.append((indx,seq_term_expr))
                 case _:
                     seq_term_expr = f"{seq_expr}[{indx}]"
                     seq_term_exprs.append(seq_term_expr)
-                    is_quantifer_expr.append(False)
 
-        def temp():
-            for indx,seq_term_expr in enumerate(seq_term_exprs):
-                if is_quantifer_expr[indx]:
-                    self.print_to_file(f"{seq_expr}[{indx}] = {seq_term_expr}\n")
+        def transcribe_subterms():
+            for indx,quantifier_variable in quantifier_variables:
+                self.print_to_file(f"{seq_expr}[{indx}] = {quantifier_variable}\n")
             for indx,(seq_term_expr,seq_term) in enumerate(zip(seq_term_exprs,seq_terms)):
-                transcribe_non_cat(f"{seq_expr}[{indx}]",seq_term,send_recv,timeslot_expr,sig_context)
-
-        if len(quantifier_term_exprs) != 0:
-            with QuantifierPredicate(QuantiferEnum.SOME,quantifier_term_exprs,f"elems[{seq_expr}]",self):
-                temp()
+                transcribe_non_cat(seq_term_expr,seq_term,send_recv,timeslot_expr,sig_context)
+        if len(quantifier_variables) != 0:
+            with QuantifierPredicate(QuantiferEnum.SOME,[txt for indx,txt in quantifier_variables],f"elems[{seq_expr}]",self):
+                transcribe_subterms()
         else:
-            temp()
+            transcribe_subterms()
     def role_var_name_in_prot_pred(self, role_name, prot_name):
         return f"arbitrary_{role_name}_{prot_name}"
 
@@ -405,15 +388,10 @@ def transcribe_indv_trace(role: Role, indx: int,
             transcr.print_to_file(f"t{indx}.receiver = {role_var_name}\n")
     match mesg:
         case CatTerm(_) as cat:
-            # sub_term_names = [f"sub_term_{i}" for i in range(len(cat.data))]
-            # transcr.write_seq_constraint(f"(t{indx}.data)", sub_term_names,
-            #                              cat.data,send_recv,f"t{indx}", role_context)
             transcr.write_new_seq_constraint(f"(t{indx}.data)",cat.data,send_recv,f"t{indx}",role_context)
 
         case non_cat_mesg:
             atom_name = f"atom_{transcr.get_fresh_num()}"
-            # transcr.write_seq_constraint(f"(t{indx}.data)", [atom_name],
-            #                              [non_cat_mesg],send_recv,f"t{indx}", role_context)
             transcr.write_new_seq_constraint(f"(t{indx}.data)",[non_cat_mesg],send_recv,f"t{indx}",role_context)
 
 
@@ -421,18 +399,18 @@ def transcribe_trace(role: Role, role_context: RoleTranscribeContext):
     trace_len = len(role.trace)
     timeslot_names = [f"t{i}" for i in range(trace_len)]
     transcr = role_context.transcr
-    # with QuantifierPredicate(QuantiferEnum.SOME, timeslot_names, "Timeslot",
-    #                          transcr):
-    #     for i in range(trace_len - 1):
-    #         transcr.print_to_file(f"t{i+1} in t{i}.(^next)\n")
-    #         all_timeslots_set = "+".join(timeslot_names)
-    #         role_var_name = role_context.role_var_name
-    #         transcr.print_to_file(
-    #             f"{all_timeslots_set} = sender.{role_var_name} + receiver.{role_var_name}\n"
-    #         )
-    #         for i, (_, _) in enumerate(role.trace):
-    #             transcribe_indv_trace(role, i, role_context)
-    #             role_context.get_transcr().print_to_file("\n")
+
+    # Below code is writing nested predicates which impose constraints on
+    # Timeslot, original code had a common some predicate instead with next
+    # predicate within
+    # Ex:
+    # Original                   New
+    # some t0,t1: Timeslot {     some t0: Timeslot{
+    #   t1 in t0.(^next)           some t1: t0.(^next){
+    # }                            }
+    #                            }
+    # the old code in ootway_rees example seemed to be slowing down the code
+    # too much
     cur_set = "Timeslot"
     for timeslot_name in timeslot_names:
         transcr.print_to_file(f"some {timeslot_name} : {cur_set} {{\n")
