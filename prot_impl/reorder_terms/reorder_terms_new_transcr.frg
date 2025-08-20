@@ -90,7 +90,7 @@ sig Ciphertext extends mesg {
    -- encrypted with this key
    encryptionKey: one Key,
    -- result in concating plaintexts
-   //plaintext: set mesg
+   --plaintext: set mesg
    plaintext: pfunc Int -> mesg
 }
 
@@ -197,7 +197,7 @@ pred wellformed {
 
   -- plaintext relation is acyclic  
   --  NOTE WELL: if ever add another type of mesg that contains data, add with + inside ^.
-  //old_plainw ould be unique so some or all doesn't
+  --old_plainw ould be unique so some or all doesn't
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
     all d: mesg | d not in d.^(old_plain)
   }

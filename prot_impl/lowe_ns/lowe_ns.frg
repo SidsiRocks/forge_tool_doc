@@ -14,15 +14,15 @@ lowe_ns_init_pov: run {
 
     lowe_ns_resp.agent != lowe_ns_init.agent
 
-    //may not be needed anymore will check
-    //why doesn't every strand have unique name
-    //might want to check
+    --may not be needed anymore will check
+    --why doesn't every strand have unique name
+    --might want to check
     lowe_ns_init.agent != AttackerStrand.agent
     lowe_ns_resp.agent != AttackerStrand.agent
 
-    //prevents sender from sending same nonce twice
+    --prevents sender from sending same nonce twice
     lowe_ns_resp.lowe_ns_resp_n1 != lowe_ns_resp.lowe_ns_resp_n2
-    //prevents attacker from sending duplicate to init
+    --prevents attacker from sending duplicate to init
     lowe_ns_init.lowe_ns_init_n1 != lowe_ns_init.lowe_ns_init_n2
 }for 
     exactly 6 Timeslot,25 mesg,
@@ -35,8 +35,8 @@ lowe_ns_init_pov: run {
 for {next is linear}
 */
 
-//firgure out how to run from command line to properly
-//check this
+--firgure out how to run from command line to properly
+--check this
 lowe_ns_init_pov_check: check {
     (wellformed and
     exec_lowe_ns_init and
@@ -46,15 +46,15 @@ lowe_ns_init_pov_check: check {
 
     lowe_ns_resp.agent != lowe_ns_init.agent and
 
-    //may not be needed anymore will check
-    //why doesn't every strand have unique name
-    //might want to check
+    --may not be needed anymore will check
+    --why doesn't every strand have unique name
+    --might want to check
     lowe_ns_init.agent != AttackerStrand.agent and
     lowe_ns_resp.agent != AttackerStrand.agent and
 
-    //prevents sender from sending same nonce twice
+    --prevents sender from sending same nonce twice
     lowe_ns_resp.lowe_ns_resp_n1 != lowe_ns_resp.lowe_ns_resp_n2 and
-    //prevents attacker from sending duplicate to init
+    --prevents attacker from sending duplicate to init
     lowe_ns_init.lowe_ns_init_n1 != lowe_ns_init.lowe_ns_init_n2 and
 
 

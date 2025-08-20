@@ -24,11 +24,14 @@
 
 -- NOTE WELL: `mesg` is what CPSA calls terms; we echo that here, do not confuse 
 -- `mesg` with just messages being sent or received.
-abstract sig mesg {} 
+abstract sig mesg {}
 
-abstract sig Key extends mesg {}
-abstract sig akey extends Key {} -- asymmetric key
-sig skey extends Key {}          -- symmetric key
+abstract sig text extends mesg {}
+abstract sig atomic extends text {}
+
+abstract sig Key extends atomic {}
+abstract sig akey extends Key {}
+sig skey extends Key {}
 sig PrivateKey extends akey {}
 sig PublicKey extends akey {}
 
@@ -44,13 +47,13 @@ fun getLTK[name_a: name, name_b: name]: lone skey {
   (KeyPairs.ltks)[name_a][name_b]
 }
 
-/** Get the inverse key for a given key (if any) */
+/** Get the inverse key for a given key (if any). The structure of this predicate 
+    is due to Forge's typechecking as of January 2025. The (none & Key) is a workaround
+    to give Key type to none, which has univ type by default.  */
 fun getInv[k: Key]: one Key {
-  (k in PublicKey => ((KeyPairs.pairs).k) else none)
+  (k in PublicKey => ((KeyPairs.pairs).k) else (k.(KeyPairs.pairs)))
   +
-  (k in PrivateKey => (k.(KeyPairs.pairs)) else none)
-  +
-  (k in skey => k else none)
+  (k in skey => k else (none & Key))
 }
 
 
@@ -72,7 +75,7 @@ sig Timeslot {
 
 -- As names process received messages, they learn pieces of data
 -- (they may also generate new values on their own)
-sig name extends mesg {
+sig name extends atomic {
   learned_times: set mesg -> Timeslot,
   generated_times: set mesg -> Timeslot
 }
@@ -86,7 +89,7 @@ abstract sig strand {
 one sig AttackerStrand extends strand {}
 one sig Attacker extends name {}
 
-sig Ciphertext extends mesg {
+sig Ciphertext extends atomic {
    -- encrypted with this key
    encryptionKey: one Key,
    -- result in concating plaintexts
@@ -95,7 +98,12 @@ sig Ciphertext extends mesg {
 }
 
 -- Non-name base value (e.g., nonces)
-sig text extends mesg {}
+sig nonce extends atomic {}
+
+sig seq extends text {
+    --remember to include constraint to ensure the components present are non empty
+    components: pfunc Int -> atomic
+}
 
 /** The starting knowledge base for all agents */
 fun baseKnown[a: name]: set mesg {
@@ -118,6 +126,7 @@ pred wellformed {
   --   assume we have a shared notion of time
   all m: Timeslot | isSeqOf[m.data,mesg]
   all t: Ciphertext | isSeqOf[t.plaintext,mesg]
+  all s: seq | isSeqOf[s.components,atomic]
   -- You cannot send a message with no data
   all m: Timeslot | some elems[m.data]
 
@@ -171,6 +180,14 @@ pred wellformed {
       d in workspace[t][Timeslot] -- derived in any micro-tick in this (reception) timeslot
     }   
     or 
+    { 
+        t.receiver.agent = a and
+        {some s : seq | {
+            d in elems[s.components]
+            s in (a.learned_times).(Timeslot - t.^next)
+        }}
+    }
+    or
     -- construct encrypted terms (only allow at NON-reception time; see above)
     -- NOTE WELL: if ever allow an agent to send/receive at same time, need rewrite 
     {d in Ciphertext and 
@@ -179,7 +196,11 @@ pred wellformed {
      {a not in t.receiver.agent} -- non-reception
     }
     or
-
+    { d in seq and
+      elems[d.components] in (a.learned_times).(Timeslot - t.^next) and
+      {a not in t.receiver.agent}
+    }
+    or
     {d in baseKnown[a]}
 
     or
@@ -188,7 +209,7 @@ pred wellformed {
     }} -- (end big disjunction for learned_times)
   
   -- If you generate something, you do it once only
-  all a: name | all d: text | lone t: Timeslot | d in (a.generated_times).t
+  all a: name | all d: nonce | lone t: Timeslot | d in (a.generated_times).t
 
   -- Messages comprise only values known by the sender
   all m: Timeslot | elems[m.data] in (((m.sender).agent).learned_times).(Timeslot - m.^next) 
@@ -241,7 +262,7 @@ pred wellformed {
   -- generation only of text and keys, not complex terms
   --  furthermore, only generate if unknown
   all n: name | {
-      n.generated_times.Timeslot in text+Key
+      n.generated_times.Timeslot in nonce+Key
       all t: Timeslot, d: mesg | {
           d in n.generated_times.t implies {
               all t2: t.~(^next) | { d not in n.learned_times.t2 }
@@ -259,6 +280,7 @@ fun subterm[supers: set mesg]: set mesg {
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
     supers + supers.^(old_plain) -- union on new subterm relations inside parens
   }
+  -- TODO add something for finding subterms of seq which extends text
 }
 
 /** When does a strand 'originate' some term? 
@@ -333,77 +355,179 @@ pred learnt_term_by[m:mesg,a:name,t:Timeslot] {
     m in (a.learned_times).(Timeslot - t.^next)
 }
 
-sig duplic_terms_A extends strand {
-  duplic_terms_A_n1 : one text,
-  duplic_terms_A_n2 : one text
+sig two_nonce_init extends strand {
+  two_nonce_init_a : one name,
+  two_nonce_init_b : one name,
+  two_nonce_init_n1 : one text,
+  two_nonce_init_n2 : one text
 }
-pred exec_duplic_terms_A {
-  all arbitrary_A_duplic_terms : duplic_terms_A | {
-    some t0,t1 : Timeslot | {
-      t1 in t0.(^next)
-      t0+t1 = sender.arbitrary_A_duplic_terms + receiver.arbitrary_A_duplic_terms
-      t0.sender = arbitrary_A_duplic_terms
-      inds[(t0.data)] = 0
-      some sub_term_0 : elems[(t0.data)] | {
-        (t0.data)[0] = sub_term_0
-        sub_term_0 = arbitrary_A_duplic_terms.duplic_terms_A_n1
+pred exec_two_nonce_init {
+  all arbitrary_init_two_nonce : two_nonce_init | {
+    some t0 : Timeslot {
+      some t1 : t0.(^next) {
+        some t2 : t1.(^next) {
+          t0+t1+t2 = sender.arbitrary_init_two_nonce + receiver.arbitrary_init_two_nonce
+          t0.sender = arbitrary_init_two_nonce
+          inds[(t0.data)] = 0
+          some enc_2 : elems[(t0.data)] | {
+            (t0.data)[0] = enc_2
+            inds[(enc_2).plaintext] = 0
+            (enc_2).plaintext[0] in nonce
+            (enc_2).plaintext[0] = arbitrary_init_two_nonce.two_nonce_init_n1
+            (enc_2).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
+          }
+          
+          t1.receiver = arbitrary_init_two_nonce
+          inds[(t1.data)] = 0
+          some enc_5 : elems[(t1.data)] | {
+            (t1.data)[0] = enc_5
+            learnt_term_by[getPRIVK[arbitrary_init_two_nonce.two_nonce_init_a],arbitrary_init_two_nonce.agent,t1]
+            inds[(enc_5).plaintext] = 0+1
+            (enc_5).plaintext[0] = arbitrary_init_two_nonce.two_nonce_init_n1
+            (enc_5).plaintext[1] = arbitrary_init_two_nonce.two_nonce_init_n2
+            (enc_5).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_a]
+          }
+          
+          t2.sender = arbitrary_init_two_nonce
+          inds[(t2.data)] = 0
+          some enc_9 : elems[(t2.data)] | {
+            (t2.data)[0] = enc_9
+            inds[(enc_9).plaintext] = 0
+            (enc_9).plaintext[0] in nonce
+            (enc_9).plaintext[0] = arbitrary_init_two_nonce.two_nonce_init_n2
+            (enc_9).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
+          }
+          
+        }
       }
-      
-      t1.receiver = arbitrary_A_duplic_terms
-      inds[(t1.data)] = 0+1
-      some sub_term_0,sub_term_1 : elems[(t1.data)] | {
-        (t1.data)[0] = sub_term_0
-        (t1.data)[1] = sub_term_1
-        sub_term_0 = arbitrary_A_duplic_terms.duplic_terms_A_n1
-        sub_term_1 = arbitrary_A_duplic_terms.duplic_terms_A_n2
-      }
-      
     }
   }
 }
-sig duplic_terms_B extends strand {
-  duplic_terms_B_n1 : one text,
-  duplic_terms_B_n2 : one text
+sig two_nonce_resp extends strand {
+  two_nonce_resp_a : one name,
+  two_nonce_resp_b : one name,
+  two_nonce_resp_n1 : one text,
+  two_nonce_resp_n2 : one text
 }
-pred exec_duplic_terms_B {
-  all arbitrary_B_duplic_terms : duplic_terms_B | {
-    some t0,t1 : Timeslot | {
-      t1 in t0.(^next)
-      t0+t1 = sender.arbitrary_B_duplic_terms + receiver.arbitrary_B_duplic_terms
-      t0.receiver = arbitrary_B_duplic_terms
-      inds[(t0.data)] = 0+1
-      some sub_term_0,sub_term_1 : elems[(t0.data)] | {
-        (t0.data)[0] = sub_term_0
-        (t0.data)[1] = sub_term_1
-        sub_term_0 = arbitrary_B_duplic_terms.duplic_terms_B_n1
-        sub_term_1 = arbitrary_B_duplic_terms.duplic_terms_B_n2
+pred exec_two_nonce_resp {
+  all arbitrary_resp_two_nonce : two_nonce_resp | {
+    some t0 : Timeslot {
+      some t1 : t0.(^next) {
+        some t2 : t1.(^next) {
+          t0+t1+t2 = sender.arbitrary_resp_two_nonce + receiver.arbitrary_resp_two_nonce
+          t0.receiver = arbitrary_resp_two_nonce
+          inds[(t0.data)] = 0
+          some enc_12 : elems[(t0.data)] | {
+            (t0.data)[0] = enc_12
+            learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t0]
+            inds[(enc_12).plaintext] = 0
+            (enc_12).plaintext[0] = arbitrary_resp_two_nonce.two_nonce_resp_n1
+            (enc_12).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
+          }
+          
+          t1.sender = arbitrary_resp_two_nonce
+          inds[(t1.data)] = 0
+          some enc_15 : elems[(t1.data)] | {
+            (t1.data)[0] = enc_15
+            inds[(enc_15).plaintext] = 0+1
+            (enc_15).plaintext[0] in nonce
+            (enc_15).plaintext[0] = arbitrary_resp_two_nonce.two_nonce_resp_n1
+            (enc_15).plaintext[1] in nonce
+            (enc_15).plaintext[1] = arbitrary_resp_two_nonce.two_nonce_resp_n2
+            (enc_15).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_a]
+          }
+          
+          t2.receiver = arbitrary_resp_two_nonce
+          inds[(t2.data)] = 0
+          some enc_19 : elems[(t2.data)] | {
+            (t2.data)[0] = enc_19
+            learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t2]
+            inds[(enc_19).plaintext] = 0
+            (enc_19).plaintext[0] = arbitrary_resp_two_nonce.two_nonce_resp_n2
+            (enc_19).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
+          }
+          
+        }
       }
-      
-      t1.sender = arbitrary_B_duplic_terms
-      inds[(t1.data)] = 0
-      some sub_term_0 : elems[(t1.data)] | {
-        (t1.data)[0] = sub_term_0
-        sub_term_0 = arbitrary_B_duplic_terms.duplic_terms_B_n2
-      }
-      
     }
+  }
+}
+one sig skeleton_two_nonce_0 {
+  skeleton_two_nonce_0_a : one name,
+  skeleton_two_nonce_0_b : one name,
+  skeleton_two_nonce_0_n1 : one text,
+  skeleton_two_nonce_0_n2 : one text
+}
+pred constrain_skeleton_two_nonce_0 {
+  some skeleton_init_0_strand_0 : two_nonce_init | {
+    skeleton_init_0_strand_0.two_nonce_init_a = skeleton_two_nonce_0.skeleton_two_nonce_0_a
+    skeleton_init_0_strand_0.two_nonce_init_b = skeleton_two_nonce_0.skeleton_two_nonce_0_b
+    skeleton_init_0_strand_0.two_nonce_init_n1 = skeleton_two_nonce_0.skeleton_two_nonce_0_n1
+    skeleton_init_0_strand_0.two_nonce_init_n2 = skeleton_two_nonce_0.skeleton_two_nonce_0_n2
+  }
+  no aStrand : strand | {
+    originates[aStrand,getPRIVK[skeleton_two_nonce_0.skeleton_two_nonce_0_a]] or generates [aStrand,getPRIVK[skeleton_two_nonce_0.skeleton_two_nonce_0_a]]
+  }
+  no aStrand : strand | {
+    originates[aStrand,getPRIVK[skeleton_two_nonce_0.skeleton_two_nonce_0_b]] or generates [aStrand,getPRIVK[skeleton_two_nonce_0.skeleton_two_nonce_0_b]]
+  }
+  one aStrand : strand | {
+    originates[aStrand,skeleton_two_nonce_0.skeleton_two_nonce_0_n1] or generates [aStrand,skeleton_two_nonce_0.skeleton_two_nonce_0_n1]
+  }
+  one aStrand : strand | {
+    originates[aStrand,skeleton_two_nonce_0.skeleton_two_nonce_0_n2] or generates [aStrand,skeleton_two_nonce_0.skeleton_two_nonce_0_n2]
   }
 }
 option run_sterling "../../crypto_viz_seq.js"
 
-duplic_terms_exmpl : run {
-    wellformed 
+pred corrected_attacker_learns[d:mesg]{
+    d in Attacker.learned_times.Timeslot
+}
 
-    exec_duplic_terms_A
-    exec_duplic_terms_B 
+--option solver MiniSatProver
+--option logtranslation 2
+--option coregranularity 1
+--option engine_verbosity 3
+--option core_minimization rce
 
-    duplic_terms_A.agent != AttackerStrand.agent
-    duplic_terms_B.agent != AttackerStrand.agent
+--option solver "./run_z3.sh"
+
+two_nonce_init_pov : run {
+    wellformed
+
+    exec_two_nonce_init
+    exec_two_nonce_resp
+
+    constrain_skeleton_two_nonce_0
+    
+    two_nonce_resp.agent != two_nonce_init.agent
+    --should not need restriction on a and b this time?
+
+    --this may prevent attack have to check
+    two_nonce_init.agent != AttackerStrand.agent
+    two_nonce_resp.agent != AttackerStrand.agent
+
+    --prevents responder from sending same nonce again
+    two_nonce_resp.two_nonce_resp_n1 != two_nonce_resp.two_nonce_resp_n2
+    --prevents attacker from sending duplicate n1,n2 in a run of protocol
+    two_nonce_init.two_nonce_init_n1 != two_nonce_init.two_nonce_init_n2
+    
+    --attacker_learns[AttackerStrand,two_nonce_resp.two_nonce_resp_n2]
+    
+    --finding attack where init beleives it is talking to resp 
+    --but attacker knows the nonce
+    two_nonce_init.two_nonce_init_b = two_nonce_resp.agent
+    corrected_attacker_learns[two_nonce_init.two_nonce_init_n2]
+    --same nonce problem seems to be resolved
+    --have to deal with initiator trying tot talk to attacker, may want to change that
+    --when planning to detect an attack
 }for 
-    exactly 4 Timeslot,10 mesg,
-    exactly 1 KeyPairs,exactly 0 Key,exactly 0 akey,exactly 0 skey,
-    exactly 0 PrivateKey,exactly 0 PublicKey,
-    exactly 3 name,exactly 5 text,exactly 0 Ciphertext,
-    exactly 1 duplic_terms_A,exactly 1 duplic_terms_B,
+    exactly 6 Timeslot,25 mesg,25 text,25 atomic,
+    exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,
+    exactly 0 skey,exactly 3 PublicKey,exactly 3 PrivateKey,
+    exactly 3 name,exactly 10 Ciphertext,exactly 6 nonce,
+    exactly 1 two_nonce_init,exactly 1 two_nonce_resp,
     4 Int
 for {next is linear}
+
+--run {} for 3

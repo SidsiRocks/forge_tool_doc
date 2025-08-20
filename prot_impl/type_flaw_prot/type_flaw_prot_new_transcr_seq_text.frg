@@ -24,11 +24,14 @@
 
 -- NOTE WELL: `mesg` is what CPSA calls terms; we echo that here, do not confuse 
 -- `mesg` with just messages being sent or received.
-abstract sig mesg {} 
+abstract sig mesg {}
 
-abstract sig Key extends mesg {}
-abstract sig akey extends Key {} -- asymmetric key
-sig skey extends Key {}          -- symmetric key
+abstract sig text extends mesg {}
+abstract sig atomic extends text {}
+
+abstract sig Key extends atomic {}
+abstract sig akey extends Key {}
+sig skey extends Key {}
 sig PrivateKey extends akey {}
 sig PublicKey extends akey {}
 
@@ -44,13 +47,13 @@ fun getLTK[name_a: name, name_b: name]: lone skey {
   (KeyPairs.ltks)[name_a][name_b]
 }
 
-/** Get the inverse key for a given key (if any) */
+/** Get the inverse key for a given key (if any). The structure of this predicate 
+    is due to Forge's typechecking as of January 2025. The (none & Key) is a workaround
+    to give Key type to none, which has univ type by default.  */
 fun getInv[k: Key]: one Key {
-  (k in PublicKey => ((KeyPairs.pairs).k) else none)
+  (k in PublicKey => ((KeyPairs.pairs).k) else (k.(KeyPairs.pairs)))
   +
-  (k in PrivateKey => (k.(KeyPairs.pairs)) else none)
-  +
-  (k in skey => k else none)
+  (k in skey => k else (none & Key))
 }
 
 
@@ -72,7 +75,7 @@ sig Timeslot {
 
 -- As names process received messages, they learn pieces of data
 -- (they may also generate new values on their own)
-sig name extends mesg {
+sig name extends atomic {
   learned_times: set mesg -> Timeslot,
   generated_times: set mesg -> Timeslot
 }
@@ -86,7 +89,7 @@ abstract sig strand {
 one sig AttackerStrand extends strand {}
 one sig Attacker extends name {}
 
-sig Ciphertext extends mesg {
+sig Ciphertext extends atomic {
    -- encrypted with this key
    encryptionKey: one Key,
    -- result in concating plaintexts
@@ -95,7 +98,12 @@ sig Ciphertext extends mesg {
 }
 
 -- Non-name base value (e.g., nonces)
-sig text extends mesg {}
+sig nonce extends atomic {}
+
+sig seq extends text {
+    --remember to include constraint to ensure the components present are non empty
+    components: pfunc Int -> atomic
+}
 
 /** The starting knowledge base for all agents */
 fun baseKnown[a: name]: set mesg {
@@ -118,6 +126,7 @@ pred wellformed {
   --   assume we have a shared notion of time
   all m: Timeslot | isSeqOf[m.data,mesg]
   all t: Ciphertext | isSeqOf[t.plaintext,mesg]
+  all s: seq | isSeqOf[s.components,atomic]
   -- You cannot send a message with no data
   all m: Timeslot | some elems[m.data]
 
@@ -171,6 +180,14 @@ pred wellformed {
       d in workspace[t][Timeslot] -- derived in any micro-tick in this (reception) timeslot
     }   
     or 
+    { 
+        t.receiver.agent = a and
+        {some s : seq | {
+            d in elems[s.components]
+            s in (a.learned_times).(Timeslot - t.^next)
+        }}
+    }
+    or
     -- construct encrypted terms (only allow at NON-reception time; see above)
     -- NOTE WELL: if ever allow an agent to send/receive at same time, need rewrite 
     {d in Ciphertext and 
@@ -179,7 +196,11 @@ pred wellformed {
      {a not in t.receiver.agent} -- non-reception
     }
     or
-
+    { d in seq and
+      elems[d.components] in (a.learned_times).(Timeslot - t.^next) and
+      {a not in t.receiver.agent}
+    }
+    or
     {d in baseKnown[a]}
 
     or
@@ -188,7 +209,7 @@ pred wellformed {
     }} -- (end big disjunction for learned_times)
   
   -- If you generate something, you do it once only
-  all a: name | all d: text | lone t: Timeslot | d in (a.generated_times).t
+  all a: name | all d: nonce | lone t: Timeslot | d in (a.generated_times).t
 
   -- Messages comprise only values known by the sender
   all m: Timeslot | elems[m.data] in (((m.sender).agent).learned_times).(Timeslot - m.^next) 
@@ -241,7 +262,7 @@ pred wellformed {
   -- generation only of text and keys, not complex terms
   --  furthermore, only generate if unknown
   all n: name | {
-      n.generated_times.Timeslot in text+Key
+      n.generated_times.Timeslot in nonce+Key
       all t: Timeslot, d: mesg | {
           d in n.generated_times.t implies {
               all t2: t.~(^next) | { d not in n.learned_times.t2 }
@@ -259,6 +280,7 @@ fun subterm[supers: set mesg]: set mesg {
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
     supers + supers.^(old_plain) -- union on new subterm relations inside parens
   }
+  -- TODO add something for finding subterms of seq which extends text
 }
 
 /** When does a strand 'originate' some term? 
@@ -333,77 +355,130 @@ pred learnt_term_by[m:mesg,a:name,t:Timeslot] {
     m in (a.learned_times).(Timeslot - t.^next)
 }
 
-sig duplic_terms_A extends strand {
-  duplic_terms_A_n1 : one text,
-  duplic_terms_A_n2 : one text
+sig type_flaw_prot_A extends strand {
+  type_flaw_prot_A_a : one name,
+  type_flaw_prot_A_b : one name,
+  type_flaw_prot_A_n : one text
 }
-pred exec_duplic_terms_A {
-  all arbitrary_A_duplic_terms : duplic_terms_A | {
-    some t0,t1 : Timeslot | {
-      t1 in t0.(^next)
-      t0+t1 = sender.arbitrary_A_duplic_terms + receiver.arbitrary_A_duplic_terms
-      t0.sender = arbitrary_A_duplic_terms
-      inds[(t0.data)] = 0
-      some sub_term_0 : elems[(t0.data)] | {
-        (t0.data)[0] = sub_term_0
-        sub_term_0 = arbitrary_A_duplic_terms.duplic_terms_A_n1
+pred exec_type_flaw_prot_A {
+  all arbitrary_A_type_flaw_prot : type_flaw_prot_A | {
+    some t0 : Timeslot {
+      some t1 : t0.(^next) {
+        t0+t1 = sender.arbitrary_A_type_flaw_prot + receiver.arbitrary_A_type_flaw_prot
+        t0.sender = arbitrary_A_type_flaw_prot
+        inds[(t0.data)] = 0
+        some enc_2 : elems[(t0.data)] | {
+          (t0.data)[0] = enc_2
+          inds[(enc_2).plaintext] = 0+1
+          some enc_5 : elems[(enc_2).plaintext] | {
+            (enc_2).plaintext[1] = enc_5
+            (enc_2).plaintext[0] = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_a]
+            inds[(enc_5).plaintext] = 0
+            (enc_5).plaintext[0] in nonce
+            (enc_5).plaintext[0] = arbitrary_A_type_flaw_prot.type_flaw_prot_A_n
+            (enc_5).encryptionKey = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_b]
+          }
+          (enc_2).encryptionKey = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_b]
+        }
+        
+        t1.receiver = arbitrary_A_type_flaw_prot
+        inds[(t1.data)] = 0
+        some enc_8 : elems[(t1.data)] | {
+          (t1.data)[0] = enc_8
+          learnt_term_by[getPRIVK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_a],arbitrary_A_type_flaw_prot.agent,t1]
+          inds[(enc_8).plaintext] = 0
+          (enc_8).plaintext[0] = arbitrary_A_type_flaw_prot.type_flaw_prot_A_n
+          (enc_8).encryptionKey = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_a]
+        }
+        
       }
-      
-      t1.receiver = arbitrary_A_duplic_terms
-      inds[(t1.data)] = 0+1
-      some sub_term_0,sub_term_1 : elems[(t1.data)] | {
-        (t1.data)[0] = sub_term_0
-        (t1.data)[1] = sub_term_1
-        sub_term_0 = arbitrary_A_duplic_terms.duplic_terms_A_n1
-        sub_term_1 = arbitrary_A_duplic_terms.duplic_terms_A_n2
-      }
-      
     }
   }
 }
-sig duplic_terms_B extends strand {
-  duplic_terms_B_n1 : one text,
-  duplic_terms_B_n2 : one text
+sig type_flaw_prot_B extends strand {
+  type_flaw_prot_B_a : one name,
+  type_flaw_prot_B_b : one name,
+  type_flaw_prot_B_n : one text
 }
-pred exec_duplic_terms_B {
-  all arbitrary_B_duplic_terms : duplic_terms_B | {
-    some t0,t1 : Timeslot | {
-      t1 in t0.(^next)
-      t0+t1 = sender.arbitrary_B_duplic_terms + receiver.arbitrary_B_duplic_terms
-      t0.receiver = arbitrary_B_duplic_terms
-      inds[(t0.data)] = 0+1
-      some sub_term_0,sub_term_1 : elems[(t0.data)] | {
-        (t0.data)[0] = sub_term_0
-        (t0.data)[1] = sub_term_1
-        sub_term_0 = arbitrary_B_duplic_terms.duplic_terms_B_n1
-        sub_term_1 = arbitrary_B_duplic_terms.duplic_terms_B_n2
+pred exec_type_flaw_prot_B {
+  all arbitrary_B_type_flaw_prot : type_flaw_prot_B | {
+    some t0 : Timeslot {
+      some t1 : t0.(^next) {
+        t0+t1 = sender.arbitrary_B_type_flaw_prot + receiver.arbitrary_B_type_flaw_prot
+        t0.receiver = arbitrary_B_type_flaw_prot
+        inds[(t0.data)] = 0
+        some enc_11 : elems[(t0.data)] | {
+          (t0.data)[0] = enc_11
+          learnt_term_by[getPRIVK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b],arbitrary_B_type_flaw_prot.agent,t0]
+          inds[(enc_11).plaintext] = 0+1
+          some enc_14 : elems[(enc_11).plaintext] | {
+            (enc_11).plaintext[1] = enc_14
+            (enc_11).plaintext[0] = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_a]
+            learnt_term_by[getPRIVK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b],arbitrary_B_type_flaw_prot.agent,t0]
+            inds[(enc_14).plaintext] = 0
+            (enc_14).plaintext[0] = arbitrary_B_type_flaw_prot.type_flaw_prot_B_n
+            (enc_14).encryptionKey = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b]
+          }
+          (enc_11).encryptionKey = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b]
+        }
+        
+        t1.sender = arbitrary_B_type_flaw_prot
+        inds[(t1.data)] = 0
+        some enc_17 : elems[(t1.data)] | {
+          (t1.data)[0] = enc_17
+          inds[(enc_17).plaintext] = 0
+          (enc_17).plaintext[0] in nonce
+          (enc_17).plaintext[0] = arbitrary_B_type_flaw_prot.type_flaw_prot_B_n
+          (enc_17).encryptionKey = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_a]
+        }
+        
       }
-      
-      t1.sender = arbitrary_B_duplic_terms
-      inds[(t1.data)] = 0
-      some sub_term_0 : elems[(t1.data)] | {
-        (t1.data)[0] = sub_term_0
-        sub_term_0 = arbitrary_B_duplic_terms.duplic_terms_B_n2
-      }
-      
     }
   }
 }
-option run_sterling "../../crypto_viz_seq.js"
+one sig skeleton_type_flaw_prot_0 {
+  skeleton_type_flaw_prot_0_a : one name,
+  skeleton_type_flaw_prot_0_b : one name,
+  skeleton_type_flaw_prot_0_n : one text
+}
+pred constrain_skeleton_type_flaw_prot_0 {
+  some skeleton_A_0_strand_0 : type_flaw_prot_A | {
+    skeleton_A_0_strand_0.type_flaw_prot_A_a = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a
+    skeleton_A_0_strand_0.type_flaw_prot_A_b = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b
+    skeleton_A_0_strand_0.type_flaw_prot_A_n = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
+  }
+  no aStrand : strand | {
+    originates[aStrand,getPRIVK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]] or generates [aStrand,getPRIVK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]]
+  }
+  no aStrand : strand | {
+    originates[aStrand,getPRIVK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]] or generates [aStrand,getPRIVK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]]
+  }
+  one aStrand : strand | {
+    originates[aStrand,skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n] or generates [aStrand,skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n]
+  }
+}
+option run_sterling "../../crypto_viz_text_seq.js"
 
-duplic_terms_exmpl : run {
-    wellformed 
+type_flaw_prot_run : run {
+    wellformed
+    exec_type_flaw_prot_A
+    exec_type_flaw_prot_B
 
-    exec_duplic_terms_A
-    exec_duplic_terms_B 
+    type_flaw_prot_A.agent != AttackerStrand.agent
+    type_flaw_prot_B.agent != AttackerStrand.agent
 
-    duplic_terms_A.agent != AttackerStrand.agent
-    duplic_terms_B.agent != AttackerStrand.agent
+    --below constraints to try and generate honest run first
+    type_flaw_prot_A.type_flaw_prot_A_a = type_flaw_prot_A.agent
+    type_flaw_prot_A.type_flaw_prot_A_b = type_flaw_prot_B.agent
+
+    type_flaw_prot_B.type_flaw_prot_B_a = type_flaw_prot_A.agent
+    type_flaw_prot_B.type_flaw_prot_B_b = type_flaw_prot_B.agent
+
 }for 
-    exactly 4 Timeslot,10 mesg,
-    exactly 1 KeyPairs,exactly 0 Key,exactly 0 akey,exactly 0 skey,
-    exactly 0 PrivateKey,exactly 0 PublicKey,
-    exactly 3 name,exactly 5 text,exactly 0 Ciphertext,
-    exactly 1 duplic_terms_A,exactly 1 duplic_terms_B,
+    exactly 4 Timeslot,17 mesg,17 text,17 atomic,
+    exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,
+    exactly 0 skey,exactly 3 PublicKey,exactly 3 PrivateKey,
+    exactly 3 name,exactly 5 Ciphertext,exactly 3 nonce,
+    exactly 1 type_flaw_prot_A,exactly 1 type_flaw_prot_B,
     4 Int
 for {next is linear}

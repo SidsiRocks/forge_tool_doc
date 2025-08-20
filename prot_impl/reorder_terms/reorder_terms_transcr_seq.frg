@@ -90,7 +90,7 @@ sig Ciphertext extends mesg {
    -- encrypted with this key
    encryptionKey: one Key,
    -- result in concating plaintexts
-   //plaintext: set mesg
+   --plaintext: set mesg
    plaintext: pfunc Int -> mesg
 }
 
@@ -197,7 +197,7 @@ pred wellformed {
 
   -- plaintext relation is acyclic  
   --  NOTE WELL: if ever add another type of mesg that contains data, add with + inside ^.
-  //old_plainw ould be unique so some or all doesn't
+  --old_plainw ould be unique so some or all doesn't
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
     all d: mesg | d not in d.^(old_plain)
   }
@@ -340,7 +340,7 @@ sig reorder_terms_A extends strand{
     reorder_terms_A_n2: one text
 }
 
-// predicate follows below
+-- predicate follows below
 pred exec_reorder_terms_A {
     all arbitrary_reorder_terms_A : reorder_terms_A | {
         some t0,t1 : Timeslot | {
@@ -368,7 +368,7 @@ pred exec_reorder_terms_A {
         }
     }
 }
-// end of predicate
+-- end of predicate
 
 sig reorder_terms_B extends strand{
     reorder_terms_B_n1: one text,
@@ -377,7 +377,7 @@ sig reorder_terms_B extends strand{
     reorder_terms_B_b: one name
 }
 
-// predicate follows below
+-- predicate follows below
 pred exec_reorder_terms_B {
     all arbitrary_reorder_terms_B : reorder_terms_B | {
         some t0,t1 : Timeslot | {
@@ -405,7 +405,7 @@ pred exec_reorder_terms_B {
         }
     }
 }
-// end of predicate
+-- end of predicate
 
 option run_sterling "../../../crypto_viz_seq.js"
 

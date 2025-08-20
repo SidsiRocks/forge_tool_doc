@@ -90,7 +90,7 @@ sig Ciphertext extends mesg {
    -- encrypted with this key
    encryptionKey: one Key,
    -- result in concating plaintexts
-   //plaintext: set mesg
+   --plaintext: set mesg
    plaintext: pfunc Int -> mesg
 }
 
@@ -197,7 +197,7 @@ pred wellformed {
 
   -- plaintext relation is acyclic  
   --  NOTE WELL: if ever add another type of mesg that contains data, add with + inside ^.
-  //old_plainw ould be unique so some or all doesn't
+  --old_plainw ould be unique so some or all doesn't
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
     all d: mesg | d not in d.^(old_plain)
   }
@@ -343,7 +343,7 @@ sig ootway_rees_A extends strand{
     ootway_rees_A_kab: one skey
 }
 
-// predicate follows below
+-- predicate follows below
 pred exec_ootway_rees_A {
     all arbitrary_ootway_rees_A : ootway_rees_A | {
         some t0,t1 : Timeslot | {
@@ -399,7 +399,7 @@ pred exec_ootway_rees_A {
         }
     }
 }
-// end of predicate
+-- end of predicate
 
 sig ootway_rees_B extends strand{
     ootway_rees_B_a: one name,
@@ -411,7 +411,7 @@ sig ootway_rees_B extends strand{
     ootway_rees_B_kab: one skey
 }
 
-// predicate follows below
+-- predicate follows below
 pred exec_ootway_rees_B {
     all arbitrary_ootway_rees_B : ootway_rees_B | {
         some t0,t1,t2,t3 : Timeslot | {
@@ -541,7 +541,7 @@ pred exec_ootway_rees_B {
         }
     }
 }
-// end of predicate
+-- end of predicate
 
 sig ootway_rees_S extends strand{
     ootway_rees_S_a: one name,
@@ -553,7 +553,7 @@ sig ootway_rees_S extends strand{
     ootway_rees_S_kab: one skey
 }
 
-// predicate follows below
+-- predicate follows below
 pred exec_ootway_rees_S {
     all arbitrary_ootway_rees_S : ootway_rees_S | {
         some t0,t1 : Timeslot | {
@@ -637,7 +637,7 @@ pred exec_ootway_rees_S {
         }
     }
 }
-// end of predicate
+-- end of predicate
 
 one sig skeleton_ootway_rees_0 {
     skeleton_ootway_rees_0_a: one name,
@@ -704,10 +704,10 @@ pred constrain_skeleton_ootway_rees_0 {
 }
 option run_sterling "../../crypto_viz_seq.js"
 
-//option run_sterling off
+--option run_sterling off
 pred prot_conditions{
         
-    //ensure agents performing their own role correctly
+    --ensure agents performing their own role correctly
     
     ootway_rees_A.ootway_rees_A_a = ootway_rees_A.agent
     ootway_rees_B.ootway_rees_B_b = ootway_rees_B.agent
@@ -722,17 +722,17 @@ pred prot_conditions{
     ootway_rees_S.ootway_rees_S_na != ootway_rees_S.ootway_rees_S_kab
     ootway_rees_S.ootway_rees_S_nb != ootway_rees_S.ootway_rees_S_kab
     ootway_rees_S.ootway_rees_S_m  != ootway_rees_S.ootway_rees_S_kab
-    //ensuring k_ab is not a long term key
-    //no (KeyPairs.ltks).(ootway_rees_S.ootway_rees_S_kab)
+    --ensuring k_ab is not a long term key
+    --no (KeyPairs.ltks).(ootway_rees_S.ootway_rees_S_kab)
 
     ootway_rees_A.agent != Attacker
     ootway_rees_B.agent != Attacker
     ootway_rees_S.agent != Attacker
     
-    //Adding this below by itself makes it unsat somehow
-    //ootway_rees_S.ootway_rees_S_na != ootway_rees_S.ootway_rees_S_nb
+    --Adding this below by itself makes it unsat somehow
+    --ootway_rees_S.ootway_rees_S_na != ootway_rees_S.ootway_rees_S_nb
 
-    //Adding these to create an honest run of the protocol
+    --Adding these to create an honest run of the protocol
     ootway_rees_A.ootway_rees_A_b = ootway_rees_B.agent 
     ootway_rees_A.ootway_rees_A_s = ootway_rees_S.agent 
 
@@ -742,20 +742,20 @@ pred prot_conditions{
     ootway_rees_S.ootway_rees_S_a = ootway_rees_A.agent
     ootway_rees_S.ootway_rees_S_b = ootway_rees_B.agent
 
-    //added this because a run generated code where ltk was sent instead of k_ab
+    --added this because a run generated code where ltk was sent instead of k_ab
     not (ootway_rees_S.ootway_rees_S_kab in (name.(name.(KeyPairs.ltks))))
 }
 
 ootway_prot_run : run {
-    //should not ideally need this anyway
+    --should not ideally need this anyway
     all n: name | no getLTK[n,n]
-    //placing constraint that no long term key can be generated
-    //first part is all long term keys, second part is all generated terms
-    //the set difference should be empty
-    //no (  (name.(name.(KeyPairs.ltks))) - (name.generated_times.Timeslot))
-    //Above was the old constraint which had incorrect logic
+    --placing constraint that no long term key can be generated
+    --first part is all long term keys, second part is all generated terms
+    --the set difference should be empty
+    --no (  (name.(name.(KeyPairs.ltks))) - (name.generated_times.Timeslot))
+    --Above was the old constraint which had incorrect logic
 
-    //This is what the correct constraint would look like
+    --This is what the correct constraint would look like
     (name.(name.(KeyPairs.ltks))) = (name.(name.(KeyPairs.ltks))) - (name.generated_times.Timeslot)
 
     wellformed
@@ -765,12 +765,12 @@ ootway_prot_run : run {
     exec_ootway_rees_S
     constrain_skeleton_ootway_rees_0
 } for 
-    //mesg = Key + name + Ciphertext + text
-    //mesg = 3   + 4    + 9          + 4
+    --mesg = Key + name + Ciphertext + text
+    --mesg = 3   + 4    + 9          + 4
     exactly 8 Timeslot,20 mesg,
-    exactly 1 KeyPairs,exactly 3 Key,exactly 0 akey,exactly 3 skey, //3 keys for ltk a s, ltk b s,kab 
+    exactly 1 KeyPairs,exactly 3 Key,exactly 0 akey,exactly 3 skey, --3 keys for ltk a s, ltk b s,kab 
     exactly 0 PublicKey,exactly 0 PrivateKey,
-    exactly 4 name,exactly 4 text,exactly 9 Ciphertext, //4 names a,b,s,attacker ; 4 texts m,na,nb,kab ; cipher texts 6 based on estimate ; 4 Ciphertext should also work
+    exactly 4 name,exactly 4 text,exactly 9 Ciphertext, --4 names a,b,s,attacker ; 4 texts m,na,nb,kab ; cipher texts 6 based on estimate ; 4 Ciphertext should also work
     exactly 1 ootway_rees_A,exactly 1 ootway_rees_B,
     exactly 1 ootway_rees_S,
     4 Int

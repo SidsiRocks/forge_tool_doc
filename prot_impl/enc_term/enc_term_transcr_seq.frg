@@ -90,7 +90,7 @@ sig Ciphertext extends mesg {
    -- encrypted with this key
    encryptionKey: one Key,
    -- result in concating plaintexts
-   //plaintext: set mesg
+   --plaintext: set mesg
    plaintext: pfunc Int -> mesg
 }
 
@@ -197,7 +197,7 @@ pred wellformed {
 
   -- plaintext relation is acyclic  
   --  NOTE WELL: if ever add another type of mesg that contains data, add with + inside ^.
-  //old_plainw ould be unique so some or all doesn't
+  --old_plainw ould be unique so some or all doesn't
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
     all d: mesg | d not in d.^(old_plain)
   }
@@ -342,7 +342,7 @@ sig enc_term_A extends strand{
     enc_term_A_n4: one text
 }
 
-// predicate follows below
+-- predicate follows below
 pred exec_enc_term_A {
     all arbitrary_enc_term_A : enc_term_A | {
         some t0,t1 : Timeslot | {
@@ -386,7 +386,7 @@ pred exec_enc_term_A {
         }
     }
 }
-// end of predicate
+-- end of predicate
 
 sig enc_term_B extends strand{
     enc_term_B_a: one name,
@@ -397,7 +397,7 @@ sig enc_term_B extends strand{
     enc_term_B_n4: one text
 }
 
-// predicate follows below
+-- predicate follows below
 pred exec_enc_term_B {
     all arbitrary_enc_term_B : enc_term_B | {
         some t0,t1 : Timeslot | {
@@ -441,7 +441,7 @@ pred exec_enc_term_B {
         }
     }
 }
-// end of predicate
+-- end of predicate
 
 one sig skeleton_enc_term_0 {
     skeleton_enc_term_0_a: one name,

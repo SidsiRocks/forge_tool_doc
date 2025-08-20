@@ -1,7 +1,7 @@
 option run_sterling "../../crypto_viz_seq.js"
 
-// TODO add something to auto generate common parts of base file
-// end up making silly mistakes like not including pred weillformed
+-- TODO add something to auto generate common parts of base file
+-- end up making silly mistakes like not including pred weillformed
 mesg_term_test_run : run {
     wellformed 
 

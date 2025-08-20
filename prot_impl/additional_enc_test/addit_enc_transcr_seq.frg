@@ -90,7 +90,7 @@ sig Ciphertext extends mesg {
    -- encrypted with this key
    encryptionKey: one Key,
    -- result in concating plaintexts
-   //plaintext: set mesg
+   --plaintext: set mesg
    plaintext: pfunc Int -> mesg
 }
 
@@ -197,7 +197,7 @@ pred wellformed {
 
   -- plaintext relation is acyclic  
   --  NOTE WELL: if ever add another type of mesg that contains data, add with + inside ^.
-  //old_plainw ould be unique so some or all doesn't
+  --old_plainw ould be unique so some or all doesn't
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
     all d: mesg | d not in d.^(old_plain)
   }
@@ -340,7 +340,7 @@ sig addit_enc_B extends strand{
     addit_enc_B_n2: one text
 }
 
-// predicate follows below
+-- predicate follows below
 pred exec_addit_enc_B {
     all arbitrary_addit_enc_B : addit_enc_B | {
         some t0,t1 : Timeslot | {
@@ -384,7 +384,7 @@ pred exec_addit_enc_B {
         }
     }
 }
-// end of predicate
+-- end of predicate
 
 sig addit_enc_A extends strand{
     addit_enc_A_a: one name,
@@ -393,7 +393,7 @@ sig addit_enc_A extends strand{
     addit_enc_A_n2: one text
 }
 
-// predicate follows below
+-- predicate follows below
 pred exec_addit_enc_A {
     all arbitrary_addit_enc_A : addit_enc_A | {
         some t0,t1 : Timeslot | {
@@ -437,7 +437,7 @@ pred exec_addit_enc_A {
         }
     }
 }
-// end of predicate
+-- end of predicate
 
 option run_sterling "../../crypto_viz_seq.js"
 addit_enc_run : run {

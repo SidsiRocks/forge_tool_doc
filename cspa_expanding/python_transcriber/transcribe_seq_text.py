@@ -358,8 +358,13 @@ def transcribe_enc(elm_expr: str, enc_term: EncTerm,send_recv:SendRecv ,timeslot
     transcribe_base_term(key_expr,enc_term.key,send_recv,sig_context)
 
 def transcribe_base_term(elm_expr:str,msg:BaseTerm,send_recv:SendRecv,role_context:SigContext):
+    transcr = role_context.get_transcr()
+    match msg:
+        case Variable(_,VarType.TEXT):
+            if send_recv == SendRecv.SEND:
+                transcr.print_to_file(f"{elm_expr} in nonce\n")
     constraint_expr = f"{elm_expr} = {role_context.get_base_term_str(msg)}\n"
-    role_context.get_transcr().print_to_file(constraint_expr)
+    transcr.print_to_file(constraint_expr)
 
 def transcribe_non_cat(elm_expr: str, msg: NonCatTerm,send_recv:SendRecv,timeslot_expr:str,
                        role_context: RoleTranscribeContext):

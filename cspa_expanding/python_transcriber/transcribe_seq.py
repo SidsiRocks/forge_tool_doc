@@ -215,14 +215,14 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
         def pred_header(pred_name:str):
             """adds predicate declaration starting block of code in which predicate
             is present"""
-            print_to_file(f"// predicate follows below\n")
+            print_to_file(f"-- predicate follows below\n")
             print_to_file(f"pred {pred_name} {{\n")
             start_block()
         def pred_footer():
             """adds the end of predicate block"""
             end_block()
             print_to_file(f"}}\n")
-            print_to_file(f"// end of predicate\n")
+            print_to_file(f"-- end of predicate\n")
         def arbit_role_header(arbit_role_name):
             """adds the beginning block of quantification over all agents
             of a particular role """

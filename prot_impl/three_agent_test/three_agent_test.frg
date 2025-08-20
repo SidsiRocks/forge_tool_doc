@@ -12,7 +12,7 @@ three_agent_base_test : run {
     exec_three_agent_B
     exec_three_agent_S
 
-    //constrain_skeleton_three_agent_0
+    --constrain_skeleton_three_agent_0
 }for 
     exactly 6 Timeslot,50 mesg,
     exactly 1 KeyPairs,exactly 8 Key,exactly 8 akey,0 skey,

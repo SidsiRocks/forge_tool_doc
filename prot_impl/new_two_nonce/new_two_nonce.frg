@@ -15,7 +15,7 @@ pred corrected_attacker_learns[d:mesg]{
 two_nonce_init_pov : run {
     wellformed
 
-exec_two_nonce_init
+    exec_two_nonce_init
     exec_two_nonce_resp
 
     constrain_skeleton_two_nonce_0
@@ -42,11 +42,10 @@ exec_two_nonce_init
     --have to deal with initiator trying tot talk to attacker, may want to change that
     --when planning to detect an attack
 }for 
-    exactly 6 Timeslot,25 mesg,
-    exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,0 skey,
-    exactly 3 PrivateKey,exactly 3 PublicKey,
-
-    exactly 3 name,exactly 6 text,exactly 10 Ciphertext,
+    exactly 6 Timeslot,25 mesg,25 text,25 atomic,
+    exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,
+    exactly 0 skey,exactly 3 PublicKey,exactly 3 PrivateKey,
+    exactly 3 name,exactly 10 Ciphertext,exactly 6 nonce,
     exactly 1 two_nonce_init,exactly 1 two_nonce_resp,
     4 Int
 for {next is linear}

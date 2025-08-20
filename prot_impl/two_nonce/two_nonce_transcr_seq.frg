@@ -90,7 +90,7 @@ sig Ciphertext extends mesg {
    -- encrypted with this key
    encryptionKey: one Key,
    -- result in concating plaintexts
-   //plaintext: set mesg
+   --plaintext: set mesg
    plaintext: pfunc Int -> mesg
 }
 
@@ -197,7 +197,7 @@ pred wellformed {
 
   -- plaintext relation is acyclic  
   --  NOTE WELL: if ever add another type of mesg that contains data, add with + inside ^.
-  //old_plainw ould be unique so some or all doesn't
+  --old_plainw ould be unique so some or all doesn't
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
     all d: mesg | d not in d.^(old_plain)
   }
@@ -340,7 +340,7 @@ sig two_nonce_init extends strand{
     two_nonce_init_n2: one text
 }
 
-// predicate follows below
+-- predicate follows below
 pred exec_two_nonce_init {
     all arbitrary_two_nonce_init : two_nonce_init | {
         some t0,t1,t2 : Timeslot | {
@@ -397,7 +397,7 @@ pred exec_two_nonce_init {
         }
     }
 }
-// end of predicate
+-- end of predicate
 
 sig two_nonce_resp extends strand{
     two_nonce_resp_a: one name,
@@ -406,7 +406,7 @@ sig two_nonce_resp extends strand{
     two_nonce_resp_n2: one text
 }
 
-// predicate follows below
+-- predicate follows below
 pred exec_two_nonce_resp {
     all arbitrary_two_nonce_resp : two_nonce_resp | {
         some t0,t1,t2 : Timeslot | {
@@ -463,7 +463,7 @@ pred exec_two_nonce_resp {
         }
     }
 }
-// end of predicate
+-- end of predicate
 
 one sig skeleton_two_nonce_0 {
     skeleton_two_nonce_0_a: one name,
@@ -514,13 +514,13 @@ pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
 }
 
-//option solver MiniSatProver
-//option logtranslation 2
-//option coregranularity 1
-//option engine_verbosity 3
-//option core_minimization rce
+--option solver MiniSatProver
+--option logtranslation 2
+--option coregranularity 1
+--option engine_verbosity 3
+--option core_minimization rce
 
-//option solver "./run_z3.sh"
+--option solver "./run_z3.sh"
 
 two_nonce_init_pov : run {
     wellformed
@@ -531,26 +531,26 @@ exec_two_nonce_init
     constrain_skeleton_two_nonce_0
     
     two_nonce_resp.agent != two_nonce_init.agent
-    //should not need restriction on a and b this time?
+    --should not need restriction on a and b this time?
 
-    //this may prevent attack have to check
+    --this may prevent attack have to check
     two_nonce_init.agent != AttackerStrand.agent
     two_nonce_resp.agent != AttackerStrand.agent
 
-    //prevents responder from sending same nonce again
+    --prevents responder from sending same nonce again
     two_nonce_resp.two_nonce_resp_n1 != two_nonce_resp.two_nonce_resp_n2
-    //prevents attacker from sending duplicate n1,n2 in a run of protocol
+    --prevents attacker from sending duplicate n1,n2 in a run of protocol
     two_nonce_init.two_nonce_init_n1 != two_nonce_init.two_nonce_init_n2
     
-    //attacker_learns[AttackerStrand,two_nonce_resp.two_nonce_resp_n2]
+    --attacker_learns[AttackerStrand,two_nonce_resp.two_nonce_resp_n2]
     
-    //finding attack where init beleives it is talking to resp 
-    //but attacker knows the nonce
+    --finding attack where init beleives it is talking to resp 
+    --but attacker knows the nonce
     two_nonce_init.two_nonce_init_b = two_nonce_resp.agent
     corrected_attacker_learns[two_nonce_init.two_nonce_init_n2]
-    //same nonce problem seems to be resolved
-    //have to deal with initiator trying tot talk to attacker, may want to change that
-    //when planning to detect an attack
+    --same nonce problem seems to be resolved
+    --have to deal with initiator trying tot talk to attacker, may want to change that
+    --when planning to detect an attack
 }for 
     exactly 6 Timeslot,25 mesg,
     exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,0 skey,
@@ -561,4 +561,4 @@ exec_two_nonce_init
     4 Int
 for {next is linear}
 
-//run {} for 3
+--run {} for 3

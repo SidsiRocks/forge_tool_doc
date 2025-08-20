@@ -25,7 +25,7 @@ sig Ciphertext extends mesg {
    -- encrypted with this key
    encryptionKey: one Key,
    -- result in concating plaintexts
-   //OLD: plaintext: set mesg
+   --OLD: plaintext: set mesg
    plaintext: pfunc Int -> mesg
 }
 ```

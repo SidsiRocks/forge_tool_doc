@@ -70,9 +70,9 @@ constrain_skeleton_two_nonce_0 refers to the defskeleton code we had written in 
 (Doubt: Lookup why had kept resp != init)
 ```frg
     two_nonce_resp.agent != two_nonce_init.agent
-    //should not need restriction on a and b this time?
+    --should not need restriction on a and b this time?
 
-    //this may prevent attack have to check
+    --this may prevent attack have to check
     two_nonce_init.agent != AttackerStrand.agent
     two_nonce_resp.agent != AttackerStrand.agent
 ```
@@ -80,16 +80,16 @@ The first line stating the reponder and initiator are not the same seems no long
 The two_nonce_init.agent != AttackerStrand.agent and the line following it ensures the initiator and responder are not the attacker itself as in that case the attacker already knows the secret.(This is not true for all the examples generated but for one of them).
 ![image](./Pictures/Two_attacker_roles.png)
 ```frg
-    //prevents responder from sending same nonce again
+    --prevents responder from sending same nonce again
     two_nonce_resp.two_nonce_resp_n1 != two_nonce_resp.two_nonce_resp_n2
-    //prevents attacker from sending duplicate n1,n2 in a run of protocol
+    --prevents attacker from sending duplicate n1,n2 in a run of protocol
     two_nonce_init.two_nonce_init_n1 != two_nonce_init.two_nonce_init_n2
 ```
 Here we enforce the constraint that the nonces n1,n2 are distinct. On removing this constraint one of the examples generated included only one nonce when initiator should be receiving two nonces. (Current explantion attacker sends the two nonces text2,text2 which in a set would be just text2 and same thing happens on the initiator end).
 ![image](./Pictures/init_duplic_nonce.png)
 ```frg
-    //finding attack where init beleives it is talking to resp
-    //but attacker knows the nonce
+    --finding attack where init beleives it is talking to resp
+    --but attacker knows the nonce
     two_nonce_init.two_nonce_init_b = two_nonce_resp.agent
     corrected_attacker_learns[two_nonce_init.two_nonce_init_n2]
 ```

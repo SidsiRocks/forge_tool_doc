@@ -162,7 +162,7 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
             """adds predicate declaration starting block of code in which predicate
             is present"""
             nonlocal space_lvl
-            print_to_file(f"// predicate follows below\n")
+            print_to_file(f"-- predicate follows below\n")
             print_to_file(f"pred {pred_name} {{\n")
             space_lvl += 1
         def pred_footer():
@@ -170,7 +170,7 @@ def transcribe_prot(prot_obj:Protocol,file:io.TextIOWrapper):
             nonlocal space_lvl
             space_lvl -= 1
             print_to_file(f"}}\n")
-            print_to_file(f"// end of predicate\n")
+            print_to_file(f"-- end of predicate\n")
         def arbit_role_header(arbit_role_name):
             """adds the beginning block of quantification over all agents 
             of a particular role """
