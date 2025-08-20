@@ -463,6 +463,7 @@ def transcribe_strand(strand: Strand,
                       skeleton_transcr_context: SkeletonTranscribeContext,
                       role_transcr_context: RoleTranscribeContext):
     transcr = skeleton_transcr_context.transcr
+    # TODO: assumes some predicate here so if there are multiple strands all of the same role this would match with only one of them, this may not always be desirable look into this later
     with QuantifierPredicate(QuantiferEnum.SOME,
                              [role_transcr_context.role_var_name],
                              role_transcr_context.role_sig_name, transcr):
