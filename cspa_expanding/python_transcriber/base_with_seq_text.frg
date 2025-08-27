@@ -130,8 +130,15 @@ pred wellformed {
   -- You cannot send a message with no data
   all m: Timeslot | some elems[m.data]
 
+  -- TODO: ask mam if this assumption is correct
   -- someone cannot send a message to themselves
-  all m: Timeslot | m.sender not in m.receiver
+  -- this should be m.sender.agent not in m.receiver.agent
+  -- I don't think there is circumstance where different strand but same agent
+  -- would occur, problem with allowing different strands and same agent leads
+  -- to cylic justification. Can learn as the term is learnt on the reciever side
+  -- because someone sent it, can send it becuase already learnt it.
+  -- all m: Timeslot | m.sender not in m.receiver
+  all m: Timeslot | m.sender.agent not in m.receiver.agent
 
   -- workspace: workaround to avoid cyclic justification within just deconstructions
   -- AGENT -> TICK -> MICRO-TICK LEARNED_SUBTERM
