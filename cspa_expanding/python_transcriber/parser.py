@@ -53,11 +53,45 @@ def parse_vars_clause(s_expr) -> VarMap:
         parse_vars_list(elm, var_map)
     return var_map
 
+def parse_skeleton_vars_list(s_expr,role_obj_types:List[str],non_strand_var_map:VarMap,strand_var_map:Dict[str,str]):
+    if len(s_expr) < 2:
+        raise ParseException(
+            f"Expected variable name and type not {str(s_expr)}")
+    variable_names = [get_str_from_symbol(variable_name,"variable name")for variable_name in s_expr[:-1]]
+    data_type = get_str_from_symbol(s_expr[-1],"variable type")
+    msg_data_types = [NAME_STR,TEXT_STR,SKEY_STR,AKEY_STR,MESG_STR]
+    is_msg_data = data_type in msg_data_types
+    if not is_msg_data and data_type not in role_obj_types:
+        raise ParseException(f"Expected variable type to be msg_data like {msg_data_types} or strand types {role_obj_types} not {data_type}")
+    for variable_name in variable_names:
+        if is_msg_data:
+            non_strand_var_map[variable_name] = Variable(variable_name,str_to_vartype(data_type))
+        else:
+            strand_var_map[variable_name] = data_type
+
+# TODO can add a helper function which handles parsing enums encoded as strings
+def parse_skeleton_vars_clause(s_expr,prot_obj:Protocol) -> Tuple[VarMap,Dict[str,str]]:
+    """this function parses the vars clauses within a defskeleton
+    declaration which also includes strands as varaible types
+    (vars (a b name) (A role_A) (B role_B) (C role_C))"""
+    non_strand_vars_map: VarMap = {}
+    strand_vars_map: Dict[str,str] = {}
+
+    if len(s_expr) < 2:
+        raise ParseException("")
+    match_type_and_str(s_expr[0],VARS_STR)
+
+    role_obj_types = [f"role_{role_obj.role_name}" for role_obj in prot_obj.role_arr]
+
+    for single_declaration in s_expr[1:]:
+        parse_skeleton_vars_list(single_declaration,role_obj_types,non_strand_vars_map,strand_vars_map)
+    return non_strand_vars_map,strand_vars_map
+
 def parse_key_term(s_expr, var_map: VarMap) -> KeyTerm:
     if is_symbol_type(s_expr):
         var_name = get_str_from_symbol(s_expr, "variable name")
         variable = get_var(var_name, var_map)
-        if variable.var_type not in [VarType.AKEY, VarType.SKEY]:
+        if variable.var_type not in [MsgTypes.AKEY, MsgTypes.SKEY]:
             raise ParseException(
                 f"Expected key term to be of type AKEY/SKEY not {variable.var_type}"
             )
@@ -208,8 +242,8 @@ def parse_protocol(s_expr) -> Protocol:
     role_arr = [parse_role(role_expr) for role_expr in s_expr[3:]]
     return Protocol(protocol_name=protocol_name, role_arr=role_arr)
 
-
-def parse_var_mapping(s_expr, skeleton_vars_dict: VarMap, role_obj: Role):
+#TODO: have to add checks for types of variables in role and skeleton matching
+def parse_var_mapping(s_expr, skeleton_vars_dict: VarMap, role_obj: Role) -> Tuple[str,Variable]:
     """parses variable mapping of the form (strnad-var-name skel-var-name) seen inside defstrand clause."""
     if len(s_expr) != 2:
         raise ParseException(
@@ -238,7 +272,7 @@ def parse_strand(s_expr, prot_obj: Protocol,
     if role_in_prot is None:
         raise ParseException(f"no role in protocol with rolename {role_name}")
     #+TODO: check if should reverse order of strand and skeleton here
-    skeleton_to_strand_var_map = {}
+    skeleton_to_strand_var_map:Dict[str,Variable] = {}
     for elm in s_expr[3:]:
         skel_var_name, strand_var = parse_var_mapping(elm, skeleton_vars_dict,
                                                       role_in_prot)
@@ -288,6 +322,25 @@ def parse_uniq_orig(s_expr, skeleton_vars_dict: VarMap) -> UniqOrig:
     ]
     return UniqOrig(terms=base_terms)
 
+def parse_indv_send_recv_constraint(s_expr,non_strand_vars_map:VarMap,strand_vars_map:Dict[str,str]) -> IndvSendRecvInConstraint:
+    send_or_recv = get_str_from_symbol(s_expr[0],"send or recv type of constraint")
+    if send_or_recv not in [SEND_FROM_STR,RECV_BY_STR]:
+        raise ParseException(f"expected {SEND_FROM_STR} or {RECV_BY_STR} to denote send or recv here")
+
+    trace_type = SendRecv.SEND if send_or_recv == SEND_FROM_STR else SendRecv.RECV
+    strand_name = get_str_from_symbol(s_expr[1],"strand name sending/receiving the message")
+    if strand_name not in strand_vars_map:
+        raise ParseException(f"expected {strand_name} to be in the list of strand variables in {list(strand_vars_map.keys())}")
+    message_term = parse_message_term(s_expr[1],non_strand_vars_map)
+    return IndvSendRecvInConstraint(trace_type,strand_name,message_term)
+
+def parse_trace_constraint(s_expr,non_strand_vars_map:VarMap,strand_vars_map:Dict[str,str]) -> TraceConstraint:
+    if len(s_expr) < 3:
+        raise ParseException(f"expected {DEF_TRACE_STR} trace_name and a non empty trace")
+    match_type_and_str(s_expr[0],DEF_TRACE_STR)
+    trace_name = get_str_from_symbol(s_expr[1],"trace name")
+    msg_trace = [parse_indv_send_recv_constraint(indv_trace,non_strand_vars_map,strand_vars_map) for indv_trace in s_expr[2:]]
+    return TraceConstraint(msg_trace,trace_name)
 
 #TODO: think about making list array naming consistent
 def parse_skeleton(s_expr, prot_obj: Protocol) -> Skeleton:
@@ -298,7 +351,7 @@ def parse_skeleton(s_expr, prot_obj: Protocol) -> Skeleton:
             "Expected s expression not string literal for skeleton")
     match_type_and_str(s_expr[0], DEF_SKEL_STR)
     protocol_name = get_str_from_symbol(s_expr[1], "protocol name")
-    skeleton_vars_dict = parse_vars_clause(s_expr[2])
+    non_strand_vars_map,strand_vars_map = parse_skeleton_vars_clause(s_expr[2],prot_obj)
 
     constraints_list = []
     for sub_expr in s_expr[3:]:
@@ -308,14 +361,19 @@ def parse_skeleton(s_expr, prot_obj: Protocol) -> Skeleton:
             )
         clause_type = get_str_from_symbol(sub_expr[0], "clause type")
         if clause_type == DEF_STRAND_STR:
-            cur_strand = parse_strand(sub_expr, prot_obj, skeleton_vars_dict)
+            cur_strand = parse_strand(sub_expr, prot_obj, non_strand_vars_map)
             constraints_list.append(cur_strand)
         elif clause_type == NON_ORIG_STR:
             constraints_list.append(
-                parse_non_orig(sub_expr, skeleton_vars_dict))
+                parse_non_orig(sub_expr, non_strand_vars_map))
         elif clause_type == UNIQ_ORIG_STR:
             constraints_list.append(
-                parse_uniq_orig(sub_expr, skeleton_vars_dict))
+                parse_uniq_orig(sub_expr, non_strand_vars_map))
+        elif clause_type == DEF_TRACE_STR:
+            constraints_list.append(
+                parse_trace_constraint(sub_expr,non_strand_vars_map,strand_vars_map)
+            )
     return Skeleton(protocol_name=protocol_name,
-                    skeleton_vars_dict=skeleton_vars_dict,
+                    non_strand_vars_map=non_strand_vars_map,
+                    strand_vars_map=strand_vars_map,
                     constraints_list=constraints_list)

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List,Tuple,Dict
 
-class VarType(Enum):
+class MsgTypes(Enum):
     NAME = 0
     TEXT = 1
     SKEY = 2
@@ -11,21 +11,28 @@ class VarType(Enum):
     MESG = 4
     def __str__(self) -> str:
         vartype_to_str_dict = {
-            VarType.NAME : NAME_STR,
-            VarType.TEXT : TEXT_STR,
-            VarType.SKEY : SKEY_STR,
-            VarType.AKEY : AKEY_STR,
-            VarType.MESG : MESG_STR
+            MsgTypes.NAME : NAME_STR,
+            MsgTypes.TEXT : TEXT_STR,
+            MsgTypes.SKEY : SKEY_STR,
+            MsgTypes.AKEY : AKEY_STR,
+            MsgTypes.MESG : MESG_STR
         }
         return vartype_to_str_dict[self]
+
+# VarTypeInConstraint needs to include strand types defined
+# during runtime when roles are defined, but this type would
+# only be allowed within the vars clause of a constraint hence
+# this is needed
+# TODO: can improve this VarType probably
+
 @dataclass
 class Variable:
     var_name: str
-    var_type: VarType
+    var_type: MsgTypes
     def __str__(self) -> str:
         return self.var_name
     def __repr__(self) -> str:
-        return f"{self.var_type}:{self.var_type}"
+        return f"{self.var_name}:{self.var_type}"
 
 VarMap = Dict[str,Variable]
 
@@ -79,7 +86,7 @@ def trace_to_str(send_recv_msg:Tuple[SendRecv,Message]):
         case SendRecv.RECV:
             return f"(recv {message})"
 def var_declarations_to_str(var_map_str:VarMap):
-    type_to_var_name:Dict[VarType,List[str]] = {}
+    type_to_var_name:Dict[MsgTypes,List[str]] = {}
     for var_name,variable in var_map_str.items():
         var_type = variable.var_type
         if var_type not in type_to_var_name:
@@ -145,17 +152,43 @@ class UniqOrig:
         return f"(uniq-orig {' '.join(f"{term}" for term in self.terms)})"
     def __str__(self):
         return self.__repr__()
-Constraint = Strand | NonOrig | UniqOrig
+@dataclass
+class IndvSendRecvInConstraint:
+    trace_type: SendRecv
+    sender_reciever_strand: str
+    message: Message
+    def __repr__(self) -> str:
+        match self.trace_type:
+            case SendRecv.SEND:
+                return f"({SEND_FROM_STR} {self.sender_reciever_strand} {self.message})"
+            case SendRecv.RECV:
+                return f"({RECV_BY_STR} {self.sender_reciever_strand} {self.message})"
+    def __str__(self) -> str:
+        return self.__repr__()
+@dataclass
+class TraceConstraint:
+    trace_elms: List[IndvSendRecvInConstraint]
+    trace_name: str
+    def __repr__(self) -> str:
+        trace_elms_str = '\n'.join([f"{trace_elm}" for trace_elm in self.trace_elms])
+        return (f"(deftrace {self.trace_name}"
+                f"{trace_elms_str}"
+                f")")
+    def __str__(self) -> str:
+        return self.__repr__()
+
+Constraint = Strand | NonOrig | UniqOrig | TraceConstraint
 
 @dataclass
 class Skeleton:
     protocol_name: str
-    skeleton_vars_dict: VarMap
+    non_strand_vars_map: VarMap
+    strand_vars_map: Dict[str,str]
     constraints_list: List[Constraint]
     def __repr__(self):
         constraints_str = '\n'.join([f"{constraint}" for constraint in self.constraints_list])
         return (f"(defskeleton {self.protocol_name}"
-                f"(vars {var_declarations_to_str(self.skeleton_vars_dict)})"
+                f"(vars {var_declarations_to_str(self.non_strand_vars_map)})"
                 f"{constraints_str})")
 """list of strings appearing in CPSA syntax collected here so prevent
 repetion and avoid inconsistencies"""
@@ -165,12 +198,15 @@ DEF_SKEL_STR = "defskeleton"
 DEF_STRAND_STR = "defstrand"
 NON_ORIG_STR = "non-orig"
 UNIQ_ORIG_STR = "uniq-orig"
+DEF_TRACE_STR = "deftrace"
 BASIC_STR = "basic"
 DEF_ROLE_STR = "defrole"
 VARS_STR = "vars"
 TRACE_STR = "trace"
 SEND_STR = "send"
 RECV_STR = "recv"
+SEND_FROM_STR = "send-from"
+RECV_BY_STR = "recv-by"
 ENC_STR = "enc"
 CAT_STR = "cat"
 LTK_STR = "ltk"
@@ -222,25 +258,27 @@ def get_int_from_symbol(s_expr,data_name:str) -> int:
     if not isinstance(s_expr,int):
         raise ParseException(f"Expected type int here not type {type(s_expr)} for {data_name}")
     return s_expr
-def match_var_and_type(var_name:str,var_dict:VarMap,var_type:VarType) -> None:
+def match_var_and_type(var_name:str,var_dict:VarMap,var_type:MsgTypes) -> None:
     if var_name not in var_dict:
         raise ParseException(f"{var_name} is not in {var_dict}")
     variable = var_dict[var_name]
     if variable.var_type != var_type:
         raise ParseException(f"{var_name} has type {variable.var_type} doesn't match {var_type}")
+
+var_type_str_to_type_dict = {
+    NAME_STR : MsgTypes.NAME,
+    TEXT_STR : MsgTypes.TEXT,
+    SKEY_STR : MsgTypes.SKEY,
+    AKEY_STR : MsgTypes.AKEY,
+    MESG_STR : MsgTypes.MESG
+}
+
 def str_to_vartype(var_type_str:str):
     """convert string of vartype to VarType Enum object,
     used for parsing var name in variable declarations"""
-    var_type_str_to_type_dict = {
-        NAME_STR : VarType.NAME,
-        TEXT_STR : VarType.TEXT,
-        SKEY_STR : VarType.SKEY,
-        AKEY_STR : VarType.AKEY,
-        MESG_STR : VarType.MESG
-    }
     if var_type_str in var_type_str_to_type_dict:
         return var_type_str_to_type_dict[var_type_str]
     raise ParseException(f"Error unknown message type {var_type_str} seen")
-def vartype_to_str(var_type:VarType):
+def vartype_to_str(var_type:MsgTypes):
     """convert vartype to string used when transcribing"""
     return f"{var_type}"
