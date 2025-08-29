@@ -24,11 +24,14 @@
 
 -- NOTE WELL: `mesg` is what CPSA calls terms; we echo that here, do not confuse 
 -- `mesg` with just messages being sent or received.
-abstract sig mesg {} 
+abstract sig mesg {}
 
-abstract sig Key extends mesg {}
-abstract sig akey extends Key {} -- asymmetric key
-sig skey extends Key {}          -- symmetric key
+abstract sig text extends mesg {}
+abstract sig atomic extends text {}
+
+abstract sig Key extends atomic {}
+abstract sig akey extends Key {}
+sig skey extends Key {}
 sig PrivateKey extends akey {}
 sig PublicKey extends akey {}
 
@@ -72,7 +75,7 @@ sig Timeslot {
 
 -- As names process received messages, they learn pieces of data
 -- (they may also generate new values on their own)
-sig name extends mesg {
+sig name extends atomic {
   learned_times: set mesg -> Timeslot,
   generated_times: set mesg -> Timeslot
 }
@@ -86,7 +89,7 @@ abstract sig strand {
 one sig AttackerStrand extends strand {}
 one sig Attacker extends name {}
 
-sig Ciphertext extends mesg {
+sig Ciphertext extends atomic {
    -- encrypted with this key
    encryptionKey: one Key,
    -- result in concating plaintexts
@@ -95,7 +98,12 @@ sig Ciphertext extends mesg {
 }
 
 -- Non-name base value (e.g., nonces)
-sig text extends mesg {}
+sig nonce extends atomic {}
+
+sig seq extends text {
+    --remember to include constraint to ensure the components present are non empty
+    components: pfunc Int -> atomic
+}
 
 /** The starting knowledge base for all agents */
 fun baseKnown[a: name]: set mesg {
@@ -118,11 +126,19 @@ pred wellformed {
   --   assume we have a shared notion of time
   all m: Timeslot | isSeqOf[m.data,mesg]
   all t: Ciphertext | isSeqOf[t.plaintext,mesg]
+  all s: seq | isSeqOf[s.components,atomic]
   -- You cannot send a message with no data
   all m: Timeslot | some elems[m.data]
 
+  -- TODO: ask mam if this assumption is correct
   -- someone cannot send a message to themselves
-  all m: Timeslot | m.sender not in m.receiver
+  -- this should be m.sender.agent not in m.receiver.agent
+  -- I don't think there is circumstance where different strand but same agent
+  -- would occur, problem with allowing different strands and same agent leads
+  -- to cylic justification. Can learn as the term is learnt on the reciever side
+  -- because someone sent it, can send it becuase already learnt it.
+  -- all m: Timeslot | m.sender not in m.receiver
+  all m: Timeslot | m.sender.agent not in m.receiver.agent
 
   -- workspace: workaround to avoid cyclic justification within just deconstructions
   -- AGENT -> TICK -> MICRO-TICK LEARNED_SUBTERM
@@ -171,6 +187,14 @@ pred wellformed {
       d in workspace[t][Timeslot] -- derived in any micro-tick in this (reception) timeslot
     }   
     or 
+    { 
+        t.receiver.agent = a and
+        {some s : seq | {
+            d in elems[s.components]
+            s in (a.learned_times).(Timeslot - t.^next)
+        }}
+    }
+    or
     -- construct encrypted terms (only allow at NON-reception time; see above)
     -- NOTE WELL: if ever allow an agent to send/receive at same time, need rewrite 
     {d in Ciphertext and 
@@ -179,7 +203,11 @@ pred wellformed {
      {a not in t.receiver.agent} -- non-reception
     }
     or
-
+    { d in seq and
+      elems[d.components] in (a.learned_times).(Timeslot - t.^next) and
+      {a not in t.receiver.agent}
+    }
+    or
     {d in baseKnown[a]}
 
     or
@@ -188,7 +216,7 @@ pred wellformed {
     }} -- (end big disjunction for learned_times)
   
   -- If you generate something, you do it once only
-  all a: name | all d: text | lone t: Timeslot | d in (a.generated_times).t
+  all a: name | all d: nonce | lone t: Timeslot | d in (a.generated_times).t
 
   -- Messages comprise only values known by the sender
   all m: Timeslot | elems[m.data] in (((m.sender).agent).learned_times).(Timeslot - m.^next) 
@@ -241,7 +269,7 @@ pred wellformed {
   -- generation only of text and keys, not complex terms
   --  furthermore, only generate if unknown
   all n: name | {
-      n.generated_times.Timeslot in text+Key
+      n.generated_times.Timeslot in nonce+Key
       all t: Timeslot, d: mesg | {
           d in n.generated_times.t implies {
               all t2: t.~(^next) | { d not in n.learned_times.t2 }
@@ -259,6 +287,7 @@ fun subterm[supers: set mesg]: set mesg {
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
     supers + supers.^(old_plain) -- union on new subterm relations inside parens
   }
+  -- TODO add something for finding subterms of seq which extends text
 }
 
 /** When does a strand 'originate' some term? 
@@ -323,6 +352,7 @@ run {
 */
 
 
+
 fun getPRIVK[name_a:name] : lone Key{
     (KeyPairs.owners).name_a
 }
@@ -333,89 +363,178 @@ pred learnt_term_by[m:mesg,a:name,t:Timeslot] {
     m in (a.learned_times).(Timeslot - t.^next)
 }
 
-sig addit_enc_B extends strand {
-  addit_enc_B_a : one name,
-  addit_enc_B_b : one name,
-  addit_enc_B_n1 : one text,
-  addit_enc_B_n2 : one text
+sig type_flaw_prot_A extends strand {
+  type_flaw_prot_A_a : one name,
+  type_flaw_prot_A_b : one name,
+  type_flaw_prot_A_n : one text
 }
-pred exec_addit_enc_B {
-  all arbitrary_B_addit_enc : addit_enc_B | {
+pred exec_type_flaw_prot_A {
+  all arbitrary_A_type_flaw_prot : type_flaw_prot_A | {
     some t0 : Timeslot {
       some t1 : t0.(^next) {
-        t0+t1 = sender.arbitrary_B_addit_enc + receiver.arbitrary_B_addit_enc
-        t0.receiver = arbitrary_B_addit_enc
-        inds[(t0.data)] = 0+1
-        some enc_1 : elems[(t0.data)] | {
-          (t0.data)[1] = enc_1
-          (t0.data)[0] = arbitrary_B_addit_enc.addit_enc_B_a
-          learnt_term_by[getPRIVK[arbitrary_B_addit_enc.addit_enc_B_b],arbitrary_B_addit_enc.agent,t0]
-          inds[(enc_1).plaintext] = 0
-          (enc_1).plaintext[0] = arbitrary_B_addit_enc.addit_enc_B_n1
-          (enc_1).encryptionKey = getPUBK[arbitrary_B_addit_enc.addit_enc_B_b]
+        t0+t1 = sender.arbitrary_A_type_flaw_prot + receiver.arbitrary_A_type_flaw_prot
+        t0.sender = arbitrary_A_type_flaw_prot
+        inds[(t0.data)] = 0
+        some enc_2 : elems[(t0.data)] | {
+          (t0.data)[0] = enc_2
+          inds[(enc_2).plaintext] = 0+1
+          some enc_5 : elems[(enc_2).plaintext] | {
+            (enc_2).plaintext[1] = enc_5
+            (enc_2).plaintext[0] = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_a]
+            inds[(enc_5).plaintext] = 0
+            (enc_5).plaintext[0] in nonce
+            (enc_5).plaintext[0] = arbitrary_A_type_flaw_prot.type_flaw_prot_A_n
+            (enc_5).encryptionKey = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_b]
+          }
+          (enc_2).encryptionKey = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_b]
         }
-        
-        t1.sender = arbitrary_B_addit_enc
-        inds[(t1.data)] = 0+1
-        some enc_3 : elems[(t1.data)] | {
-          (t1.data)[1] = enc_3
-          (t1.data)[0] = arbitrary_B_addit_enc.addit_enc_B_b
-          inds[(enc_3).plaintext] = 0
-          (enc_3).plaintext[0] = arbitrary_B_addit_enc.addit_enc_B_n2
-          (enc_3).encryptionKey = getPUBK[arbitrary_B_addit_enc.addit_enc_B_a]
+
+        t1.receiver = arbitrary_A_type_flaw_prot
+        inds[(t1.data)] = 0
+        some enc_8 : elems[(t1.data)] | {
+          (t1.data)[0] = enc_8
+          learnt_term_by[getPRIVK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_a],arbitrary_A_type_flaw_prot.agent,t1]
+          inds[(enc_8).plaintext] = 0
+          (enc_8).plaintext[0] = arbitrary_A_type_flaw_prot.type_flaw_prot_A_n
+          (enc_8).encryptionKey = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_a]
         }
-        
+
       }
     }
   }
 }
-sig addit_enc_A extends strand {
-  addit_enc_A_a : one name,
-  addit_enc_A_b : one name,
-  addit_enc_A_n1 : one text,
-  addit_enc_A_n2 : one text
+sig type_flaw_prot_B extends strand {
+  type_flaw_prot_B_a : one name,
+  type_flaw_prot_B_b : one name,
+  type_flaw_prot_B_n : one text
 }
-pred exec_addit_enc_A {
-  all arbitrary_A_addit_enc : addit_enc_A | {
+pred exec_type_flaw_prot_B {
+  all arbitrary_B_type_flaw_prot : type_flaw_prot_B | {
     some t0 : Timeslot {
       some t1 : t0.(^next) {
-        t0+t1 = sender.arbitrary_A_addit_enc + receiver.arbitrary_A_addit_enc
-        t0.sender = arbitrary_A_addit_enc
-        inds[(t0.data)] = 0+1
-        some enc_5 : elems[(t0.data)] | {
-          (t0.data)[1] = enc_5
-          (t0.data)[0] = arbitrary_A_addit_enc.addit_enc_A_a
-          inds[(enc_5).plaintext] = 0
-          (enc_5).plaintext[0] = arbitrary_A_addit_enc.addit_enc_A_n1
-          (enc_5).encryptionKey = getPUBK[arbitrary_A_addit_enc.addit_enc_A_b]
+        t0+t1 = sender.arbitrary_B_type_flaw_prot + receiver.arbitrary_B_type_flaw_prot
+        t0.receiver = arbitrary_B_type_flaw_prot
+        inds[(t0.data)] = 0
+        some enc_11 : elems[(t0.data)] | {
+          (t0.data)[0] = enc_11
+          learnt_term_by[getPRIVK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b],arbitrary_B_type_flaw_prot.agent,t0]
+          inds[(enc_11).plaintext] = 0+1
+          some enc_14 : elems[(enc_11).plaintext] | {
+            (enc_11).plaintext[1] = enc_14
+            (enc_11).plaintext[0] = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_a]
+            learnt_term_by[getPRIVK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b],arbitrary_B_type_flaw_prot.agent,t0]
+            inds[(enc_14).plaintext] = 0
+            (enc_14).plaintext[0] = arbitrary_B_type_flaw_prot.type_flaw_prot_B_n
+            (enc_14).encryptionKey = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b]
+          }
+          (enc_11).encryptionKey = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b]
         }
-        
-        t1.receiver = arbitrary_A_addit_enc
-        inds[(t1.data)] = 0+1
-        some enc_7 : elems[(t1.data)] | {
-          (t1.data)[1] = enc_7
-          (t1.data)[0] = arbitrary_A_addit_enc.addit_enc_A_b
-          learnt_term_by[getPRIVK[arbitrary_A_addit_enc.addit_enc_A_a],arbitrary_A_addit_enc.agent,t1]
-          inds[(enc_7).plaintext] = 0
-          (enc_7).plaintext[0] = arbitrary_A_addit_enc.addit_enc_A_n2
-          (enc_7).encryptionKey = getPUBK[arbitrary_A_addit_enc.addit_enc_A_a]
+
+        t1.sender = arbitrary_B_type_flaw_prot
+        inds[(t1.data)] = 0
+        some enc_17 : elems[(t1.data)] | {
+          (t1.data)[0] = enc_17
+          inds[(enc_17).plaintext] = 0
+          (enc_17).plaintext[0] in nonce
+          (enc_17).plaintext[0] = arbitrary_B_type_flaw_prot.type_flaw_prot_B_n
+          (enc_17).encryptionKey = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_a]
         }
-        
+
       }
     }
   }
 }
-option run_sterling "../../crypto_viz_seq.js"
-addit_enc_run : run {
-    wellformed 
-    exec_addit_enc_A
-    exec_addit_enc_B
+one sig skeleton_type_flaw_prot_0 {
+  skeleton_type_flaw_prot_0_a : one name,
+  skeleton_type_flaw_prot_0_b : one name,
+  skeleton_type_flaw_prot_0_n : one text,
+  skeleton_type_flaw_prot_0_A : one type_flaw_prot_A,
+  skeleton_type_flaw_prot_0_B : one type_flaw_prot_B
 }
-for 
-    exactly 4 Timeslot,16 mesg,
-    exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,
-    exactly 0 skey,exactly 3 PublicKey,exactly 3 PrivateKey,
-    exactly 3 name,exactly 2 text,exactly 2 Ciphertext,
-    exactly 1 addit_enc_A,exactly 1 addit_enc_B,
-    3 Int
+pred constrain_skeleton_type_flaw_prot_0_honest_run {
+  some t_0 : Timeslot {
+    some t_1 : t_0.(^next) {
+      some t_2 : t_1.(^next) {
+        some t_3 : t_2.(^next) {
+          t_0.sender = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_A
+          inds[t_0.data] = 0
+          some enc_19 : elems[t_0.data] | {
+            t_0.data[0] = enc_19
+            inds[(enc_19).plaintext] = 0+1
+            some enc_22 : elems[(enc_19).plaintext] | {
+              (enc_19).plaintext[1] = enc_22
+              (enc_19).plaintext[0] = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]
+              inds[(enc_22).plaintext] = 0
+              (enc_22).plaintext[0] in nonce
+              (enc_22).plaintext[0] = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
+              (enc_22).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
+            }
+            (enc_19).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
+          }
+
+          t_1.receiver = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B
+          inds[t_1.data] = 0
+          some enc_24 : elems[t_1.data] | {
+            t_1.data[0] = enc_24
+            inds[(enc_24).plaintext] = 0+1
+            some enc_27 : elems[(enc_24).plaintext] | {
+              (enc_24).plaintext[1] = enc_27
+              (enc_24).plaintext[0] = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]
+              inds[(enc_27).plaintext] = 0
+              (enc_27).plaintext[0] = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
+              (enc_27).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
+            }
+            (enc_24).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
+          }
+
+          t_2.sender = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B
+          inds[t_2.data] = 0
+          some enc_29 : elems[t_2.data] | {
+            t_2.data[0] = enc_29
+            inds[(enc_29).plaintext] = 0
+            (enc_29).plaintext[0] in nonce
+            (enc_29).plaintext[0] = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
+            (enc_29).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]
+          }
+
+          t_3.receiver = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_A
+          inds[t_3.data] = 0
+          some enc_31 : elems[t_3.data] | {
+            t_3.data[0] = enc_31
+            inds[(enc_31).plaintext] = 0
+            (enc_31).plaintext[0] = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
+            (enc_31).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]
+          }
+
+        }
+      }
+    }
+  }
+}
+pred constrain_skeleton_type_flaw_prot_0 {
+  no aStrand : strand | {
+    originates[aStrand,getPRIVK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]] or generates [aStrand,getPRIVK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]]
+  }
+  no aStrand : strand | {
+    originates[aStrand,getPRIVK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]] or generates [aStrand,getPRIVK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]]
+  }
+  one aStrand : strand | {
+    originates[aStrand,skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n] or generates [aStrand,skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n]
+  }
+  constrain_skeleton_type_flaw_prot_0_honest_run
+}
+option run_sterling "../../crypto_viz_text_seq.js"
+
+type_flaw_prot_run : run {
+    wellformed
+    exec_type_flaw_prot_A
+    exec_type_flaw_prot_B
+    constrain_skeleton_type_flaw_prot_0
+} for
+    exactly 4 Timeslot,exactly 13 mesg,exactly 13 atomic,
+    exactly 6 Key,exactly 6 akey,exactly 0 skey,
+    exactly 3 PrivateKey,exactly 3 PublicKey,exactly 3 name,
+    exactly 3 Ciphertext,exactly 1 nonce,exactly 1 KeyPairs,
+    exactly 1 type_flaw_prot_A,exactly 1 type_flaw_prot_B,
+    4 Int
 for {next is linear}

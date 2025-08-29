@@ -69,7 +69,6 @@ def parse_skeleton_vars_list(s_expr,role_obj_types:List[str],non_strand_var_map:
         else:
             strand_var_map[variable_name] = data_type
 
-# TODO can add a helper function which handles parsing enums encoded as strings
 def parse_skeleton_vars_clause(s_expr,prot_obj:Protocol) -> Tuple[VarMap,Dict[str,str]]:
     """this function parses the vars clauses within a defskeleton
     declaration which also includes strands as varaible types
@@ -125,15 +124,37 @@ def parse_key_term(s_expr, var_map: VarMap) -> KeyTerm:
         raise ParseException(
             f"Unrecognised key category {key_category} in {s_expr}")
 
+def parse_seq_term(s_expr,var_dict:VarMap) -> Message:
+    if len(s_expr) < 2:
+        raise ParseException(f"expected seq keyword and atleast one message term not {s_expr}")
+    match_type_and_str(s_expr[0],SEQ_STR)
+    data : List[Message] = [parse_message_term(sub_expr,var_dict) for sub_expr in s_expr[1:]]
+    non_cat_data : List[NonCatTerm] = []
+    #TODO: can add code for condensing cat here as well
+    for msg_subterm in data:
+        match msg_subterm:
+            #TODO: may want to extend message types to incorporate atomic and other classes mybe could be useful when stating seq term
+            case Variable(var_name,var_type):
+                acceptable_var_types = [MsgTypes.AKEY,MsgTypes.SKEY,MsgTypes.NAME]
+                if var_type not in acceptable_var_types:
+                    raise ParseException(f"{msg_subterm} type is not in {acceptable_var_types} allowed in seq term")
+                non_cat_data.append(msg_subterm)
+            case EncTerm(_) | LtkTerm(_) | PubkTerm(_) | PrivkTerm(_):
+                non_cat_data.append(msg_subterm)
+            case _:
+                raise ParseException(f"Expected EncTerm,LtkTerm,PubkTerm,PrivkTermf or seq not {msg_subterm}")
+    return SeqTerm(non_cat_data)
 
 def parse_message_term(s_expr, var_dict: VarMap) -> Message:
     if is_symbol_type(s_expr):
         variable_name = get_str_from_symbol(s_expr, "variable name")
-        if variable_name not in var_dict:
+        if variable_name not in var_dict and variable_name not in predefined_constants:
             raise ParseException(
                 f"unknown variable name {variable_name} not previously declated"
             )
-        return var_dict[variable_name]
+        if variable_name in var_dict:
+            return var_dict[variable_name]
+        return predefined_constants[variable_name]
     message_category = get_str_from_symbol(s_expr[0], "enc/cat/pubk/privk/ltk")
     if message_category not in MESSAGE_CATEGORIES:
         raise ParseException(
@@ -173,6 +194,8 @@ def parse_message_term(s_expr, var_dict: VarMap) -> Message:
                 case other_subterm:
                     condensed_data.append(other_subterm)
         return CatTerm(data=condensed_data)
+    elif message_category == SEQ_STR:
+        return parse_seq_term(s_expr,var_dict)
     elif message_category in KEY_CATEGORIES:
         return parse_key_term(s_expr, var_dict)
     else:
@@ -322,16 +345,26 @@ def parse_uniq_orig(s_expr, skeleton_vars_dict: VarMap) -> UniqOrig:
     ]
     return UniqOrig(terms=base_terms)
 
+#TODO: currently no need to write not eq constraint on strand vars so only non
+# strand var map is enough
+def parse_not_eq(s_expr,skeleton_vars_dict:VarMap) -> NotEqConstraint:
+    if len(s_expr) != 3:
+        raise ParseException(f"expected not-eq and two message terms not {s_expr}")
+    match_type_and_str(s_expr[0],NOT_EQ_STR)
+    term1 = parse_base_term(s_expr[1],skeleton_vars_dict)
+    term2 = parse_base_term(s_expr[2],skeleton_vars_dict)
+    return NotEqConstraint(term1,term2)
+
 def parse_indv_send_recv_constraint(s_expr,non_strand_vars_map:VarMap,strand_vars_map:Dict[str,str]) -> IndvSendRecvInConstraint:
     send_or_recv = get_str_from_symbol(s_expr[0],"send or recv type of constraint")
     if send_or_recv not in [SEND_FROM_STR,RECV_BY_STR]:
-        raise ParseException(f"expected {SEND_FROM_STR} or {RECV_BY_STR} to denote send or recv here")
+        raise ParseException(f"expected {SEND_FROM_STR} or {RECV_BY_STR} to denote send or recv here not {send_or_recv}")
 
     trace_type = SendRecv.SEND if send_or_recv == SEND_FROM_STR else SendRecv.RECV
     strand_name = get_str_from_symbol(s_expr[1],"strand name sending/receiving the message")
     if strand_name not in strand_vars_map:
         raise ParseException(f"expected {strand_name} to be in the list of strand variables in {list(strand_vars_map.keys())}")
-    message_term = parse_message_term(s_expr[1],non_strand_vars_map)
+    message_term = parse_message_term(s_expr[2],non_strand_vars_map)
     return IndvSendRecvInConstraint(trace_type,strand_name,message_term)
 
 def parse_trace_constraint(s_expr,non_strand_vars_map:VarMap,strand_vars_map:Dict[str,str]) -> TraceConstraint:
@@ -373,6 +406,12 @@ def parse_skeleton(s_expr, prot_obj: Protocol) -> Skeleton:
             constraints_list.append(
                 parse_trace_constraint(sub_expr,non_strand_vars_map,strand_vars_map)
             )
+        elif clause_type == NOT_EQ_STR:
+            constraints_list.append(
+                parse_not_eq(sub_expr,non_strand_vars_map)
+            )
+        else:
+            raise ParseException(f"Expected clause type in {[DEF_STRAND_STR,NON_ORIG_STR,UNIQ_ORIG_STR,DEF_TRACE_STR,NOT_EQ_STR]} not {clause_type}")
     return Skeleton(protocol_name=protocol_name,
                     non_strand_vars_map=non_strand_vars_map,
                     strand_vars_map=strand_vars_map,

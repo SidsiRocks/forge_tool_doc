@@ -227,7 +227,9 @@ pred wellformed {
   --  NOTE WELL: if ever add another type of mesg that contains data, add with + inside ^.
   --old_plainw ould be unique so some or all doesn't
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
-    all d: mesg | d not in d.^(old_plain)
+      let components_rel = {seq_term:seq,msg:mesg | {msg in elems[seq_term.components]}} | {
+          all d: mesg | d not in d.^(old_plain + components_rel)
+      }
   }
   
   -- Disallow empty ciphertexts
@@ -285,7 +287,9 @@ fun subterm[supers: set mesg]: set mesg {
   -- do cross check that it actually returns the correct thing and not an empty set
   -- or something
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
-    supers + supers.^(old_plain) -- union on new subterm relations inside parens
+      let components_rel = {seq_term:seq,msg:mesg | {msg in elems[seq_term.components]}} | {
+          supers + supers.^(old_plain + components_rel) -- union on new subterm relations inside parens
+      }
   }
   -- TODO add something for finding subterms of seq which extends text
 }

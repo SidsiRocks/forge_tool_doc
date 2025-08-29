@@ -26,7 +26,6 @@ def test_parse_role():
     role = parser.parse_role(sexpdata.loads(role_string))
     assert get_pp_sexp(f"{role}") == get_pp_sexp(role_string)
 
-
 def remove_comments_from_file(rkt_file):
     for _ in rkt_file:
         break
@@ -115,4 +114,14 @@ def test_three_agent_test_parsing():
 def test_two_nonce_parsing():
     helper_for_test_rkt_file(
         r"../../prot_impl/two_nonce/two_nonce.rkt"
+    )
+
+def test_two_nonce_trace_test_parsing():
+    helper_for_test_rkt_file(
+        r"../../prot_impl/two_nonce_trace_test/two_nonce_trace_test.rkt"
+    )
+
+def test_seq_text_trace_test_parsing():
+    helper_for_test_rkt_file(
+        r"../../prot_impl/test_seq_text_trace_test/test_seq_text_trace_test.rkt"
     )

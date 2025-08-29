@@ -70,11 +70,24 @@ class CatTerm:
     def __repr__(self):
         data_str = ' '.join([f"{msg}" for msg in self.data])
         return f"(cat {data_str})"
+    def __str__(self) -> str:
+        return self.__repr__()
+
+@dataclass
+class SeqTerm:
+    #TODO: currently have seq inside seq might want to change that like we had for cat
+    data: List["NonCatTerm"]
+    def __repr__(self) -> str:
+        data_str = ' '.join([f"{msg}" for msg in self.data])
+        return f"(seq {data_str})"
+    def __str__(self) -> str:
+        return self.__repr__()
+
 class SendRecv(Enum):
     SEND = 0
     RECV = 1
-Message = Variable | EncTerm | CatTerm | KeyTerm
-NonCatTerm = KeyTerm | EncTerm
+Message = Variable | EncTerm | CatTerm | KeyTerm | SeqTerm
+NonCatTerm = KeyTerm | EncTerm | SeqTerm
 IndvTrace = Tuple[SendRecv,Message]
 MessageTrace = List[IndvTrace]
 
@@ -176,9 +189,27 @@ class TraceConstraint:
                 f")")
     def __str__(self) -> str:
         return self.__repr__()
+@dataclass
+class NotEqConstraint:
+    term1: BaseTerm
+    term2: BaseTerm
+    def __repr__(self) -> str:
+        return f"(not-eq {self.term1} {self.term2})"
+    def __str__(self) -> str:
+        return self.__repr__()
+Constraint = Strand | NonOrig | UniqOrig | TraceConstraint | NotEqConstraint
 
-Constraint = Strand | NonOrig | UniqOrig | TraceConstraint
-
+def strand_var_map_to_str(strand_vars_map:Dict[str,str]):
+    strand_type_to_vars : Dict[str,List[str]] = {}
+    for key,value in strand_vars_map.items():
+        if value not in strand_type_to_vars:
+            strand_type_to_vars[value] = []
+        strand_type_to_vars[value].append(key)
+    all_var_declarations : List[str] = []
+    for strand_type,strand_vars in strand_type_to_vars.items():
+        cur_str = f"({' '.join(strand_vars)} {strand_type})"
+        all_var_declarations.append(cur_str)
+    return " ".join(all_var_declarations)
 @dataclass
 class Skeleton:
     protocol_name: str
@@ -188,16 +219,25 @@ class Skeleton:
     def __repr__(self):
         constraints_str = '\n'.join([f"{constraint}" for constraint in self.constraints_list])
         return (f"(defskeleton {self.protocol_name}"
-                f"(vars {var_declarations_to_str(self.non_strand_vars_map)})"
+                f"(vars {var_declarations_to_str(self.non_strand_vars_map)} {strand_var_map_to_str(self.strand_vars_map)})"
                 f"{constraints_str})")
 """list of strings appearing in CPSA syntax collected here so prevent
 repetion and avoid inconsistencies"""
+
+# TODO can add a helper function which handles parsing enums encoded as strings
+def get_role_sig_name(role:Role,protocol:Protocol):
+    return f"{protocol.protocol_name}_{role.role_name}"
+#TODO: can improve this should not need to do string mangling like this
+def rolesig_of_role_obj_type(protocol:Protocol,role_obj_type:str):
+    role_name = role_obj_type[5:]
+    return f"{protocol.protocol_name}_{role_name}"
 
 DEF_PROT_STR = "defprotocol"
 DEF_SKEL_STR = "defskeleton"
 DEF_STRAND_STR = "defstrand"
 NON_ORIG_STR = "non-orig"
 UNIQ_ORIG_STR = "uniq-orig"
+NOT_EQ_STR = "not-eq"
 DEF_TRACE_STR = "deftrace"
 BASIC_STR = "basic"
 DEF_ROLE_STR = "defrole"
@@ -209,6 +249,7 @@ SEND_FROM_STR = "send-from"
 RECV_BY_STR = "recv-by"
 ENC_STR = "enc"
 CAT_STR = "cat"
+SEQ_STR = "seq"
 LTK_STR = "ltk"
 PUBK_STR = "pubk"
 PRIVK_STR = "privk"
@@ -217,11 +258,16 @@ NAME_STR = "name"
 TEXT_STR = "text"
 SKEY_STR = "skey"
 AKEY_STR = "akey"
+ATTACKER_STR = "Attacker"
 
 KEY_CATEGORIES = [PRIVK_STR,PUBK_STR,LTK_STR]
-MESSAGE_CATEGORIES = [ENC_STR,CAT_STR,LTK_STR,PUBK_STR,PRIVK_STR]
+MESSAGE_CATEGORIES = [ENC_STR,CAT_STR,LTK_STR,PUBK_STR,PRIVK_STR,SEQ_STR]
 
 Sexp = sexpdata.Symbol | int | List[sexpdata.Symbol]
+
+predefined_constants : Dict[str,Variable] = {
+    ATTACKER_STR : Variable(ATTACKER_STR,MsgTypes.NAME)
+}
 
 class ParseException(Exception):
     """parse exception used to signal an exception occured somewhere while transcribing"""
@@ -246,9 +292,12 @@ def match_type_and_str(s_expr,expected_str:str) -> None:
     if str(s_expr) != expected_str:
         raise unexpected_str_error(expected_str,str(s_expr))
 def get_var(var_name:str,var_dict:VarMap) -> Variable:
-    if var_name not in var_dict:
+    #TODO: the function body counterintutive compared to definition see if can improve this
+    if var_name not in var_dict and var_name not in predefined_constants:
         raise ParseException(f"{var_name} is not in {var_dict}")
-    return var_dict[var_name]
+    if var_name in var_dict:
+        return var_dict[var_name]
+    return predefined_constants[var_name]
 def get_str_from_symbol(s_expr:sexpdata.Symbol,data_name:str) -> str:
     """simply gets the string from an s-expr"""
     if not is_symbol_type(s_expr):
