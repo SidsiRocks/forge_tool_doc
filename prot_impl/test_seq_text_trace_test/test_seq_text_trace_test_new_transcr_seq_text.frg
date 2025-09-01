@@ -439,19 +439,80 @@ one sig skeleton_test_seq_text_0 {
   skeleton_test_seq_text_0_A : one test_seq_text_A,
   skeleton_test_seq_text_0_B : one test_seq_text_B
 }
+pred constrain_skeleton_test_seq_text_0_honest_run {
+  some t_0 : Timeslot {
+    some t_1 : t_0.(^next) {
+      some t_2 : t_1.(^next) {
+        some t_3 : t_2.(^next) {
+          t_0.sender = skeleton_test_seq_text_0.skeleton_test_seq_text_0_A
+          inds[t_0.data] = 0
+          some enc_10 : elems[t_0.data] | {
+            t_0.data[0] = enc_10
+            inds[(enc_10).plaintext] = 0
+            (enc_10).plaintext[0] in nonce
+            (enc_10).plaintext[0] = skeleton_test_seq_text_0.skeleton_test_seq_text_0_n1
+            (enc_10).encryptionKey = getPUBK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_b]
+          }
+
+          t_1.receiver = skeleton_test_seq_text_0.skeleton_test_seq_text_0_B
+          inds[t_1.data] = 0
+          some enc_12 : elems[t_1.data] | {
+            t_1.data[0] = enc_12
+            inds[(enc_12).plaintext] = 0
+            (enc_12).plaintext[0] = skeleton_test_seq_text_0.skeleton_test_seq_text_0_n1
+            (enc_12).encryptionKey = getPUBK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_b]
+          }
+
+          t_2.receiver = skeleton_test_seq_text_0.skeleton_test_seq_text_0_A
+          inds[t_2.data] = 0
+          inds[(t_2.data[0]).components] = 0+1
+          some enc_16 : elems[(t_2.data[0]).components] | {
+            (t_2.data[0]).components[1] = enc_16
+            (t_2.data[0]).components[0] = getPUBK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_a]
+            inds[(enc_16).plaintext] = 0
+            (enc_16).plaintext[0] = skeleton_test_seq_text_0.skeleton_test_seq_text_0_n1
+            (enc_16).encryptionKey = getPUBK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_b]
+          }
+
+          t_3.sender = skeleton_test_seq_text_0.skeleton_test_seq_text_0_B
+          inds[t_3.data] = 0+1
+          some enc_18 : elems[t_3.data] | {
+            t_3.data[1] = enc_18
+            t_3.data[0] = getPUBK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_a]
+            inds[(enc_18).plaintext] = 0
+            (enc_18).plaintext[0] in nonce
+            (enc_18).plaintext[0] = skeleton_test_seq_text_0.skeleton_test_seq_text_0_n1
+            (enc_18).encryptionKey = getPUBK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_b]
+          }
+
+        }
+      }
+    }
+  }
+}
 pred constrain_skeleton_test_seq_text_0 {
   some skeleton_A_0_strand_0 : test_seq_text_A | {
     skeleton_A_0_strand_0.test_seq_text_A_a = skeleton_test_seq_text_0.skeleton_test_seq_text_0_a
     skeleton_A_0_strand_0.test_seq_text_A_b = skeleton_test_seq_text_0.skeleton_test_seq_text_0_b
+    skeleton_A_0_strand_0.test_seq_text_A_n1 = skeleton_test_seq_text_0.skeleton_test_seq_text_0_n1
   }
   no aStrand : strand | {
-    originates[aStrand,getPUBK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_a]] or generates [aStrand,getPUBK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_a]]
+    originates[aStrand,getPRIVK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_a]] or generates [aStrand,getPRIVK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_a]]
   }
   no aStrand : strand | {
-    originates[aStrand,getPUBK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_b]] or generates [aStrand,getPUBK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_b]]
+    originates[aStrand,getPRIVK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_b]] or generates [aStrand,getPRIVK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_b]]
   }
+  one aStrand : strand | {
+    originates[aStrand,skeleton_test_seq_text_0.skeleton_test_seq_text_0_n1] or generates [aStrand,skeleton_test_seq_text_0.skeleton_test_seq_text_0_n1]
+  }
+  constrain_skeleton_test_seq_text_0_honest_run
 }
 option run_sterling "../../crypto_viz_text_seq.js"
+
+option solver MiniSatProver
+option logtranslation 1
+option coregranularity 1
+option core_minimization rce
 
 test_seq_text_run : run {
     wellformed
@@ -465,17 +526,30 @@ test_seq_text_run : run {
     test_seq_text_B.test_seq_text_B_a = test_seq_text_A.agent
     test_seq_text_B.test_seq_text_B_b = test_seq_text_B.agent
 
-    test_seq_text_A.agent != test_seq_text_B.agent
+    -- not in other file but by coincidence constraint obeyed so may
+    -- leave it to be that way
+    -- test_seq_text_A.agent != test_seq_text_B.agent
 
     test_seq_text_A.test_seq_text_A_n2 in seq
     inds[test_seq_text_A.test_seq_text_A_n2.components] = 0+1
-    test_seq_text_A.test_seq_text_A_n2.components[0] = getPUBK[test_seq_text_A.agent]
-    test_seq_text_A.test_seq_text_A_n2.components[1] in Ciphertext
-}for
-    exactly 4 Timeslot,exactly 18 mesg,exactly 18 text,
-    exactly 1 seq,exactly 17 atomic,exactly 6 Key,exactly 3 name,
-    exactly 5 Ciphertext,exactly 3 nonce,exactly 6 akey,exactly 0 skey,
-    exactly 3 PrivateKey,exactly 3 PublicKey,exactly 1 KeyPairs,
+
+    let A_n2 = test_seq_text_A.test_seq_text_A_n2 | {
+        A_n2.components[0] = getPUBK[test_seq_text_A.agent]
+        A_n2.components[1] in Ciphertext
+        let cipher = A_n2.components[1] | {
+            inds[cipher.plaintext] = 0
+            cipher.plaintext[0] = test_seq_text_B.test_seq_text_B_n1
+            cipher.encryptionKey = getPUBK[test_seq_text_B.agent]
+        }
+    }
+    test_seq_text_A.agent != test_seq_text_B.agent
+}
+for
+    exactly 14 mesg,exactly 14 text,exactly 1 seq,
+    exactly 13 atomic,exactly 6 Key,exactly 3 name,
+    exactly 3 Ciphertext,exactly 1 nonce,exactly 6 Key,
+    exactly 6 akey,exactly 0 skey,
+    exactly 3 PublicKey,exactly 3 PrivateKey,exactly 1 KeyPairs,
     exactly 1 test_seq_text_A,exactly 1 test_seq_text_B,
     4 Int
 for {next is linear}

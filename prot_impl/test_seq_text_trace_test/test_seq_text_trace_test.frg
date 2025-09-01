@@ -1,5 +1,10 @@
 option run_sterling "../../crypto_viz_text_seq.js"
 
+option solver MiniSatProver
+option logtranslation 1
+option coregranularity 1
+option core_minimization rce
+
 test_seq_text_run : run {
     wellformed
     exec_test_seq_text_A
@@ -12,17 +17,30 @@ test_seq_text_run : run {
     test_seq_text_B.test_seq_text_B_a = test_seq_text_A.agent
     test_seq_text_B.test_seq_text_B_b = test_seq_text_B.agent
 
-    test_seq_text_A.agent != test_seq_text_B.agent
+    -- not in other file but by coincidence constraint obeyed so may
+    -- leave it to be that way
+    -- test_seq_text_A.agent != test_seq_text_B.agent
 
     test_seq_text_A.test_seq_text_A_n2 in seq
     inds[test_seq_text_A.test_seq_text_A_n2.components] = 0+1
-    test_seq_text_A.test_seq_text_A_n2.components[0] = getPUBK[test_seq_text_A.agent]
-    test_seq_text_A.test_seq_text_A_n2.components[1] in Ciphertext
-}for
-    exactly 4 Timeslot,exactly 18 mesg,exactly 18 text,
-    exactly 1 seq,exactly 17 atomic,exactly 6 Key,exactly 3 name,
-    exactly 5 Ciphertext,exactly 3 nonce,exactly 6 akey,exactly 0 skey,
-    exactly 3 PrivateKey,exactly 3 PublicKey,exactly 1 KeyPairs,
+
+    let A_n2 = test_seq_text_A.test_seq_text_A_n2 | {
+        A_n2.components[0] = getPUBK[test_seq_text_A.agent]
+        A_n2.components[1] in Ciphertext
+        let cipher = A_n2.components[1] | {
+            inds[cipher.plaintext] = 0
+            cipher.plaintext[0] = test_seq_text_B.test_seq_text_B_n1
+            cipher.encryptionKey = getPUBK[test_seq_text_B.agent]
+        }
+    }
+    test_seq_text_A.agent != test_seq_text_B.agent
+}
+for
+    exactly 14 mesg,exactly 14 text,exactly 1 seq,
+    exactly 13 atomic,exactly 6 Key,exactly 3 name,
+    exactly 3 Ciphertext,exactly 1 nonce,exactly 6 Key,
+    exactly 6 akey,exactly 0 skey,
+    exactly 3 PublicKey,exactly 3 PrivateKey,exactly 1 KeyPairs,
     exactly 1 test_seq_text_A,exactly 1 test_seq_text_B,
     4 Int
 for {next is linear}

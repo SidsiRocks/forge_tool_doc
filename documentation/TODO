@@ -5,33 +5,38 @@
 - adding pairs
 - adding timestamps
 * TODO Extend tool with signature and hashes
-* TODO fix the problem with encryption related terms
+* DONE fix the problem with encryption related terms
+CLOSED: [2025-09-01 Mon 15:14]
 ** TODO add explanation in documentation
-even after fixing the problem of knowing the encryption term what would happen
-if we want to generate a scenario where an agent recieves an encrypted term which
-they know the key for but they shouldn't be decrypting it they are just passing it on?
-Can support this by marking the type as a simple 'text' instead of (enc ..) when
-stating that agents role maybe mention this in the documentation?
+when stating term to be (enc term) it is now interpreted as you saying the agent
+knows the inverse key so is able to talk about the contents. If don't want to
+talk about the contents of the message only passing it on replace with simple
+variable of type message instead.
+(In this scenario however even when to the agent the term is opaque some random
+message term if it knows the inverse key it can still look up the corresponding
+key)
 * TODO implementing timestamps
 * TODO check documentation is up to date and correct
 * TODO text should be able to contain multiple terms
-Example in otway rees protocol symmetric key K_ab has to be confusable
-with the sequence of terms M,A,B.
-For the other protocol example sent in teams need something similar
-To fix these below TODOs
-** TODO implement 'bytes' datatype containing sequence of messages
-*** TODO possibly update visualizer to make this work
-*** TODO enc. term when key not known is arbitrary bytes
+have implemented this have to debug issues with this as not able to generate the
+typeflaw attack currenty.
+** TODO debug why trying to find the attack for type_flaw_prot is failing
+* TODO constraints for generating a particular trace
+** TODO debug why generating a particular trace is failing for test_seq_text
+Seems like the error is in how the protocol was originally stated not with the
+trace code itself as unable to generate proper honest run there as well
+** TODO can add manual test for transcribed forge code, add
+tests for transcribed forge code maybe can be improved
+
 * TODO Final goal
  * model a protocol with singatures hashing and encryption
  * state correspondence property (example mutual authentication)
  * maybe state correspondence property using a template
 
-* TODO can add manual test for transcribed forge code, add
-constraints for generating a desired run (like known attack) and see if that is generated
 * TODO maybe change to give constraint using a json file
 * TODO just like added test for parser add manual tests for running the file
-*** TODO see if can get output of forge run in command line to run automated tests
+currently cannot get information for generated runs without GUI ask Professor Tim
+if it is possible and use that for this automated testing.
 
 * TODO figure out what trace and equivalence based predicates would look like
 ** TODO maybe better interface for stating predicates as well?
@@ -54,7 +59,6 @@ constraints for generating a desired run (like known attack) and see if that is 
 ** TODO evaulator giving type error when using functions
 When using getPUBK[name0] get error that type should be name not mesg, but
 getPUBK[two_nonce_resp0.agent] works eventhough  two_nonce_resp0.agent = name0
-** TODO getInv function not wokring
-When trying to use the getInv function get the below error
-[/home/sidsi_skilled/data-4/another_fedora_home_folder/Documents/LearnFolder/forge_tool_doc/prot_impl/two_nonce/two_nonce_new_transcr.frg:51:22 (span 20)] Join always results in an empty relation: Left argument of join "(KeyPairs.owners.arbitrary_init_two_nonce.two_nonce_init_a.KeyPairs.pairs)" is in ((PublicKey)). Right argument of join "(KeyPairs.pairs)" is in ((PrivateKey -> PublicKey))
-figure out alternate getInv currently settting the inverse at transcribe time
+** TODO get perf metrics for ootway_rees two_nonce and others
+get these performance metrics for different versisons to send to sir
+** TODO unable to make many other custom solvers work ask sir about being able to use those

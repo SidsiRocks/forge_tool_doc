@@ -130,8 +130,15 @@ pred wellformed {
   -- You cannot send a message with no data
   all m: Timeslot | some elems[m.data]
 
+  -- TODO: ask mam if this assumption is correct
   -- someone cannot send a message to themselves
-  all m: Timeslot | m.sender not in m.receiver
+  -- this should be m.sender.agent not in m.receiver.agent
+  -- I don't think there is circumstance where different strand but same agent
+  -- would occur, problem with allowing different strands and same agent leads
+  -- to cylic justification. Can learn as the term is learnt on the reciever side
+  -- because someone sent it, can send it becuase already learnt it.
+  -- all m: Timeslot | m.sender not in m.receiver
+  all m: Timeslot | m.sender.agent not in m.receiver.agent
 
   -- workspace: workaround to avoid cyclic justification within just deconstructions
   -- AGENT -> TICK -> MICRO-TICK LEARNED_SUBTERM
@@ -220,7 +227,9 @@ pred wellformed {
   --  NOTE WELL: if ever add another type of mesg that contains data, add with + inside ^.
   --old_plainw ould be unique so some or all doesn't
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
-    all d: mesg | d not in d.^(old_plain)
+      let components_rel = {seq_term:seq,msg:mesg | {msg in elems[seq_term.components]}} | {
+          all d: mesg | d not in d.^(old_plain + components_rel)
+      }
   }
   
   -- Disallow empty ciphertexts
@@ -278,7 +287,9 @@ fun subterm[supers: set mesg]: set mesg {
   -- do cross check that it actually returns the correct thing and not an empty set
   -- or something
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
-    supers + supers.^(old_plain) -- union on new subterm relations inside parens
+      let components_rel = {seq_term:seq,msg:mesg | {msg in elems[seq_term.components]}} | {
+          supers + supers.^(old_plain + components_rel) -- union on new subterm relations inside parens
+      }
   }
   -- TODO add something for finding subterms of seq which extends text
 }
@@ -345,6 +356,7 @@ run {
 */
 
 
+
 fun getPRIVK[name_a:name] : lone Key{
     (KeyPairs.owners).name_a
 }
@@ -375,11 +387,11 @@ pred exec_test_seq_text_A {
           (enc_2).plaintext[0] = arbitrary_A_test_seq_text.test_seq_text_A_n1
           (enc_2).encryptionKey = getPUBK[arbitrary_A_test_seq_text.test_seq_text_A_b]
         }
-        
+
         t1.receiver = arbitrary_A_test_seq_text
         inds[(t1.data)] = 0
         (t1.data)[0] = arbitrary_A_test_seq_text.test_seq_text_A_n2
-        
+
       }
     }
   }
@@ -403,7 +415,7 @@ pred exec_test_seq_text_B {
           (enc_6).plaintext[0] = arbitrary_B_test_seq_text.test_seq_text_B_n1
           (enc_6).encryptionKey = getPUBK[arbitrary_B_test_seq_text.test_seq_text_B_b]
         }
-        
+
         t1.sender = arbitrary_B_test_seq_text
         inds[(t1.data)] = 0+1
         some enc_8 : elems[(t1.data)] | {
@@ -414,26 +426,66 @@ pred exec_test_seq_text_B {
           (enc_8).plaintext[0] = arbitrary_B_test_seq_text.test_seq_text_B_n1
           (enc_8).encryptionKey = getPUBK[arbitrary_B_test_seq_text.test_seq_text_B_b]
         }
-        
+
       }
     }
   }
 }
-option run_sterling "../../crypto_viz_seq.js"
+one sig skeleton_test_seq_text_0 {
+  skeleton_test_seq_text_0_a : one name,
+  skeleton_test_seq_text_0_b : one name,
+  skeleton_test_seq_text_0_n1 : one text,
+  skeleton_test_seq_text_0_n2 : one text
+}
+pred constrain_skeleton_test_seq_text_0 {
+  some skeleton_A_0_strand_0 : test_seq_text_A | {
+    skeleton_A_0_strand_0.test_seq_text_A_a = skeleton_test_seq_text_0.skeleton_test_seq_text_0_a
+    skeleton_A_0_strand_0.test_seq_text_A_b = skeleton_test_seq_text_0.skeleton_test_seq_text_0_b
+    skeleton_A_0_strand_0.test_seq_text_A_n1 = skeleton_test_seq_text_0.skeleton_test_seq_text_0_n1
+  }
+  no aStrand : strand | {
+    originates[aStrand,getPRIVK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_a]] or generates [aStrand,getPRIVK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_a]]
+  }
+  no aStrand : strand | {
+    originates[aStrand,getPRIVK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_b]] or generates [aStrand,getPRIVK[skeleton_test_seq_text_0.skeleton_test_seq_text_0_b]]
+  }
+  one aStrand : strand | {
+    originates[aStrand,skeleton_test_seq_text_0.skeleton_test_seq_text_0_n1] or generates [aStrand,skeleton_test_seq_text_0.skeleton_test_seq_text_0_n1]
+  }
+}
+option run_sterling "../../crypto_viz_text_seq.js"
+
+option solver MiniSatProver
+option logtranslation 1
+option coregranularity 1
+option core_minimization rce
 
 test_seq_text_run : run {
     wellformed
 
     exec_test_seq_text_A
     exec_test_seq_text_B
+    constrain_skeleton_test_seq_text_0
 
-    test_seq_text_A.test_seq_text_A_a = test_seq_text_A.agent   
-    test_seq_text_A.test_seq_text_A_b = test_seq_text_B.agent   
+    test_seq_text_A.test_seq_text_A_a = test_seq_text_A.agent
+    test_seq_text_A.test_seq_text_A_b = test_seq_text_B.agent
 
-    test_seq_text_B.test_seq_text_B_a = test_seq_text_A.agent   
+    test_seq_text_B.test_seq_text_B_a = test_seq_text_A.agent
     test_seq_text_B.test_seq_text_B_b = test_seq_text_B.agent
 
     test_seq_text_A.test_seq_text_A_n2 in seq
+    inds[test_seq_text_A.test_seq_text_A_n2.components] = 0+1
+
+    let A_n2 = test_seq_text_A.test_seq_text_A_n2 | {
+        A_n2.components[0] = getPUBK[test_seq_text_A.agent]
+        A_n2.components[1] in Ciphertext
+        let cipher = A_n2.components[1] | {
+            inds[cipher.plaintext] = 0
+            cipher.plaintext[0] = test_seq_text_B.test_seq_text_B_n1
+            cipher.encryptionKey = getPUBK[test_seq_text_B.agent]
+        }
+    }
+    test_seq_text_A.agent != test_seq_text_B.agent
 }
 for
     exactly 14 mesg,exactly 14 text,exactly 1 seq,
