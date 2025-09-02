@@ -1,7 +1,7 @@
 #lang forge/domains/crypto
 (defprotocol ootway_rees basic
   (defrole A
-    (vars (a b s name) (m na nb text) (kab skey))
+    (vars (a b s name) (m na text) (kab skey))
     (trace
      (send (cat m a b (enc na m a b (ltk a s))))
      (recv (cat m (enc na kab (ltk a s))))
@@ -26,7 +26,8 @@
 )
 (defskeleton ootway_rees
   (vars (a b s name) (m na nb text) (kab skey) (A role_A) (B role_B) (S role_S))
-  (defstrand A 2 (a a) (b b) (s s) (m m) (na na) (nb nb) (kab kab))
+  (defstrand A 2 (a a) (b b) (s s) (m m) (na na) (kab kab))
+  (defstrand B 2 (nb nb))
   (not-eq a b) (not-eq a s) (not-eq b s)
   (not-eq m na) (not-eq m nb) (not-eq na nb)
   ;; (deftrace honest_run
@@ -43,5 +44,8 @@
   ;;   (recv-by A (cat m (enc na kab (ltk a s))))
   ;; )
   (non-orig (ltk a s) (ltk b s))
-  (uniq-orig m na nb kab)
+  ;; add uniq-orig nb here after adding another strand declaration
+  ;; previous code was incorrect not adding immediately incase it makes it
+  ;; unsat
+  (uniq-orig m na kab nb)
 )

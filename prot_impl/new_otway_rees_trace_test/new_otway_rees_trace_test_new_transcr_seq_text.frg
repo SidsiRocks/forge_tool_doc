@@ -375,7 +375,6 @@ sig ootway_rees_A extends strand {
   ootway_rees_A_s : one name,
   ootway_rees_A_m : one text,
   ootway_rees_A_na : one text,
-  ootway_rees_A_nb : one text,
   ootway_rees_A_kab : one skey
 }
 pred exec_ootway_rees_A {
@@ -565,8 +564,10 @@ pred constrain_skeleton_ootway_rees_0 {
     skeleton_A_0_strand_0.ootway_rees_A_s = skeleton_ootway_rees_0.skeleton_ootway_rees_0_s
     skeleton_A_0_strand_0.ootway_rees_A_m = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
     skeleton_A_0_strand_0.ootway_rees_A_na = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-    skeleton_A_0_strand_0.ootway_rees_A_nb = skeleton_ootway_rees_0.skeleton_ootway_rees_0_nb
     skeleton_A_0_strand_0.ootway_rees_A_kab = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
+  }
+  some skeleton_B_0_strand_1 : ootway_rees_B | {
+    skeleton_B_0_strand_1.ootway_rees_B_nb = skeleton_ootway_rees_0.skeleton_ootway_rees_0_nb
   }
   skeleton_ootway_rees_0.skeleton_ootway_rees_0_a != skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
   skeleton_ootway_rees_0.skeleton_ootway_rees_0_a != skeleton_ootway_rees_0.skeleton_ootway_rees_0_s
@@ -587,9 +588,6 @@ pred constrain_skeleton_ootway_rees_0 {
     originates[aStrand,skeleton_ootway_rees_0.skeleton_ootway_rees_0_na] or generates [aStrand,skeleton_ootway_rees_0.skeleton_ootway_rees_0_na]
   }
   one aStrand : strand | {
-    originates[aStrand,skeleton_ootway_rees_0.skeleton_ootway_rees_0_nb] or generates [aStrand,skeleton_ootway_rees_0.skeleton_ootway_rees_0_nb]
-  }
-  one aStrand : strand | {
     originates[aStrand,skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab] or generates [aStrand,skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab]
   }
 }
@@ -600,7 +598,56 @@ option logtranslation 1
 option coregranularity 1
 option core_minimization rce
 
+pred A_name_consistent {
+    let A = ootway_rees_A | { let B = ootway_rees_B | {
+    let S = ootway_rees_S | {
+        A.ootway_rees_A_a = A.agent
+        A.ootway_rees_A_b = B.agent
+        A.ootway_rees_A_s = S.agent
+    } } }
+}
+pred B_name_consistent {
+    let A = ootway_rees_A | { let B = ootway_rees_B | {
+    let S = ootway_rees_S | {
+        B.ootway_rees_B_a = A.agent
+        B.ootway_rees_B_b = B.agent
+        B.ootway_rees_B_s = S.agent
+    } } }
+}
+pred S_name_consistent {
+    let A = ootway_rees_A | { let B = ootway_rees_B | {
+    let S = ootway_rees_S | {
+        S.ootway_rees_S_a = A.agent
+        S.ootway_rees_S_b = B.agent
+        S.ootway_rees_S_s = S.agent
+    } } }
+}
+pred name_consistent {
+    A_name_consistent and B_name_consistent and S_name_consistent
+}
+pred m_consistent {
+    let A_m = ootway_rees_A.ootway_rees_A_m | { let B_m = ootway_rees_B.ootway_rees_B_m | {
+    let S_m = ootway_rees_S.ootway_rees_S_m | {
+        (A_m = S_m) and (A_m = B_m) and (B_m = S_m)
+    } } }
+}
 
+pred na_consistent {
+    ootway_rees_A.ootway_rees_A_na = ootway_rees_S.ootway_rees_S_na
+}
+pred nb_consistent {
+    ootway_rees_B.ootway_rees_B_nb = ootway_rees_S.ootway_rees_S_nb
+}
+pred kab_consistent {
+    let S_kab = ootway_rees_S.ootway_rees_S_kab | { let A_kab = ootway_rees_A.ootway_rees_A_kab | {
+    let B_kab = ootway_rees_B.ootway_rees_B_kab | {
+        (S_kab = A_kab) and (S_kab = B_kab) and (A_kab = B_kab)
+    } } }
+}
+pred all_consistent {
+    name_consistent and m_consistent and na_consistent and nb_consistent
+    kab_consistent
+}
 new_ootway_prot_run : run {
     wellformed
     exec_ootway_rees_A

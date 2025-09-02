@@ -32,7 +32,29 @@ pred S_name_consistent {
 pred name_consistent {
     A_name_consistent and B_name_consistent and S_name_consistent
 }
+pred m_consistent {
+    let A_m = ootway_rees_A.ootway_rees_A_m | { let B_m = ootway_rees_B.ootway_rees_B_m | {
+    let S_m = ootway_rees_S.ootway_rees_S_m | {
+        (A_m = S_m) and (A_m = B_m) and (B_m = S_m)
+    } } }
+}
 
+pred na_consistent {
+    ootway_rees_A.ootway_rees_A_na = ootway_rees_S.ootway_rees_S_na
+}
+pred nb_consistent {
+    ootway_rees_B.ootway_rees_B_nb = ootway_rees_S.ootway_rees_S_nb
+}
+pred kab_consistent {
+    let S_kab = ootway_rees_S.ootway_rees_S_kab | { let A_kab = ootway_rees_A.ootway_rees_A_kab | {
+    let B_kab = ootway_rees_B.ootway_rees_B_kab | {
+        (S_kab = A_kab) and (S_kab = B_kab) and (A_kab = B_kab)
+    } } }
+}
+pred all_consistent {
+    name_consistent and m_consistent and na_consistent and nb_consistent
+    kab_consistent
+}
 new_ootway_prot_run : run {
     wellformed
     exec_ootway_rees_A
