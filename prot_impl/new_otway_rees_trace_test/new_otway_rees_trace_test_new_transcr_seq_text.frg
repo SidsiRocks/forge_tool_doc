@@ -559,6 +559,15 @@ one sig skeleton_ootway_rees_0 {
   skeleton_ootway_rees_0_S : one ootway_rees_S
 }
 pred constrain_skeleton_ootway_rees_0 {
+  some skeleton_A_0_strand_0 : ootway_rees_A | {
+    skeleton_A_0_strand_0.ootway_rees_A_a = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
+    skeleton_A_0_strand_0.ootway_rees_A_b = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
+    skeleton_A_0_strand_0.ootway_rees_A_s = skeleton_ootway_rees_0.skeleton_ootway_rees_0_s
+    skeleton_A_0_strand_0.ootway_rees_A_m = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
+    skeleton_A_0_strand_0.ootway_rees_A_na = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
+    skeleton_A_0_strand_0.ootway_rees_A_nb = skeleton_ootway_rees_0.skeleton_ootway_rees_0_nb
+    skeleton_A_0_strand_0.ootway_rees_A_kab = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
+  }
   skeleton_ootway_rees_0.skeleton_ootway_rees_0_a != skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
   skeleton_ootway_rees_0.skeleton_ootway_rees_0_a != skeleton_ootway_rees_0.skeleton_ootway_rees_0_s
   skeleton_ootway_rees_0.skeleton_ootway_rees_0_b != skeleton_ootway_rees_0.skeleton_ootway_rees_0_s

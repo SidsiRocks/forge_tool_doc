@@ -26,6 +26,7 @@
 )
 (defskeleton ootway_rees
   (vars (a b s name) (m na nb text) (kab skey) (A role_A) (B role_B) (S role_S))
+  (defstrand A 2 (a a) (b b) (s s) (m m) (na na) (nb nb) (kab kab))
   (not-eq a b) (not-eq a s) (not-eq b s)
   (not-eq m na) (not-eq m nb) (not-eq na nb)
   ;; (deftrace honest_run
