@@ -31,7 +31,7 @@ new_ootway_prot_run : run {
         (S.S_a = A.agent) and (S.S_b = B.agent) and (S.S_s = S.agent)
     } } }
 
-    let first_a_s_mesg = ootway_rees_B_first_a_s_mesg | {
+    let first_a_s_mesg = B.ootway_rees_B_first_a_s_mesg | {
         first_a_s_mesg in Ciphertext
         first_a_s_mesg.encryptionKey = getLTK[A.agent,S.agent]
         inds[first_a_s_mesg.plaintext] = 0+1+2+3
