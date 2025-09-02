@@ -643,6 +643,11 @@ new_ootway_prot_run : run {
         (second_a_s_mesg.plaintext)[0] = S.ootway_rees_S_na
         (second_a_s_mesg.plaintext)[1] = S.ootway_rees_S_kab
     }
+
+    let k_ab = S.ootway_rees_S_kab | {
+        (k_ab != getLTK[A.agent,S.agent]) and (k_ab != getLTK[B.agent,S.agent]) and (k_ab != getLTK[A.agent,B.agent])
+    }
+
     } } }
 } for
     exactly 8 Timeslot,exactly 24 mesg,exactly 24 text,exactly 24 atomic,
