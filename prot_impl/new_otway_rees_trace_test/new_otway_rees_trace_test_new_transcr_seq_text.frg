@@ -636,6 +636,13 @@ new_ootway_prot_run : run {
         (first_a_s_mesg.plaintext)[3] = A.ootway_rees_A_b
     }
 
+    let second_a_s_mesg = B.ootway_rees_B_second_a_s_mesg | {
+        second_a_s_mesg in Ciphertext
+        second_a_s_mesg.encryptionKey = getLTK[A.agent,S.agent]
+        inds[second_a_s_mesg.plaintext] = 0+1
+        (second_a_s_mesg.plaintext)[0] = S.ootway_rees_S_na
+        (second_a_s_mesg.plaintext)[1] = S.ootway_rees_S_kab
+    }
     } } }
 } for
     exactly 8 Timeslot,exactly 24 mesg,exactly 24 text,exactly 24 atomic,

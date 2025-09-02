@@ -50,6 +50,8 @@ function orderTimeslots(arr) {
 // data from forge spec
 const strands = strand.atoms(true);
 const messages = Timeslot.atoms(true);
+// TODO: maybe can use the agent names here to improve the visualization
+// can show names like A,B instead of name1,name2 figure out later
 const agentNames = strands.map(x => x.toString());
 const keyNames = Key.atoms(true).map(x => x.toString());
 const timeslots = [];
