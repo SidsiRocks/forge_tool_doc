@@ -331,3 +331,5 @@ def str_to_vartype(var_type_str:str):
 def vartype_to_str(var_type:MsgTypes):
     """convert vartype to string used when transcribing"""
     return f"{var_type}"
+
+# added comment here to test commit all command

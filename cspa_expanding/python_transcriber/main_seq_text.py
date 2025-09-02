@@ -118,3 +118,5 @@ if __name__ == "__main__":
                     with open(run_forge_file_path) as run_forge_file:
                         main(cpsa_file,destination_forge_file,base_file,extra_func_file,run_forge_file,should_strip_lang_and_open,visualization_script)
                         print(f"finish transcribing to {destination_forge_file_name}")
+
+# added comment here to test commit all command
