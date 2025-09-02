@@ -28,19 +28,19 @@
   (vars (a b s name) (m na nb text) (kab skey) (A role_A) (B role_B) (S role_S))
   (not-eq a b) (not-eq a s) (not-eq b s)
   (not-eq m na) (not-eq m nb) (not-eq na nb)
-  (deftrace honest_run
-    (send-from A (cat m a b (enc na m a b (ltk a s))))
-    (recv-by B (cat m a b (enc na m a b (ltk a s))))
+  ;; (deftrace honest_run
+  ;;   (send-from A (cat m a b (enc na m a b (ltk a s))))
+  ;;   (recv-by B (cat m a b (enc na m a b (ltk a s))))
 
-    (send-from B (cat m a b (enc na m a b (ltk a s)) (enc na m a b (ltk b s))))
-    (recv-by S (cat m a b (enc na m a b (ltk a s)) (enc na m a b (ltk b s))))
+  ;;   (send-from B (cat m a b (enc na m a b (ltk a s)) (enc na m a b (ltk b s))))
+  ;;   (recv-by S (cat m a b (enc na m a b (ltk a s)) (enc na m a b (ltk b s))))
 
-    (send-from S (cat m (enc na kab (ltk a s)) (enc na kab (ltk b s))))
-    (recv-by B (cat m (enc na kab (ltk a s)) (enc na kab (ltk b s))))
+  ;;   (send-from S (cat m (enc na kab (ltk a s)) (enc na kab (ltk b s))))
+  ;;   (recv-by B (cat m (enc na kab (ltk a s)) (enc na kab (ltk b s))))
 
-    (send-from B (cat m (enc na kab (ltk a s))))
-    (recv-by A (cat m (enc na kab (ltk a s))))
-  )
+  ;;   (send-from B (cat m (enc na kab (ltk a s))))
+  ;;   (recv-by A (cat m (enc na kab (ltk a s))))
+  ;; )
   (non-orig (ltk a s) (ltk b s))
   (uniq-orig m na nb kab)
 )

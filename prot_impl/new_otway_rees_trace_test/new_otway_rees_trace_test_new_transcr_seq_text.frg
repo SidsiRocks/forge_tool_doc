@@ -227,7 +227,9 @@ pred wellformed {
   --  NOTE WELL: if ever add another type of mesg that contains data, add with + inside ^.
   --old_plainw ould be unique so some or all doesn't
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
-    all d: mesg | d not in d.^(old_plain)
+      let components_rel = {seq_term:seq,msg:mesg | {msg in elems[seq_term.components]}} | {
+          all d: mesg | d not in d.^(old_plain + components_rel)
+      }
   }
   
   -- Disallow empty ciphertexts
@@ -285,7 +287,9 @@ fun subterm[supers: set mesg]: set mesg {
   -- do cross check that it actually returns the correct thing and not an empty set
   -- or something
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
-    supers + supers.^(old_plain) -- union on new subterm relations inside parens
+      let components_rel = {seq_term:seq,msg:mesg | {msg in elems[seq_term.components]}} | {
+          supers + supers.^(old_plain + components_rel) -- union on new subterm relations inside parens
+      }
   }
   -- TODO add something for finding subterms of seq which extends text
 }
@@ -350,6 +354,8 @@ run {
   }
 }
 */
+
+-- added comment here to test commit all command
 
 
 
@@ -552,165 +558,6 @@ one sig skeleton_ootway_rees_0 {
   skeleton_ootway_rees_0_B : one ootway_rees_B,
   skeleton_ootway_rees_0_S : one ootway_rees_S
 }
-pred constrain_skeleton_ootway_rees_0_honest_run {
-  some t_0 : Timeslot {
-    some t_1 : t_0.(^next) {
-      some t_2 : t_1.(^next) {
-        some t_3 : t_2.(^next) {
-          some t_4 : t_3.(^next) {
-            some t_5 : t_4.(^next) {
-              some t_6 : t_5.(^next) {
-                some t_7 : t_6.(^next) {
-                  t_0.sender = skeleton_ootway_rees_0.skeleton_ootway_rees_0_A
-                  inds[t_0.data] = 0+1+2+3
-                  some enc_33 : elems[t_0.data] | {
-                    t_0.data[3] = enc_33
-                    t_0.data[0] in nonce
-                    t_0.data[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    t_0.data[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
-                    t_0.data[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    inds[(enc_33).plaintext] = 0+1+2+3
-                    (enc_33).plaintext[0] in nonce
-                    (enc_33).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_33).plaintext[1] in nonce
-                    (enc_33).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    (enc_33).plaintext[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
-                    (enc_33).plaintext[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    (enc_33).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
-                  }
-
-                  t_1.receiver = skeleton_ootway_rees_0.skeleton_ootway_rees_0_B
-                  inds[t_1.data] = 0+1+2+3
-                  some enc_38 : elems[t_1.data] | {
-                    t_1.data[3] = enc_38
-                    t_1.data[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    t_1.data[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
-                    t_1.data[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    inds[(enc_38).plaintext] = 0+1+2+3
-                    (enc_38).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_38).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    (enc_38).plaintext[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
-                    (enc_38).plaintext[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    (enc_38).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
-                  }
-
-                  t_2.sender = skeleton_ootway_rees_0.skeleton_ootway_rees_0_B
-                  inds[t_2.data] = 0+1+2+3+4
-                  some enc_43,enc_44 : elems[t_2.data] | {
-                    t_2.data[3] = enc_43
-                    t_2.data[4] = enc_44
-                    t_2.data[0] in nonce
-                    t_2.data[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    t_2.data[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
-                    t_2.data[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    inds[(enc_43).plaintext] = 0+1+2+3
-                    (enc_43).plaintext[0] in nonce
-                    (enc_43).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_43).plaintext[1] in nonce
-                    (enc_43).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    (enc_43).plaintext[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
-                    (enc_43).plaintext[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    (enc_43).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
-                    inds[(enc_44).plaintext] = 0+1+2+3
-                    (enc_44).plaintext[0] in nonce
-                    (enc_44).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_44).plaintext[1] in nonce
-                    (enc_44).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    (enc_44).plaintext[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
-                    (enc_44).plaintext[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    (enc_44).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_b,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
-                  }
-
-                  t_3.receiver = skeleton_ootway_rees_0.skeleton_ootway_rees_0_S
-                  inds[t_3.data] = 0+1+2+3+4
-                  some enc_53,enc_54 : elems[t_3.data] | {
-                    t_3.data[3] = enc_53
-                    t_3.data[4] = enc_54
-                    t_3.data[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    t_3.data[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
-                    t_3.data[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    inds[(enc_53).plaintext] = 0+1+2+3
-                    (enc_53).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_53).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    (enc_53).plaintext[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
-                    (enc_53).plaintext[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    (enc_53).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
-                    inds[(enc_54).plaintext] = 0+1+2+3
-                    (enc_54).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_54).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    (enc_54).plaintext[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
-                    (enc_54).plaintext[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    (enc_54).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_b,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
-                  }
-
-                  t_4.sender = skeleton_ootway_rees_0.skeleton_ootway_rees_0_S
-                  inds[t_4.data] = 0+1+2
-                  some enc_63,enc_64 : elems[t_4.data] | {
-                    t_4.data[1] = enc_63
-                    t_4.data[2] = enc_64
-                    t_4.data[0] in nonce
-                    t_4.data[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    inds[(enc_63).plaintext] = 0+1
-                    (enc_63).plaintext[0] in nonce
-                    (enc_63).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_63).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
-                    (enc_63).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
-                    inds[(enc_64).plaintext] = 0+1
-                    (enc_64).plaintext[0] in nonce
-                    (enc_64).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_64).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
-                    (enc_64).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_b,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
-                  }
-
-                  t_5.receiver = skeleton_ootway_rees_0.skeleton_ootway_rees_0_B
-                  inds[t_5.data] = 0+1+2
-                  some enc_69,enc_70 : elems[t_5.data] | {
-                    t_5.data[1] = enc_69
-                    t_5.data[2] = enc_70
-                    t_5.data[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    inds[(enc_69).plaintext] = 0+1
-                    (enc_69).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_69).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
-                    (enc_69).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
-                    inds[(enc_70).plaintext] = 0+1
-                    (enc_70).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_70).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
-                    (enc_70).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_b,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
-                  }
-
-                  t_6.sender = skeleton_ootway_rees_0.skeleton_ootway_rees_0_B
-                  inds[t_6.data] = 0+1
-                  some enc_75 : elems[t_6.data] | {
-                    t_6.data[1] = enc_75
-                    t_6.data[0] in nonce
-                    t_6.data[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    inds[(enc_75).plaintext] = 0+1
-                    (enc_75).plaintext[0] in nonce
-                    (enc_75).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_75).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
-                    (enc_75).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
-                  }
-
-                  t_7.receiver = skeleton_ootway_rees_0.skeleton_ootway_rees_0_A
-                  inds[t_7.data] = 0+1
-                  some enc_78 : elems[t_7.data] | {
-                    t_7.data[1] = enc_78
-                    t_7.data[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    inds[(enc_78).plaintext] = 0+1
-                    (enc_78).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_78).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
-                    (enc_78).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
-                  }
-
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
 pred constrain_skeleton_ootway_rees_0 {
   skeleton_ootway_rees_0.skeleton_ootway_rees_0_a != skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
   skeleton_ootway_rees_0.skeleton_ootway_rees_0_a != skeleton_ootway_rees_0.skeleton_ootway_rees_0_s
@@ -736,21 +583,45 @@ pred constrain_skeleton_ootway_rees_0 {
   one aStrand : strand | {
     originates[aStrand,skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab] or generates [aStrand,skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab]
   }
-  constrain_skeleton_ootway_rees_0_honest_run
 }
 option run_sterling "../../crypto_viz_seq.js"
+
+option solver MiniSatProver
+option logtranslation 1
+option coregranularity 1
+option core_minimization rce
+
 
 new_ootway_prot_run : run {
     wellformed
     exec_ootway_rees_A
     exec_ootway_rees_B
-    exec_ootway_rees_B
+    exec_ootway_rees_S
     constrain_skeleton_ootway_rees_0
+    let A = ootway_rees_A | { let B = ootway_rees_B | {
+    let S = ootway_rees_S | {
+        (A.agent != Attacker) and (B.agent != Attacker) and (S.agent != Attacker)
+        (A.agent != B.agent) and (A.agent != S.agent) and (B.agent != S.agent)
+    let A_a = ootway_rees_A_a | { let A_b = ootway_rees_A_b | {
+    let A_s = ootway_rees_A_s | {
+        (A.A_a = A.agent) and (A.A_b = B.agent) and (A.A_s = S.agent)
+    } } }
+
+    let B_a = ootway_rees_B_a | { let B_b = ootway_rees_B_b | {
+    let B_s = ootway_rees_B_s | {
+        (B.B_a = A.agent) and (B.B_b = B.agent) and (B.B_s = S.agent)
+    } } }
+
+    let S_a = ootway_rees_S_a | { let S_b = ootway_rees_S_b | {
+    let S_s = ootway_rees_S_s | {
+        (S.S_a = A.agent) and (S.S_b = B.agent) and (S.S_s = S.agent)
+    } } }
+
+    } } }
 } for
-    exactly 8 Timeslot,exactly 20 mesg,exactly 20 text,exactly 20 atomic,
-    exactly 3 Key,exactly 0 akey,exactly 3 skey,exactly 0 PrivateKey,exactly 0 PublicKey,
+    exactly 8 Timeslot,exactly 24 mesg,exactly 24 text,exactly 24 atomic,
+    exactly 7 Key,exactly 0 akey,exactly 7 skey,exactly 0 PrivateKey,exactly 0 PublicKey,
     exactly 4 name,exactly 9 Ciphertext,exactly 4 nonce,exactly 1 KeyPairs,
     exactly 1 ootway_rees_A,exactly 1 ootway_rees_B,
-    exactly 1 ootway_rees_S,
-    4 Int
-for {next is linear}
+    exactly 1 ootway_rees_S
+for { next is linear }
