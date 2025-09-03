@@ -227,7 +227,9 @@ pred wellformed {
   --  NOTE WELL: if ever add another type of mesg that contains data, add with + inside ^.
   --old_plainw ould be unique so some or all doesn't
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
-    all d: mesg | d not in d.^(old_plain)
+      let components_rel = {seq_term:seq,msg:mesg | {msg in elems[seq_term.components]}} | {
+          all d: mesg | d not in d.^(old_plain + components_rel)
+      }
   }
   
   -- Disallow empty ciphertexts
@@ -285,7 +287,9 @@ fun subterm[supers: set mesg]: set mesg {
   -- do cross check that it actually returns the correct thing and not an empty set
   -- or something
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
-    supers + supers.^(old_plain) -- union on new subterm relations inside parens
+      let components_rel = {seq_term:seq,msg:mesg | {msg in elems[seq_term.components]}} | {
+          supers + supers.^(old_plain + components_rel) -- union on new subterm relations inside parens
+      }
   }
   -- TODO add something for finding subterms of seq which extends text
 }
@@ -351,6 +355,8 @@ run {
 }
 */
 
+-- added comment here to test commit all command
+
 
 
 fun getPRIVK[name_a:name] : lone Key{
@@ -388,7 +394,7 @@ pred exec_type_flaw_prot_A {
           }
           (enc_2).encryptionKey = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_b]
         }
-        
+
         t1.receiver = arbitrary_A_type_flaw_prot
         inds[(t1.data)] = 0
         some enc_8 : elems[(t1.data)] | {
@@ -398,7 +404,7 @@ pred exec_type_flaw_prot_A {
           (enc_8).plaintext[0] = arbitrary_A_type_flaw_prot.type_flaw_prot_A_n
           (enc_8).encryptionKey = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_a]
         }
-        
+
       }
     }
   }
@@ -429,7 +435,7 @@ pred exec_type_flaw_prot_B {
           }
           (enc_11).encryptionKey = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b]
         }
-        
+
         t1.sender = arbitrary_B_type_flaw_prot
         inds[(t1.data)] = 0
         some enc_17 : elems[(t1.data)] | {
@@ -439,7 +445,7 @@ pred exec_type_flaw_prot_B {
           (enc_17).plaintext[0] = arbitrary_B_type_flaw_prot.type_flaw_prot_B_n
           (enc_17).encryptionKey = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_a]
         }
-        
+
       }
     }
   }
@@ -455,11 +461,18 @@ pred constrain_skeleton_type_flaw_prot_0 {
     skeleton_A_0_strand_0.type_flaw_prot_A_b = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b
     skeleton_A_0_strand_0.type_flaw_prot_A_n = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
   }
+  some skeleton_B_0_strand_1 : type_flaw_prot_B | {
+    skeleton_B_0_strand_1.type_flaw_prot_B_a = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a
+    skeleton_B_0_strand_1.type_flaw_prot_B_b = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b
+  }
   no aStrand : strand | {
     originates[aStrand,getPRIVK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]] or generates [aStrand,getPRIVK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]]
   }
   no aStrand : strand | {
     originates[aStrand,getPRIVK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]] or generates [aStrand,getPRIVK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]]
+  }
+  no aStrand : strand | {
+    originates[aStrand,getPRIVK[Attacker]] or generates [aStrand,getPRIVK[Attacker]]
   }
   one aStrand : strand | {
     originates[aStrand,skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n] or generates [aStrand,skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n]
@@ -473,44 +486,17 @@ option engine_verbosity 3
 pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
 }
-pred A_nonce_cannot_be_regen {
-    all type_flaw_prot_A_strand : type_flaw_prot_A | {
-        all aStrand : strand | {
-            generates[aStrand,type_flaw_prot_A_strand.type_flaw_prot_A_n] => (aStrand = type_flaw_prot_A_strand)
-        }
-    }
-}
-pred priv_key_not_in_gen {
-    all k : PrivateKey | {
-        not (k in (name.generated_times).Timeslot)
-    }
-}
 
 type_flaw_prot_run : run {
     wellformed
     exec_type_flaw_prot_A
     exec_type_flaw_prot_B
-    A_nonce_cannot_be_regen
-    priv_key_not_in_gen
-
-    type_flaw_prot_A.agent != AttackerStrand.agent
-    type_flaw_prot_A.type_flaw_prot_A_b != AttackerStrand.agent
-    corrected_attacker_learns[type_flaw_prot_A.type_flaw_prot_A_n]
-    -- type_flaw_prot_B.agent != AttackerStrand.agent
-
-    --below constraints to try and generate honest run first
-    -- type_flaw_prot_A.type_flaw_prot_A_a = type_flaw_prot_A.agent
-    -- type_flaw_prot_A.type_flaw_prot_A_b = type_flaw_prot_B.agent
-
-    -- type_flaw_prot_B.type_flaw_prot_B_a = type_flaw_prot_A.agent
-    -- type_flaw_prot_B.type_flaw_prot_B_b = type_flaw_prot_B.agent
-
-    -- type_flaw_prot_A.agent != type_flaw_prot_B.agent
+    constrain_skeleton_type_flaw_prot_0
 }for
-    exactly 6 Timeslot,17 mesg,17 text,16 atomic,1 seq,
+    exactly 4 Timeslot,13 mesg,13 text,13 atomic,0 seq,
     exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,
     exactly 0 skey,exactly 3 PublicKey,exactly 3 PrivateKey,
-    exactly 3 name,exactly 6 Ciphertext,exactly 1 nonce,
-    exactly 1 type_flaw_prot_A,exactly 2 type_flaw_prot_B,
-    4 Int
+    exactly 3 name,exactly 3 Ciphertext,exactly 1 nonce,
+    exactly 1 type_flaw_prot_A,exactly 1 type_flaw_prot_B,
+    3 Int
 for {next is linear}

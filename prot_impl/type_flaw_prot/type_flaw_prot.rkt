@@ -18,6 +18,7 @@
 (defskeleton type_flaw_prot
     (vars (a b name) (n text))
     (defstrand A 2 (a a) (b b) (n n))
-    (non-orig (privk a) (privk b))
+    (defstrand B 2 (a a) (b b))
+    (non-orig (privk a) (privk b) (privk Attacker))
     (uniq-orig n)
 )
