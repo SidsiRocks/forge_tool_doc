@@ -453,7 +453,69 @@ pred exec_type_flaw_prot_B {
 one sig skeleton_type_flaw_prot_0 {
   skeleton_type_flaw_prot_0_a : one name,
   skeleton_type_flaw_prot_0_b : one name,
-  skeleton_type_flaw_prot_0_n : one text
+  skeleton_type_flaw_prot_0_n : one text,
+  skeleton_type_flaw_prot_0_A : one type_flaw_prot_A,
+  skeleton_type_flaw_prot_0_B : one type_flaw_prot_B
+}
+pred constrain_skeleton_type_flaw_prot_0_honest_run {
+  some t_0 : Timeslot {
+    some t_1 : t_0.(^next) {
+      some t_2 : t_1.(^next) {
+        some t_3 : t_2.(^next) {
+          t_0.sender = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_A
+          inds[t_0.data] = 0
+          some enc_19 : elems[t_0.data] | {
+            t_0.data[0] = enc_19
+            inds[(enc_19).plaintext] = 0+1
+            some enc_22 : elems[(enc_19).plaintext] | {
+              (enc_19).plaintext[1] = enc_22
+              (enc_19).plaintext[0] = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]
+              inds[(enc_22).plaintext] = 0
+              (enc_22).plaintext[0] in nonce
+              (enc_22).plaintext[0] = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
+              (enc_22).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
+            }
+            (enc_19).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
+          }
+
+          t_1.receiver = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B
+          inds[t_1.data] = 0
+          some enc_24 : elems[t_1.data] | {
+            t_1.data[0] = enc_24
+            inds[(enc_24).plaintext] = 0+1
+            some enc_27 : elems[(enc_24).plaintext] | {
+              (enc_24).plaintext[1] = enc_27
+              (enc_24).plaintext[0] = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]
+              inds[(enc_27).plaintext] = 0
+              (enc_27).plaintext[0] = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
+              (enc_27).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
+            }
+            (enc_24).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
+          }
+
+          t_2.sender = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B
+          inds[t_2.data] = 0
+          some enc_29 : elems[t_2.data] | {
+            t_2.data[0] = enc_29
+            inds[(enc_29).plaintext] = 0
+            (enc_29).plaintext[0] in nonce
+            (enc_29).plaintext[0] = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
+            (enc_29).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]
+          }
+
+          t_3.receiver = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_A
+          inds[t_3.data] = 0
+          some enc_31 : elems[t_3.data] | {
+            t_3.data[0] = enc_31
+            inds[(enc_31).plaintext] = 0
+            (enc_31).plaintext[0] = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
+            (enc_31).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]
+          }
+
+        }
+      }
+    }
+  }
 }
 pred constrain_skeleton_type_flaw_prot_0 {
   some skeleton_A_0_strand_0 : type_flaw_prot_A | {
@@ -477,11 +539,17 @@ pred constrain_skeleton_type_flaw_prot_0 {
   one aStrand : strand | {
     originates[aStrand,skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n] or generates [aStrand,skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n]
   }
+  constrain_skeleton_type_flaw_prot_0_honest_run
 }
 option run_sterling "../../crypto_viz_text_seq.js"
 -- option verbose 10
 -- option solver "../../../../../../../../../usr/bin/minisat"
 option engine_verbosity 3
+
+option solver MiniSatProver
+option logtranslation 1
+option coregranularity 1
+option core_minimization rce
 
 pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
@@ -492,6 +560,8 @@ type_flaw_prot_run : run {
     exec_type_flaw_prot_A
     exec_type_flaw_prot_B
     constrain_skeleton_type_flaw_prot_0
+
+    -- type_flaw_prot_B.type_flaw_prot_B_n in seq
 }for
     exactly 4 Timeslot,13 mesg,13 text,13 atomic,0 seq,
     exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,

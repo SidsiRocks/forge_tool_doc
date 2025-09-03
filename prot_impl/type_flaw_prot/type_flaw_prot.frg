@@ -3,6 +3,11 @@ option run_sterling "../../crypto_viz_text_seq.js"
 -- option solver "../../../../../../../../../usr/bin/minisat"
 option engine_verbosity 3
 
+option solver MiniSatProver
+option logtranslation 1
+option coregranularity 1
+option core_minimization rce
+
 pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
 }
@@ -12,6 +17,8 @@ type_flaw_prot_run : run {
     exec_type_flaw_prot_A
     exec_type_flaw_prot_B
     constrain_skeleton_type_flaw_prot_0
+
+    -- type_flaw_prot_B.type_flaw_prot_B_n in seq
 }for
     exactly 4 Timeslot,13 mesg,13 text,13 atomic,0 seq,
     exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,
