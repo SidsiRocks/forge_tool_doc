@@ -19,14 +19,9 @@
 (defskeleton type_flaw_prot
   (vars (a b name) (n text) (A role_A) (B role_B))
 
-  (deftrace honest_run
-    (send-from A (enc (pubk a) (enc n (pubk b)) (pubk b)))
-    (recv-by B (enc (pubk a) (enc n (pubk b)) (pubk b)))
+  (defstrand A 2 (a a) (n n))
 
-    (send-from B (enc n (pubk a)))
-    (recv-by A (enc n (pubk a)))
-  )
-
-  (non-orig (privk a) (privk b))
+  ;; TODO check if non-orig privk Attacker is needed or not
+  (non-orig (privk a) (privk b) (privk Attacker))
   (uniq-orig n)
 )

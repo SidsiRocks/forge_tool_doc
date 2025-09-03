@@ -227,7 +227,9 @@ pred wellformed {
   --  NOTE WELL: if ever add another type of mesg that contains data, add with + inside ^.
   --old_plainw ould be unique so some or all doesn't
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
-    all d: mesg | d not in d.^(old_plain)
+      let components_rel = {seq_term:seq,msg:mesg | {msg in elems[seq_term.components]}} | {
+          all d: mesg | d not in d.^(old_plain + components_rel)
+      }
   }
   
   -- Disallow empty ciphertexts
@@ -285,7 +287,9 @@ fun subterm[supers: set mesg]: set mesg {
   -- do cross check that it actually returns the correct thing and not an empty set
   -- or something
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
-    supers + supers.^(old_plain) -- union on new subterm relations inside parens
+      let components_rel = {seq_term:seq,msg:mesg | {msg in elems[seq_term.components]}} | {
+          supers + supers.^(old_plain + components_rel) -- union on new subterm relations inside parens
+      }
   }
   -- TODO add something for finding subterms of seq which extends text
 }
@@ -350,6 +354,8 @@ run {
   }
 }
 */
+
+-- added comment here to test commit all command
 
 
 
@@ -451,77 +457,23 @@ one sig skeleton_type_flaw_prot_0 {
   skeleton_type_flaw_prot_0_A : one type_flaw_prot_A,
   skeleton_type_flaw_prot_0_B : one type_flaw_prot_B
 }
-pred constrain_skeleton_type_flaw_prot_0_honest_run {
-  some t_0 : Timeslot {
-    some t_1 : t_0.(^next) {
-      some t_2 : t_1.(^next) {
-        some t_3 : t_2.(^next) {
-          t_0.sender = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_A
-          inds[t_0.data] = 0
-          some enc_19 : elems[t_0.data] | {
-            t_0.data[0] = enc_19
-            inds[(enc_19).plaintext] = 0+1
-            some enc_22 : elems[(enc_19).plaintext] | {
-              (enc_19).plaintext[1] = enc_22
-              (enc_19).plaintext[0] = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]
-              inds[(enc_22).plaintext] = 0
-              (enc_22).plaintext[0] in nonce
-              (enc_22).plaintext[0] = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
-              (enc_22).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
-            }
-            (enc_19).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
-          }
-
-          t_1.receiver = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B
-          inds[t_1.data] = 0
-          some enc_24 : elems[t_1.data] | {
-            t_1.data[0] = enc_24
-            inds[(enc_24).plaintext] = 0+1
-            some enc_27 : elems[(enc_24).plaintext] | {
-              (enc_24).plaintext[1] = enc_27
-              (enc_24).plaintext[0] = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]
-              inds[(enc_27).plaintext] = 0
-              (enc_27).plaintext[0] = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
-              (enc_27).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
-            }
-            (enc_24).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
-          }
-
-          t_2.sender = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B
-          inds[t_2.data] = 0
-          some enc_29 : elems[t_2.data] | {
-            t_2.data[0] = enc_29
-            inds[(enc_29).plaintext] = 0
-            (enc_29).plaintext[0] in nonce
-            (enc_29).plaintext[0] = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
-            (enc_29).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]
-          }
-
-          t_3.receiver = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_A
-          inds[t_3.data] = 0
-          some enc_31 : elems[t_3.data] | {
-            t_3.data[0] = enc_31
-            inds[(enc_31).plaintext] = 0
-            (enc_31).plaintext[0] = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
-            (enc_31).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]
-          }
-
-        }
-      }
-    }
-  }
-}
 pred constrain_skeleton_type_flaw_prot_0 {
+  some skeleton_A_0_strand_0 : type_flaw_prot_A | {
+    skeleton_A_0_strand_0.type_flaw_prot_A_a = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a
+    skeleton_A_0_strand_0.type_flaw_prot_A_n = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
+  }
   no aStrand : strand | {
     originates[aStrand,getPRIVK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]] or generates [aStrand,getPRIVK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]]
   }
   no aStrand : strand | {
     originates[aStrand,getPRIVK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]] or generates [aStrand,getPRIVK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]]
   }
+  no aStrand : strand | {
+    originates[aStrand,getPRIVK[Attacker]] or generates [aStrand,getPRIVK[Attacker]]
+  }
   one aStrand : strand | {
     originates[aStrand,skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n] or generates [aStrand,skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n]
   }
-  constrain_skeleton_type_flaw_prot_0_honest_run
 }
 option run_sterling "../../crypto_viz_text_seq.js"
 
@@ -529,12 +481,18 @@ type_flaw_prot_run : run {
     wellformed
     exec_type_flaw_prot_A
     exec_type_flaw_prot_B
+
     constrain_skeleton_type_flaw_prot_0
+    let A = type_flaw_prot_A | { let B = type_flaw_prot_B | {
+        A.agent != B.agent and A.agent != Attacker and B.agent != Attacker
+    } }
 } for
-    exactly 4 Timeslot,exactly 13 mesg,exactly 13 atomic,
+    exactly 6 Timeslot,exactly 19 mesg,exactly 19 text,
+    exactly 18 atomic,exactly 1 seq,
     exactly 6 Key,exactly 6 akey,exactly 0 skey,
-    exactly 3 PrivateKey,exactly 3 PublicKey,exactly 3 name,
-    exactly 3 Ciphertext,exactly 1 nonce,exactly 1 KeyPairs,
-    exactly 1 type_flaw_prot_A,exactly 1 type_flaw_prot_B,
+    exactly 3 PrivateKey,exactly 3 PublicKey,
+    exactly 3 name,exactly 8 Ciphertext,exactly 1 nonce,
+    exactly 1 KeyPairs,exactly 1 type_flaw_prot_A,
+    exactly 2 type_flaw_prot_B,
     4 Int
 for {next is linear}
