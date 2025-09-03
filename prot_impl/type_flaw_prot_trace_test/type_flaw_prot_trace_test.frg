@@ -1,5 +1,9 @@
 option run_sterling "../../crypto_viz_text_seq.js"
 
+pred corrected_attacker_learns[d:mesg]{
+    d in Attacker.learned_times.Timeslot
+}
+
 type_flaw_prot_run : run {
     wellformed
     exec_type_flaw_prot_A
@@ -8,7 +12,10 @@ type_flaw_prot_run : run {
     constrain_skeleton_type_flaw_prot_0
     let A = type_flaw_prot_A | { let B = type_flaw_prot_B | {
         A.agent != B.agent and A.agent != Attacker and B.agent != Attacker
+        A.type_flaw_prot_A_b != Attacker
+        -- corrected_attacker_learns[A.type_flaw_prot_A_n]
     } }
+
 } for
     exactly 6 Timeslot,exactly 19 mesg,exactly 19 text,
     exactly 18 atomic,exactly 1 seq,
