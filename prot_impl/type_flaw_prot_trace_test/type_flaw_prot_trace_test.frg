@@ -1,5 +1,11 @@
 option run_sterling "../../crypto_viz_text_seq.js"
 
+option solver MiniSatProver
+option logtranslation 1
+option coregranularity 1
+option core_minimization rce
+
+
 pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
 }
