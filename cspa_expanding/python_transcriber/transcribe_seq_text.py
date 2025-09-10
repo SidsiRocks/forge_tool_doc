@@ -381,7 +381,10 @@ def transcribe_seq_term(elm_expr:str,seq_expr:SeqTerm,send_recv:SendRecv,timeslo
     transcr = sig_context.get_transcr()
     match sig_context:
         case RoleTranscribeContext(_):
-            raise ParseException(f"seq term only allowed in {DEF_SKEL_STR} not {DEF_ROLE_STR}")
+            # raise ParseException(f"seq term only allowed in {DEF_SKEL_STR} not {DEF_ROLE_STR}")
+            # TODO temporarily added support for seq in defrole to test something
+            # related to a type flaw attack
+            pass
         case SkeletonTranscribeContext(_):
             pass
     transcr = sig_context.get_transcr()

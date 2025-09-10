@@ -208,6 +208,19 @@ pred wellformed {
       {a not in t.receiver.agent}
     }
     or
+    {
+      -- If an agent recieves enc(m1 m2 m3 ... (pubk a)) then allows them
+      -- to learn (enc (seq m1 m2 m3 ...) (pubk a)) this is needed to model
+      -- a type flaw attack, not ideal solution might introduce a pair datatype instead
+      t.receiver.agent = a
+      d in Ciphertext and
+      inds[d.plaintext] = 0 and elems[d.plaintext] in seq
+      some cipher : elems[t.data] {
+            (elems[d.plaintext]).components = cipher.plaintext
+            d.encryptionKey = cipher.encryptionKey
+      }
+    }
+    or
     {d in baseKnown[a]}
 
     or
@@ -525,11 +538,11 @@ type_flaw_prot_run : run {
     } }
 
 } for
-    exactly 6 Timeslot,exactly 19 mesg,exactly 19 text,
-    exactly 18 atomic,exactly 1 seq,
+    exactly 6 Timeslot,exactly 34 mesg,exactly 34 text,
+    exactly 26 atomic,exactly 8 seq,
     exactly 6 Key,exactly 6 akey,exactly 0 skey,
     exactly 3 PrivateKey,exactly 3 PublicKey,
-    exactly 3 name,exactly 8 Ciphertext,exactly 1 nonce,
+    exactly 3 name,exactly 16 Ciphertext,exactly 1 nonce,
     exactly 1 KeyPairs,exactly 1 type_flaw_prot_A,
     exactly 2 type_flaw_prot_B,
     4 Int
