@@ -135,7 +135,7 @@ def parse_seq_term(s_expr,var_dict:VarMap) -> Message:
         match msg_subterm:
             #TODO: may want to extend message types to incorporate atomic and other classes mybe could be useful when stating seq term
             case Variable(var_name,var_type):
-                acceptable_var_types = [MsgTypes.AKEY,MsgTypes.SKEY,MsgTypes.NAME]
+                acceptable_var_types = [MsgTypes.AKEY,MsgTypes.SKEY,MsgTypes.NAME,MsgTypes.MESG,MsgTypes.TEXT]
                 if var_type not in acceptable_var_types:
                     raise ParseException(f"{msg_subterm} type is not in {acceptable_var_types} allowed in seq term")
                 non_cat_data.append(msg_subterm)

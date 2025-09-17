@@ -638,10 +638,10 @@ type_flaw_prot_run : run {
 
     -- corrected_attacker_learns[type_flaw_prot_A.type_flaw_prot_A_n]
 }for
-    exactly 6 Timeslot,20 mesg,20 text,17 atomic,3 seq,
+    exactly 6 Timeslot,25 mesg,25 text,20 atomic,5 seq,
     exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,
     exactly 0 skey,exactly 3 PublicKey,exactly 3 PrivateKey,
-    exactly 3 name,exactly 7 Ciphertext,exactly 1 nonce,
+    exactly 3 name,exactly 10 Ciphertext,exactly 1 nonce,
     exactly 1 type_flaw_prot_A,exactly 2 type_flaw_prot_B,
     3 Int
 for {next is linear}
