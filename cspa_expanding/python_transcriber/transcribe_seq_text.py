@@ -361,8 +361,8 @@ def transcribe_enc(elm_expr: str, enc_term: EncTerm,send_recv:SendRecv ,timeslot
     data_atom_names = [
         f"atom_{transcr.get_fresh_num()}" for _ in range(len(enc_term.data))
     ]
-    data_expr = f"({elm_expr}).plaintext"
-    key_expr = f"({elm_expr}).encryptionKey"
+    data_expr = f"(({elm_expr}).plaintext)"
+    key_expr = f"(({elm_expr}).encryptionKey)"
 
     match send_recv:
         case SendRecv.SEND:
@@ -391,7 +391,7 @@ def transcribe_seq_term(elm_expr:str,seq_expr:SeqTerm,send_recv:SendRecv,timeslo
     data_atom_names = [
         f"atom_{transcr.get_fresh_num()}" for _ in range(len(seq_expr.data))
     ]
-    data_expr = f"({elm_expr}).components"
+    data_expr = f"(({elm_expr}).components)"
     transcr.write_new_seq_constraint(data_expr,seq_expr.data,send_recv,timeslot_expr,sig_context)
 
 def transcribe_base_term(elm_expr:str,msg:BaseTerm,send_recv:SendRecv,role_context:SigContext):

@@ -50,7 +50,7 @@ type_flaw_prot_run : run {
         }
     }
 
-    corrected_attacker_learns[type_flaw_prot_A.type_flaw_prot_A_n]
+    -- corrected_attacker_learns[type_flaw_prot_A.type_flaw_prot_A_n]
 }for
     exactly 6 Timeslot,20 mesg,20 text,17 atomic,3 seq,
     exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,

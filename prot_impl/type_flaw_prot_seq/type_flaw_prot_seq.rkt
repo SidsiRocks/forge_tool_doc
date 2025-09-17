@@ -31,8 +31,16 @@
 )
 
 (defskeleton type_flaw_prot
-  (vars (a name) (n text) (A role_A) (B1 role_B) (B2 role_B))
+  (vars (a name) (b name) (n text) (A role_A) (B1 role_B) (B2 role_B))
   (defstrand A 2 (a a) (n n))
+  (defstrand B 2 (b b))
   (uniq-orig n)
   (non-orig (privk a) (privk Attacker))
+  (deftrace attack_run
+    (send-from A (enc (seq (pubk a) (enc n (pubk b))) (pubk b)))
+    (recv-by B1
+         (enc (seq (pubk Attacker)
+                   (enc (seq (pubk a) (enc n (pubk b))) (pubk b)))
+              (pubk b)))
+  )
 )

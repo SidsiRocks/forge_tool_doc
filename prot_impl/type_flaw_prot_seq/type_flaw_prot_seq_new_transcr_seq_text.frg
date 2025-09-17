@@ -412,17 +412,17 @@ pred exec_type_flaw_prot_A {
         inds[(t0.data)] = 0
         some enc_2 : elems[(t0.data)] | {
           (t0.data)[0] = enc_2
-          inds[(enc_2).plaintext] = 0
-          inds[((enc_2).plaintext[0]).components] = 0+1
-          some enc_6 : elems[((enc_2).plaintext[0]).components] | {
-            ((enc_2).plaintext[0]).components[1] = enc_6
-            ((enc_2).plaintext[0]).components[0] = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_a]
-            inds[(enc_6).plaintext] = 0
-            (enc_6).plaintext[0] in nonce
-            (enc_6).plaintext[0] = arbitrary_A_type_flaw_prot.type_flaw_prot_A_n
-            (enc_6).encryptionKey = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_b]
+          inds[((enc_2).plaintext)] = 0
+          inds[((((enc_2).plaintext)[0]).components)] = 0+1
+          some enc_6 : elems[((((enc_2).plaintext)[0]).components)] | {
+            ((((enc_2).plaintext)[0]).components)[1] = enc_6
+            ((((enc_2).plaintext)[0]).components)[0] = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_a]
+            inds[((enc_6).plaintext)] = 0
+            ((enc_6).plaintext)[0] in nonce
+            ((enc_6).plaintext)[0] = arbitrary_A_type_flaw_prot.type_flaw_prot_A_n
+            ((enc_6).encryptionKey) = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_b]
           }
-          (enc_2).encryptionKey = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_b]
+          ((enc_2).encryptionKey) = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_b]
         }
 
         t1.receiver = arbitrary_A_type_flaw_prot
@@ -430,9 +430,9 @@ pred exec_type_flaw_prot_A {
         some enc_9 : elems[(t1.data)] | {
           (t1.data)[0] = enc_9
           learnt_term_by[getPRIVK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_a],arbitrary_A_type_flaw_prot.agent,t1]
-          inds[(enc_9).plaintext] = 0
-          (enc_9).plaintext[0] = arbitrary_A_type_flaw_prot.type_flaw_prot_A_n
-          (enc_9).encryptionKey = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_a]
+          inds[((enc_9).plaintext)] = 0
+          ((enc_9).plaintext)[0] = arbitrary_A_type_flaw_prot.type_flaw_prot_A_n
+          ((enc_9).encryptionKey) = getPUBK[arbitrary_A_type_flaw_prot.type_flaw_prot_A_a]
         }
 
       }
@@ -454,27 +454,27 @@ pred exec_type_flaw_prot_B {
         some enc_12 : elems[(t0.data)] | {
           (t0.data)[0] = enc_12
           learnt_term_by[getPRIVK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b],arbitrary_B_type_flaw_prot.agent,t0]
-          inds[(enc_12).plaintext] = 0
-          inds[((enc_12).plaintext[0]).components] = 0+1
-          some enc_16 : elems[((enc_12).plaintext[0]).components] | {
-            ((enc_12).plaintext[0]).components[1] = enc_16
-            ((enc_12).plaintext[0]).components[0] = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_a]
+          inds[((enc_12).plaintext)] = 0
+          inds[((((enc_12).plaintext)[0]).components)] = 0+1
+          some enc_16 : elems[((((enc_12).plaintext)[0]).components)] | {
+            ((((enc_12).plaintext)[0]).components)[1] = enc_16
+            ((((enc_12).plaintext)[0]).components)[0] = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_a]
             learnt_term_by[getPRIVK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b],arbitrary_B_type_flaw_prot.agent,t0]
-            inds[(enc_16).plaintext] = 0
-            (enc_16).plaintext[0] = arbitrary_B_type_flaw_prot.type_flaw_prot_B_n
-            (enc_16).encryptionKey = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b]
+            inds[((enc_16).plaintext)] = 0
+            ((enc_16).plaintext)[0] = arbitrary_B_type_flaw_prot.type_flaw_prot_B_n
+            ((enc_16).encryptionKey) = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b]
           }
-          (enc_12).encryptionKey = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b]
+          ((enc_12).encryptionKey) = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b]
         }
 
         t1.sender = arbitrary_B_type_flaw_prot
         inds[(t1.data)] = 0
         some enc_19 : elems[(t1.data)] | {
           (t1.data)[0] = enc_19
-          inds[(enc_19).plaintext] = 0
-          (enc_19).plaintext[0] in nonce
-          (enc_19).plaintext[0] = arbitrary_B_type_flaw_prot.type_flaw_prot_B_n
-          (enc_19).encryptionKey = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_a]
+          inds[((enc_19).plaintext)] = 0
+          ((enc_19).plaintext)[0] in nonce
+          ((enc_19).plaintext)[0] = arbitrary_B_type_flaw_prot.type_flaw_prot_B_n
+          ((enc_19).encryptionKey) = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_a]
         }
 
       }
@@ -513,15 +513,65 @@ pred constrain_skeleton_type_flaw_prot_0 {
 }
 one sig skeleton_type_flaw_prot_1 {
   skeleton_type_flaw_prot_1_a : one name,
+  skeleton_type_flaw_prot_1_b : one name,
   skeleton_type_flaw_prot_1_n : one text,
   skeleton_type_flaw_prot_1_A : one type_flaw_prot_A,
   skeleton_type_flaw_prot_1_B1 : one type_flaw_prot_B,
   skeleton_type_flaw_prot_1_B2 : one type_flaw_prot_B
 }
+pred constrain_skeleton_type_flaw_prot_1_attack_run {
+  some t_0 : Timeslot {
+    some t_1 : t_0.(^next) {
+      t_0.sender = skeleton_type_flaw_prot_1.skeleton_type_flaw_prot_1_A
+      inds[t_0.data] = 0
+      some enc_21 : elems[t_0.data] | {
+        t_0.data[0] = enc_21
+        inds[((enc_21).plaintext)] = 0
+        inds[((((enc_21).plaintext)[0]).components)] = 0+1
+        some enc_25 : elems[((((enc_21).plaintext)[0]).components)] | {
+          ((((enc_21).plaintext)[0]).components)[1] = enc_25
+          ((((enc_21).plaintext)[0]).components)[0] = getPUBK[skeleton_type_flaw_prot_1.skeleton_type_flaw_prot_1_a]
+          inds[((enc_25).plaintext)] = 0
+          ((enc_25).plaintext)[0] in nonce
+          ((enc_25).plaintext)[0] = skeleton_type_flaw_prot_1.skeleton_type_flaw_prot_1_n
+          ((enc_25).encryptionKey) = getPUBK[skeleton_type_flaw_prot_1.skeleton_type_flaw_prot_1_b]
+        }
+        ((enc_21).encryptionKey) = getPUBK[skeleton_type_flaw_prot_1.skeleton_type_flaw_prot_1_b]
+      }
+
+      t_1.receiver = skeleton_type_flaw_prot_1.skeleton_type_flaw_prot_1_B1
+      inds[t_1.data] = 0
+      some enc_27 : elems[t_1.data] | {
+        t_1.data[0] = enc_27
+        inds[((enc_27).plaintext)] = 0
+        inds[((((enc_27).plaintext)[0]).components)] = 0+1
+        some enc_31 : elems[((((enc_27).plaintext)[0]).components)] | {
+          ((((enc_27).plaintext)[0]).components)[1] = enc_31
+          ((((enc_27).plaintext)[0]).components)[0] = getPUBK[Attacker]
+          inds[((enc_31).plaintext)] = 0
+          inds[((((enc_31).plaintext)[0]).components)] = 0+1
+          some enc_35 : elems[((((enc_31).plaintext)[0]).components)] | {
+            ((((enc_31).plaintext)[0]).components)[1] = enc_35
+            ((((enc_31).plaintext)[0]).components)[0] = getPUBK[skeleton_type_flaw_prot_1.skeleton_type_flaw_prot_1_a]
+            inds[((enc_35).plaintext)] = 0
+            ((enc_35).plaintext)[0] = skeleton_type_flaw_prot_1.skeleton_type_flaw_prot_1_n
+            ((enc_35).encryptionKey) = getPUBK[skeleton_type_flaw_prot_1.skeleton_type_flaw_prot_1_b]
+          }
+          ((enc_31).encryptionKey) = getPUBK[skeleton_type_flaw_prot_1.skeleton_type_flaw_prot_1_b]
+        }
+        ((enc_27).encryptionKey) = getPUBK[skeleton_type_flaw_prot_1.skeleton_type_flaw_prot_1_b]
+      }
+
+    }
+  }
+}
 pred constrain_skeleton_type_flaw_prot_1 {
   some skeleton_A_1_strand_0 : type_flaw_prot_A | {
     skeleton_A_1_strand_0.type_flaw_prot_A_a = skeleton_type_flaw_prot_1.skeleton_type_flaw_prot_1_a
     skeleton_A_1_strand_0.type_flaw_prot_A_n = skeleton_type_flaw_prot_1.skeleton_type_flaw_prot_1_n
+  }
+  some skeleton_B_1_strand_1 : type_flaw_prot_B | {
+    skeleton_B_1_strand_1.type_flaw_prot_B_b = skeleton_type_flaw_prot_1.skeleton_type_flaw_prot_1_b
   }
   one aStrand : strand | {
     originates[aStrand,skeleton_type_flaw_prot_1.skeleton_type_flaw_prot_1_n] or generates [aStrand,skeleton_type_flaw_prot_1.skeleton_type_flaw_prot_1_n]
@@ -532,6 +582,7 @@ pred constrain_skeleton_type_flaw_prot_1 {
   no aStrand : strand | {
     originates[aStrand,getPRIVK[Attacker]] or generates [aStrand,getPRIVK[Attacker]]
   }
+  constrain_skeleton_type_flaw_prot_1_attack_run
 }
 option run_sterling "../../crypto_viz_text_seq.js"
 option engine_verbosity 3
@@ -585,7 +636,7 @@ type_flaw_prot_run : run {
         }
     }
 
-    corrected_attacker_learns[type_flaw_prot_A.type_flaw_prot_A_n]
+    -- corrected_attacker_learns[type_flaw_prot_A.type_flaw_prot_A_n]
 }for
     exactly 6 Timeslot,20 mesg,20 text,17 atomic,3 seq,
     exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,
