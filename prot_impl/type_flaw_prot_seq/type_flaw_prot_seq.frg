@@ -52,7 +52,7 @@ type_flaw_prot_run : run {
 
     -- corrected_attacker_learns[type_flaw_prot_A.type_flaw_prot_A_n]
 }for
-    exactly 6 Timeslot,25 mesg,25 text,20 atomic,5 seq,
+    exactly 6 Timeslot,25 mesg,25 text,exactly 20 atomic,exactly 5 seq,
     exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,
     exactly 0 skey,exactly 3 PublicKey,exactly 3 PrivateKey,
     exactly 3 name,exactly 10 Ciphertext,exactly 1 nonce,
