@@ -1,7 +1,7 @@
 # Intro 
 Documentation goes over the code line by line, explaining sections of the code
 
-### Message Subtypes
+## Message Subtypes
 The mesg type represents the messages transfered between principals and all the components of the message (keys/nonces etc.)
 Line number 27 in base.frg
 ```frg
