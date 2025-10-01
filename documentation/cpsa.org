@@ -1,0 +1,58 @@
+#+NAME: startup
+#+BEGIN_SRC elisp :exports none
+  (setq org-confirm-babel-evaluate nil)
+#+END_SRC
+
+#+RESULTS: startup
+
+* Introduction
+This is the explanatiaon of CPSA syntax, the protocol description and some constraints on generated protocol run are given using this syntax.
+The syntax conists of multiple nested s-expressions. The below sections contain an explanation of the different clauses that appear in the syntax.
+The documentation also incrementally gives the grammar for CPSA in EBNF form.
+
+\begin{equation*}
+\end{equation*}
+
+#+NAME: FILE
+#+BEGIN_SRC latex :exports none
+\begin{equation*}
+  FILE \rightarrow PROTOCOL SKELETON*
+\end{equation*}
+#+END_SRC
+
+#+BEGIN_SRC python :results html :exports results :noweb yes
+  latex_code = r"""
+  <<FILE>>
+  """
+  result = ""
+  result += latex_code + "\n"
+  return result
+#+END_SRC
+
+* defprotcol
+This clause contains the different roles present in the protocol and
+#+NAME: PROTOCOL
+#+BEGIN_SRC latex
+\begin{equation}
+  PROTOCOL \rightarrow (defprotcol PROTOCOL\_NAME basic ROLE* )
+\end{equation}
+#+END_SRC
+
+#+BEGIN_SRC python :results html :exports results :noweb yes
+  latex_code = r"""
+  <<PROTOCOL>>
+  """
+  result = ""
+  result += latex_code + "\n"
+  return result
+#+END_SRC
+
+** defrole
+* defskeleton
+
+
+
+# Local variables
+# org-confirm-babel-evaluate: nil
+# eval: (progn (org-babel-goto-named-src-block "startup") (org-babel-execute-src-block) (outline-hide-sublevels 1))
+# End:
