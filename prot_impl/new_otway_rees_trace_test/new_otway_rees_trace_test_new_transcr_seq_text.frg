@@ -161,6 +161,22 @@ pred wellformed {
       superterm in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a] and
       getInv[superterm.encryptionKey] in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a]
     }}}
+    -- TODO
+    -- if recieve something like in timeslot t_i (enc (seq (pubk a) (enc n (pubk b))) (pubk b))
+    -- then first decryption happens in microticks giving us (seq (pubk a) (enc n (pubk b)))
+    -- and (seq (pubk a) (enc n (pubk b))) in agent.learned_times[t_i]
+    -- also learn (pubk a) and (enc n (pubk b)) in agent.learned_times[t_i]
+    -- but microtick only allows supertem in (a.learned_times).(Timeslot - t.*next)
+    -- so cannot decrypt (enc n (pubk b)). Most likely chaning to ^next to allow
+    -- decrypting terms learnt now would cause more problems, as a temporary fix
+    -- adding similar decryption logic for seq terms. This can lead to other problems
+    -- down the line so have to fix this
+    or
+    {
+      {some superterm : seq | {
+      d in elems[superterm.components] and
+      superterm in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a]
+    }}}
   }
  
   -- names only learn information that associated strands are explicitly sent 
@@ -206,6 +222,19 @@ pred wellformed {
     { d in seq and
       elems[d.components] in (a.learned_times).(Timeslot - t.^next) and
       {a not in t.receiver.agent}
+    }
+    or
+    {
+      -- If an agent recieves enc(m1 m2 m3 ... (pubk a)) then allows them
+      -- to learn (enc (seq m1 m2 m3 ...) (pubk a)) this is needed to model
+      -- a type flaw attack, not ideal solution might introduce a pair datatype instead
+      t.receiver.agent = a
+      d in Ciphertext and
+      inds[d.plaintext] = 0 and elems[d.plaintext] in seq
+      some cipher : elems[t.data] {
+            (elems[d.plaintext]).components = cipher.plaintext
+            d.encryptionKey = cipher.encryptionKey
+      }
     }
     or
     {d in baseKnown[a]}
@@ -390,14 +419,14 @@ pred exec_ootway_rees_A {
           (t0.data)[0] = arbitrary_A_ootway_rees.ootway_rees_A_m
           (t0.data)[1] = arbitrary_A_ootway_rees.ootway_rees_A_a
           (t0.data)[2] = arbitrary_A_ootway_rees.ootway_rees_A_b
-          inds[(enc_1).plaintext] = 0+1+2+3
-          (enc_1).plaintext[0] in nonce
-          (enc_1).plaintext[0] = arbitrary_A_ootway_rees.ootway_rees_A_na
-          (enc_1).plaintext[1] in nonce
-          (enc_1).plaintext[1] = arbitrary_A_ootway_rees.ootway_rees_A_m
-          (enc_1).plaintext[2] = arbitrary_A_ootway_rees.ootway_rees_A_a
-          (enc_1).plaintext[3] = arbitrary_A_ootway_rees.ootway_rees_A_b
-          (enc_1).encryptionKey = getLTK[arbitrary_A_ootway_rees.ootway_rees_A_a,arbitrary_A_ootway_rees.ootway_rees_A_s]
+          inds[((enc_1).plaintext)] = 0+1+2+3
+          ((enc_1).plaintext)[0] in nonce
+          ((enc_1).plaintext)[0] = arbitrary_A_ootway_rees.ootway_rees_A_na
+          ((enc_1).plaintext)[1] in nonce
+          ((enc_1).plaintext)[1] = arbitrary_A_ootway_rees.ootway_rees_A_m
+          ((enc_1).plaintext)[2] = arbitrary_A_ootway_rees.ootway_rees_A_a
+          ((enc_1).plaintext)[3] = arbitrary_A_ootway_rees.ootway_rees_A_b
+          ((enc_1).encryptionKey) = getLTK[arbitrary_A_ootway_rees.ootway_rees_A_a,arbitrary_A_ootway_rees.ootway_rees_A_s]
         }
 
         t1.receiver = arbitrary_A_ootway_rees
@@ -406,10 +435,10 @@ pred exec_ootway_rees_A {
           (t1.data)[1] = enc_6
           (t1.data)[0] = arbitrary_A_ootway_rees.ootway_rees_A_m
           learnt_term_by[getLTK[arbitrary_A_ootway_rees.ootway_rees_A_a,arbitrary_A_ootway_rees.ootway_rees_A_s],arbitrary_A_ootway_rees.agent,t1]
-          inds[(enc_6).plaintext] = 0+1
-          (enc_6).plaintext[0] = arbitrary_A_ootway_rees.ootway_rees_A_na
-          (enc_6).plaintext[1] = arbitrary_A_ootway_rees.ootway_rees_A_kab
-          (enc_6).encryptionKey = getLTK[arbitrary_A_ootway_rees.ootway_rees_A_a,arbitrary_A_ootway_rees.ootway_rees_A_s]
+          inds[((enc_6).plaintext)] = 0+1
+          ((enc_6).plaintext)[0] = arbitrary_A_ootway_rees.ootway_rees_A_na
+          ((enc_6).plaintext)[1] = arbitrary_A_ootway_rees.ootway_rees_A_kab
+          ((enc_6).encryptionKey) = getLTK[arbitrary_A_ootway_rees.ootway_rees_A_a,arbitrary_A_ootway_rees.ootway_rees_A_s]
         }
 
       }
@@ -449,14 +478,14 @@ pred exec_ootway_rees_B {
               (t1.data)[1] = arbitrary_B_ootway_rees.ootway_rees_B_a
               (t1.data)[2] = arbitrary_B_ootway_rees.ootway_rees_B_b
               (t1.data)[3] = arbitrary_B_ootway_rees.ootway_rees_B_first_a_s_mesg
-              inds[(enc_9).plaintext] = 0+1+2+3
-              (enc_9).plaintext[0] in nonce
-              (enc_9).plaintext[0] = arbitrary_B_ootway_rees.ootway_rees_B_nb
-              (enc_9).plaintext[1] in nonce
-              (enc_9).plaintext[1] = arbitrary_B_ootway_rees.ootway_rees_B_m
-              (enc_9).plaintext[2] = arbitrary_B_ootway_rees.ootway_rees_B_a
-              (enc_9).plaintext[3] = arbitrary_B_ootway_rees.ootway_rees_B_b
-              (enc_9).encryptionKey = getLTK[arbitrary_B_ootway_rees.ootway_rees_B_b,arbitrary_B_ootway_rees.ootway_rees_B_s]
+              inds[((enc_9).plaintext)] = 0+1+2+3
+              ((enc_9).plaintext)[0] in nonce
+              ((enc_9).plaintext)[0] = arbitrary_B_ootway_rees.ootway_rees_B_nb
+              ((enc_9).plaintext)[1] in nonce
+              ((enc_9).plaintext)[1] = arbitrary_B_ootway_rees.ootway_rees_B_m
+              ((enc_9).plaintext)[2] = arbitrary_B_ootway_rees.ootway_rees_B_a
+              ((enc_9).plaintext)[3] = arbitrary_B_ootway_rees.ootway_rees_B_b
+              ((enc_9).encryptionKey) = getLTK[arbitrary_B_ootway_rees.ootway_rees_B_b,arbitrary_B_ootway_rees.ootway_rees_B_s]
             }
 
             t2.receiver = arbitrary_B_ootway_rees
@@ -466,10 +495,10 @@ pred exec_ootway_rees_B {
               (t2.data)[0] = arbitrary_B_ootway_rees.ootway_rees_B_m
               (t2.data)[1] = arbitrary_B_ootway_rees.ootway_rees_B_second_a_s_mesg
               learnt_term_by[getLTK[arbitrary_B_ootway_rees.ootway_rees_B_b,arbitrary_B_ootway_rees.ootway_rees_B_s],arbitrary_B_ootway_rees.agent,t2]
-              inds[(enc_14).plaintext] = 0+1
-              (enc_14).plaintext[0] = arbitrary_B_ootway_rees.ootway_rees_B_nb
-              (enc_14).plaintext[1] = arbitrary_B_ootway_rees.ootway_rees_B_kab
-              (enc_14).encryptionKey = getLTK[arbitrary_B_ootway_rees.ootway_rees_B_b,arbitrary_B_ootway_rees.ootway_rees_B_s]
+              inds[((enc_14).plaintext)] = 0+1
+              ((enc_14).plaintext)[0] = arbitrary_B_ootway_rees.ootway_rees_B_nb
+              ((enc_14).plaintext)[1] = arbitrary_B_ootway_rees.ootway_rees_B_kab
+              ((enc_14).encryptionKey) = getLTK[arbitrary_B_ootway_rees.ootway_rees_B_b,arbitrary_B_ootway_rees.ootway_rees_B_s]
             }
 
             t3.sender = arbitrary_B_ootway_rees
@@ -507,19 +536,19 @@ pred exec_ootway_rees_S {
           (t0.data)[1] = arbitrary_S_ootway_rees.ootway_rees_S_a
           (t0.data)[2] = arbitrary_S_ootway_rees.ootway_rees_S_b
           learnt_term_by[getLTK[arbitrary_S_ootway_rees.ootway_rees_S_a,arbitrary_S_ootway_rees.ootway_rees_S_s],arbitrary_S_ootway_rees.agent,t0]
-          inds[(enc_17).plaintext] = 0+1+2+3
-          (enc_17).plaintext[0] = arbitrary_S_ootway_rees.ootway_rees_S_na
-          (enc_17).plaintext[1] = arbitrary_S_ootway_rees.ootway_rees_S_m
-          (enc_17).plaintext[2] = arbitrary_S_ootway_rees.ootway_rees_S_a
-          (enc_17).plaintext[3] = arbitrary_S_ootway_rees.ootway_rees_S_b
-          (enc_17).encryptionKey = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_a,arbitrary_S_ootway_rees.ootway_rees_S_s]
+          inds[((enc_17).plaintext)] = 0+1+2+3
+          ((enc_17).plaintext)[0] = arbitrary_S_ootway_rees.ootway_rees_S_na
+          ((enc_17).plaintext)[1] = arbitrary_S_ootway_rees.ootway_rees_S_m
+          ((enc_17).plaintext)[2] = arbitrary_S_ootway_rees.ootway_rees_S_a
+          ((enc_17).plaintext)[3] = arbitrary_S_ootway_rees.ootway_rees_S_b
+          ((enc_17).encryptionKey) = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_a,arbitrary_S_ootway_rees.ootway_rees_S_s]
           learnt_term_by[getLTK[arbitrary_S_ootway_rees.ootway_rees_S_b,arbitrary_S_ootway_rees.ootway_rees_S_s],arbitrary_S_ootway_rees.agent,t0]
-          inds[(enc_18).plaintext] = 0+1+2+3
-          (enc_18).plaintext[0] = arbitrary_S_ootway_rees.ootway_rees_S_nb
-          (enc_18).plaintext[1] = arbitrary_S_ootway_rees.ootway_rees_S_m
-          (enc_18).plaintext[2] = arbitrary_S_ootway_rees.ootway_rees_S_a
-          (enc_18).plaintext[3] = arbitrary_S_ootway_rees.ootway_rees_S_b
-          (enc_18).encryptionKey = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_b,arbitrary_S_ootway_rees.ootway_rees_S_s]
+          inds[((enc_18).plaintext)] = 0+1+2+3
+          ((enc_18).plaintext)[0] = arbitrary_S_ootway_rees.ootway_rees_S_nb
+          ((enc_18).plaintext)[1] = arbitrary_S_ootway_rees.ootway_rees_S_m
+          ((enc_18).plaintext)[2] = arbitrary_S_ootway_rees.ootway_rees_S_a
+          ((enc_18).plaintext)[3] = arbitrary_S_ootway_rees.ootway_rees_S_b
+          ((enc_18).encryptionKey) = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_b,arbitrary_S_ootway_rees.ootway_rees_S_s]
         }
 
         t1.sender = arbitrary_S_ootway_rees
@@ -529,16 +558,16 @@ pred exec_ootway_rees_S {
           (t1.data)[2] = enc_28
           (t1.data)[0] in nonce
           (t1.data)[0] = arbitrary_S_ootway_rees.ootway_rees_S_m
-          inds[(enc_27).plaintext] = 0+1
-          (enc_27).plaintext[0] in nonce
-          (enc_27).plaintext[0] = arbitrary_S_ootway_rees.ootway_rees_S_na
-          (enc_27).plaintext[1] = arbitrary_S_ootway_rees.ootway_rees_S_kab
-          (enc_27).encryptionKey = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_a,arbitrary_S_ootway_rees.ootway_rees_S_s]
-          inds[(enc_28).plaintext] = 0+1
-          (enc_28).plaintext[0] in nonce
-          (enc_28).plaintext[0] = arbitrary_S_ootway_rees.ootway_rees_S_nb
-          (enc_28).plaintext[1] = arbitrary_S_ootway_rees.ootway_rees_S_kab
-          (enc_28).encryptionKey = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_b,arbitrary_S_ootway_rees.ootway_rees_S_s]
+          inds[((enc_27).plaintext)] = 0+1
+          ((enc_27).plaintext)[0] in nonce
+          ((enc_27).plaintext)[0] = arbitrary_S_ootway_rees.ootway_rees_S_na
+          ((enc_27).plaintext)[1] = arbitrary_S_ootway_rees.ootway_rees_S_kab
+          ((enc_27).encryptionKey) = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_a,arbitrary_S_ootway_rees.ootway_rees_S_s]
+          inds[((enc_28).plaintext)] = 0+1
+          ((enc_28).plaintext)[0] in nonce
+          ((enc_28).plaintext)[0] = arbitrary_S_ootway_rees.ootway_rees_S_nb
+          ((enc_28).plaintext)[1] = arbitrary_S_ootway_rees.ootway_rees_S_kab
+          ((enc_28).encryptionKey) = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_b,arbitrary_S_ootway_rees.ootway_rees_S_s]
         }
 
       }
@@ -574,14 +603,14 @@ pred constrain_skeleton_ootway_rees_0_honest_run {
                     t_0.data[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
                     t_0.data[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
                     t_0.data[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    inds[(enc_33).plaintext] = 0+1+2+3
-                    (enc_33).plaintext[0] in nonce
-                    (enc_33).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_33).plaintext[1] in nonce
-                    (enc_33).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    (enc_33).plaintext[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
-                    (enc_33).plaintext[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    (enc_33).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
+                    inds[((enc_33).plaintext)] = 0+1+2+3
+                    ((enc_33).plaintext)[0] in nonce
+                    ((enc_33).plaintext)[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
+                    ((enc_33).plaintext)[1] in nonce
+                    ((enc_33).plaintext)[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
+                    ((enc_33).plaintext)[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
+                    ((enc_33).plaintext)[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
+                    ((enc_33).encryptionKey) = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
                   }
 
                   t_1.receiver = skeleton_ootway_rees_0.skeleton_ootway_rees_0_B
@@ -591,12 +620,12 @@ pred constrain_skeleton_ootway_rees_0_honest_run {
                     t_1.data[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
                     t_1.data[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
                     t_1.data[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    inds[(enc_38).plaintext] = 0+1+2+3
-                    (enc_38).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_38).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    (enc_38).plaintext[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
-                    (enc_38).plaintext[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    (enc_38).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
+                    inds[((enc_38).plaintext)] = 0+1+2+3
+                    ((enc_38).plaintext)[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
+                    ((enc_38).plaintext)[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
+                    ((enc_38).plaintext)[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
+                    ((enc_38).plaintext)[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
+                    ((enc_38).encryptionKey) = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
                   }
 
                   t_2.sender = skeleton_ootway_rees_0.skeleton_ootway_rees_0_B
@@ -608,22 +637,22 @@ pred constrain_skeleton_ootway_rees_0_honest_run {
                     t_2.data[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
                     t_2.data[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
                     t_2.data[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    inds[(enc_43).plaintext] = 0+1+2+3
-                    (enc_43).plaintext[0] in nonce
-                    (enc_43).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_43).plaintext[1] in nonce
-                    (enc_43).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    (enc_43).plaintext[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
-                    (enc_43).plaintext[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    (enc_43).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
-                    inds[(enc_44).plaintext] = 0+1+2+3
-                    (enc_44).plaintext[0] in nonce
-                    (enc_44).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_nb
-                    (enc_44).plaintext[1] in nonce
-                    (enc_44).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    (enc_44).plaintext[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
-                    (enc_44).plaintext[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    (enc_44).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_b,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
+                    inds[((enc_43).plaintext)] = 0+1+2+3
+                    ((enc_43).plaintext)[0] in nonce
+                    ((enc_43).plaintext)[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
+                    ((enc_43).plaintext)[1] in nonce
+                    ((enc_43).plaintext)[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
+                    ((enc_43).plaintext)[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
+                    ((enc_43).plaintext)[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
+                    ((enc_43).encryptionKey) = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
+                    inds[((enc_44).plaintext)] = 0+1+2+3
+                    ((enc_44).plaintext)[0] in nonce
+                    ((enc_44).plaintext)[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_nb
+                    ((enc_44).plaintext)[1] in nonce
+                    ((enc_44).plaintext)[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
+                    ((enc_44).plaintext)[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
+                    ((enc_44).plaintext)[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
+                    ((enc_44).encryptionKey) = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_b,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
                   }
 
                   t_3.receiver = skeleton_ootway_rees_0.skeleton_ootway_rees_0_S
@@ -634,18 +663,18 @@ pred constrain_skeleton_ootway_rees_0_honest_run {
                     t_3.data[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
                     t_3.data[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
                     t_3.data[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    inds[(enc_53).plaintext] = 0+1+2+3
-                    (enc_53).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_53).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    (enc_53).plaintext[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
-                    (enc_53).plaintext[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    (enc_53).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
-                    inds[(enc_54).plaintext] = 0+1+2+3
-                    (enc_54).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_nb
-                    (enc_54).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    (enc_54).plaintext[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
-                    (enc_54).plaintext[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
-                    (enc_54).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_b,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
+                    inds[((enc_53).plaintext)] = 0+1+2+3
+                    ((enc_53).plaintext)[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
+                    ((enc_53).plaintext)[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
+                    ((enc_53).plaintext)[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
+                    ((enc_53).plaintext)[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
+                    ((enc_53).encryptionKey) = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
+                    inds[((enc_54).plaintext)] = 0+1+2+3
+                    ((enc_54).plaintext)[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_nb
+                    ((enc_54).plaintext)[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
+                    ((enc_54).plaintext)[2] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
+                    ((enc_54).plaintext)[3] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
+                    ((enc_54).encryptionKey) = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_b,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
                   }
 
                   t_4.sender = skeleton_ootway_rees_0.skeleton_ootway_rees_0_S
@@ -655,16 +684,16 @@ pred constrain_skeleton_ootway_rees_0_honest_run {
                     t_4.data[2] = enc_64
                     t_4.data[0] in nonce
                     t_4.data[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    inds[(enc_63).plaintext] = 0+1
-                    (enc_63).plaintext[0] in nonce
-                    (enc_63).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_63).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
-                    (enc_63).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
-                    inds[(enc_64).plaintext] = 0+1
-                    (enc_64).plaintext[0] in nonce
-                    (enc_64).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_nb
-                    (enc_64).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
-                    (enc_64).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_b,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
+                    inds[((enc_63).plaintext)] = 0+1
+                    ((enc_63).plaintext)[0] in nonce
+                    ((enc_63).plaintext)[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
+                    ((enc_63).plaintext)[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
+                    ((enc_63).encryptionKey) = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
+                    inds[((enc_64).plaintext)] = 0+1
+                    ((enc_64).plaintext)[0] in nonce
+                    ((enc_64).plaintext)[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_nb
+                    ((enc_64).plaintext)[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
+                    ((enc_64).encryptionKey) = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_b,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
                   }
 
                   t_5.receiver = skeleton_ootway_rees_0.skeleton_ootway_rees_0_A
@@ -672,10 +701,10 @@ pred constrain_skeleton_ootway_rees_0_honest_run {
                   some enc_69 : elems[t_5.data] | {
                     t_5.data[1] = enc_69
                     t_5.data[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    inds[(enc_69).plaintext] = 0+1
-                    (enc_69).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_69).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
-                    (enc_69).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
+                    inds[((enc_69).plaintext)] = 0+1
+                    ((enc_69).plaintext)[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
+                    ((enc_69).plaintext)[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
+                    ((enc_69).encryptionKey) = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
                   }
 
                   t_6.receiver = skeleton_ootway_rees_0.skeleton_ootway_rees_0_B
@@ -684,14 +713,14 @@ pred constrain_skeleton_ootway_rees_0_honest_run {
                     t_6.data[1] = enc_72
                     t_6.data[2] = enc_73
                     t_6.data[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    inds[(enc_72).plaintext] = 0+1
-                    (enc_72).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_72).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
-                    (enc_72).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
-                    inds[(enc_73).plaintext] = 0+1
-                    (enc_73).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_nb
-                    (enc_73).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
-                    (enc_73).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_b,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
+                    inds[((enc_72).plaintext)] = 0+1
+                    ((enc_72).plaintext)[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
+                    ((enc_72).plaintext)[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
+                    ((enc_72).encryptionKey) = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
+                    inds[((enc_73).plaintext)] = 0+1
+                    ((enc_73).plaintext)[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_nb
+                    ((enc_73).plaintext)[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
+                    ((enc_73).encryptionKey) = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_b,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
                   }
 
                   t_7.sender = skeleton_ootway_rees_0.skeleton_ootway_rees_0_B
@@ -700,11 +729,11 @@ pred constrain_skeleton_ootway_rees_0_honest_run {
                     t_7.data[1] = enc_78
                     t_7.data[0] in nonce
                     t_7.data[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
-                    inds[(enc_78).plaintext] = 0+1
-                    (enc_78).plaintext[0] in nonce
-                    (enc_78).plaintext[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
-                    (enc_78).plaintext[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
-                    (enc_78).encryptionKey = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
+                    inds[((enc_78).plaintext)] = 0+1
+                    ((enc_78).plaintext)[0] in nonce
+                    ((enc_78).plaintext)[0] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
+                    ((enc_78).plaintext)[1] = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
+                    ((enc_78).encryptionKey) = getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]
                   }
 
                 }

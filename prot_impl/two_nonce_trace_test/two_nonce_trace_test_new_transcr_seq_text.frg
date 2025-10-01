@@ -161,6 +161,22 @@ pred wellformed {
       superterm in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a] and
       getInv[superterm.encryptionKey] in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a]
     }}}
+    -- TODO
+    -- if recieve something like in timeslot t_i (enc (seq (pubk a) (enc n (pubk b))) (pubk b))
+    -- then first decryption happens in microticks giving us (seq (pubk a) (enc n (pubk b)))
+    -- and (seq (pubk a) (enc n (pubk b))) in agent.learned_times[t_i]
+    -- also learn (pubk a) and (enc n (pubk b)) in agent.learned_times[t_i]
+    -- but microtick only allows supertem in (a.learned_times).(Timeslot - t.*next)
+    -- so cannot decrypt (enc n (pubk b)). Most likely chaning to ^next to allow
+    -- decrypting terms learnt now would cause more problems, as a temporary fix
+    -- adding similar decryption logic for seq terms. This can lead to other problems
+    -- down the line so have to fix this
+    or
+    {
+      {some superterm : seq | {
+      d in elems[superterm.components] and
+      superterm in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a]
+    }}}
   }
  
   -- names only learn information that associated strands are explicitly sent 
@@ -208,6 +224,19 @@ pred wellformed {
       {a not in t.receiver.agent}
     }
     or
+    {
+      -- If an agent recieves enc(m1 m2 m3 ... (pubk a)) then allows them
+      -- to learn (enc (seq m1 m2 m3 ...) (pubk a)) this is needed to model
+      -- a type flaw attack, not ideal solution might introduce a pair datatype instead
+      t.receiver.agent = a
+      d in Ciphertext and
+      inds[d.plaintext] = 0 and elems[d.plaintext] in seq
+      some cipher : elems[t.data] {
+            (elems[d.plaintext]).components = cipher.plaintext
+            d.encryptionKey = cipher.encryptionKey
+      }
+    }
+    or
     {d in baseKnown[a]}
 
     or
@@ -227,7 +256,9 @@ pred wellformed {
   --  NOTE WELL: if ever add another type of mesg that contains data, add with + inside ^.
   --old_plainw ould be unique so some or all doesn't
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
-    all d: mesg | d not in d.^(old_plain)
+      let components_rel = {seq_term:seq,msg:mesg | {msg in elems[seq_term.components]}} | {
+          all d: mesg | d not in d.^(old_plain + components_rel)
+      }
   }
   
   -- Disallow empty ciphertexts
@@ -285,7 +316,9 @@ fun subterm[supers: set mesg]: set mesg {
   -- do cross check that it actually returns the correct thing and not an empty set
   -- or something
   let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
-    supers + supers.^(old_plain) -- union on new subterm relations inside parens
+      let components_rel = {seq_term:seq,msg:mesg | {msg in elems[seq_term.components]}} | {
+          supers + supers.^(old_plain + components_rel) -- union on new subterm relations inside parens
+      }
   }
   -- TODO add something for finding subterms of seq which extends text
 }
@@ -351,6 +384,8 @@ run {
 }
 */
 
+-- added comment here to test commit all command
+
 
 
 fun getPRIVK[name_a:name] : lone Key{
@@ -379,10 +414,10 @@ pred exec_two_nonce_init {
           inds[(t0.data)] = 0
           some enc_2 : elems[(t0.data)] | {
             (t0.data)[0] = enc_2
-            inds[(enc_2).plaintext] = 0
-            (enc_2).plaintext[0] in nonce
-            (enc_2).plaintext[0] = arbitrary_init_two_nonce.two_nonce_init_n1
-            (enc_2).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
+            inds[((enc_2).plaintext)] = 0
+            ((enc_2).plaintext)[0] in nonce
+            ((enc_2).plaintext)[0] = arbitrary_init_two_nonce.two_nonce_init_n1
+            ((enc_2).encryptionKey) = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
           }
 
           t1.receiver = arbitrary_init_two_nonce
@@ -390,20 +425,20 @@ pred exec_two_nonce_init {
           some enc_5 : elems[(t1.data)] | {
             (t1.data)[0] = enc_5
             learnt_term_by[getPRIVK[arbitrary_init_two_nonce.two_nonce_init_a],arbitrary_init_two_nonce.agent,t1]
-            inds[(enc_5).plaintext] = 0+1
-            (enc_5).plaintext[0] = arbitrary_init_two_nonce.two_nonce_init_n1
-            (enc_5).plaintext[1] = arbitrary_init_two_nonce.two_nonce_init_n2
-            (enc_5).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_a]
+            inds[((enc_5).plaintext)] = 0+1
+            ((enc_5).plaintext)[0] = arbitrary_init_two_nonce.two_nonce_init_n1
+            ((enc_5).plaintext)[1] = arbitrary_init_two_nonce.two_nonce_init_n2
+            ((enc_5).encryptionKey) = getPUBK[arbitrary_init_two_nonce.two_nonce_init_a]
           }
 
           t2.sender = arbitrary_init_two_nonce
           inds[(t2.data)] = 0
           some enc_9 : elems[(t2.data)] | {
             (t2.data)[0] = enc_9
-            inds[(enc_9).plaintext] = 0
-            (enc_9).plaintext[0] in nonce
-            (enc_9).plaintext[0] = arbitrary_init_two_nonce.two_nonce_init_n2
-            (enc_9).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
+            inds[((enc_9).plaintext)] = 0
+            ((enc_9).plaintext)[0] in nonce
+            ((enc_9).plaintext)[0] = arbitrary_init_two_nonce.two_nonce_init_n2
+            ((enc_9).encryptionKey) = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
           }
 
         }
@@ -428,21 +463,21 @@ pred exec_two_nonce_resp {
           some enc_12 : elems[(t0.data)] | {
             (t0.data)[0] = enc_12
             learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t0]
-            inds[(enc_12).plaintext] = 0
-            (enc_12).plaintext[0] = arbitrary_resp_two_nonce.two_nonce_resp_n1
-            (enc_12).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
+            inds[((enc_12).plaintext)] = 0
+            ((enc_12).plaintext)[0] = arbitrary_resp_two_nonce.two_nonce_resp_n1
+            ((enc_12).encryptionKey) = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
           }
 
           t1.sender = arbitrary_resp_two_nonce
           inds[(t1.data)] = 0
           some enc_15 : elems[(t1.data)] | {
             (t1.data)[0] = enc_15
-            inds[(enc_15).plaintext] = 0+1
-            (enc_15).plaintext[0] in nonce
-            (enc_15).plaintext[0] = arbitrary_resp_two_nonce.two_nonce_resp_n1
-            (enc_15).plaintext[1] in nonce
-            (enc_15).plaintext[1] = arbitrary_resp_two_nonce.two_nonce_resp_n2
-            (enc_15).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_a]
+            inds[((enc_15).plaintext)] = 0+1
+            ((enc_15).plaintext)[0] in nonce
+            ((enc_15).plaintext)[0] = arbitrary_resp_two_nonce.two_nonce_resp_n1
+            ((enc_15).plaintext)[1] in nonce
+            ((enc_15).plaintext)[1] = arbitrary_resp_two_nonce.two_nonce_resp_n2
+            ((enc_15).encryptionKey) = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_a]
           }
 
           t2.receiver = arbitrary_resp_two_nonce
@@ -450,9 +485,9 @@ pred exec_two_nonce_resp {
           some enc_19 : elems[(t2.data)] | {
             (t2.data)[0] = enc_19
             learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t2]
-            inds[(enc_19).plaintext] = 0
-            (enc_19).plaintext[0] = arbitrary_resp_two_nonce.two_nonce_resp_n2
-            (enc_19).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
+            inds[((enc_19).plaintext)] = 0
+            ((enc_19).plaintext)[0] = arbitrary_resp_two_nonce.two_nonce_resp_n2
+            ((enc_19).encryptionKey) = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
           }
 
         }
@@ -479,60 +514,60 @@ pred constrain_skeleton_two_nonce_0_two_nonce_trace {
               inds[t_0.data] = 0
               some enc_21 : elems[t_0.data] | {
                 t_0.data[0] = enc_21
-                inds[(enc_21).plaintext] = 0
-                (enc_21).plaintext[0] in nonce
-                (enc_21).plaintext[0] = skeleton_two_nonce_0.skeleton_two_nonce_0_n1
-                (enc_21).encryptionKey = getPUBK[skeleton_two_nonce_0.skeleton_two_nonce_0_b]
+                inds[((enc_21).plaintext)] = 0
+                ((enc_21).plaintext)[0] in nonce
+                ((enc_21).plaintext)[0] = skeleton_two_nonce_0.skeleton_two_nonce_0_n1
+                ((enc_21).encryptionKey) = getPUBK[skeleton_two_nonce_0.skeleton_two_nonce_0_b]
               }
 
               t_1.receiver = skeleton_two_nonce_0.skeleton_two_nonce_0_B
               inds[t_1.data] = 0
               some enc_23 : elems[t_1.data] | {
                 t_1.data[0] = enc_23
-                inds[(enc_23).plaintext] = 0
-                (enc_23).plaintext[0] = skeleton_two_nonce_0.skeleton_two_nonce_0_n1
-                (enc_23).encryptionKey = getPUBK[skeleton_two_nonce_0.skeleton_two_nonce_0_b]
+                inds[((enc_23).plaintext)] = 0
+                ((enc_23).plaintext)[0] = skeleton_two_nonce_0.skeleton_two_nonce_0_n1
+                ((enc_23).encryptionKey) = getPUBK[skeleton_two_nonce_0.skeleton_two_nonce_0_b]
               }
 
               t_2.sender = skeleton_two_nonce_0.skeleton_two_nonce_0_B
               inds[t_2.data] = 0
               some enc_25 : elems[t_2.data] | {
                 t_2.data[0] = enc_25
-                inds[(enc_25).plaintext] = 0+1
-                (enc_25).plaintext[0] in nonce
-                (enc_25).plaintext[0] = skeleton_two_nonce_0.skeleton_two_nonce_0_n1
-                (enc_25).plaintext[1] in nonce
-                (enc_25).plaintext[1] = skeleton_two_nonce_0.skeleton_two_nonce_0_n2
-                (enc_25).encryptionKey = getPUBK[Attacker]
+                inds[((enc_25).plaintext)] = 0+1
+                ((enc_25).plaintext)[0] in nonce
+                ((enc_25).plaintext)[0] = skeleton_two_nonce_0.skeleton_two_nonce_0_n1
+                ((enc_25).plaintext)[1] in nonce
+                ((enc_25).plaintext)[1] = skeleton_two_nonce_0.skeleton_two_nonce_0_n2
+                ((enc_25).encryptionKey) = getPUBK[Attacker]
               }
 
               t_3.receiver = skeleton_two_nonce_0.skeleton_two_nonce_0_B
               inds[t_3.data] = 0
               some enc_28 : elems[t_3.data] | {
                 t_3.data[0] = enc_28
-                inds[(enc_28).plaintext] = 0
-                (enc_28).plaintext[0] = skeleton_two_nonce_0.skeleton_two_nonce_0_n2
-                (enc_28).encryptionKey = getPUBK[skeleton_two_nonce_0.skeleton_two_nonce_0_b]
+                inds[((enc_28).plaintext)] = 0
+                ((enc_28).plaintext)[0] = skeleton_two_nonce_0.skeleton_two_nonce_0_n2
+                ((enc_28).encryptionKey) = getPUBK[skeleton_two_nonce_0.skeleton_two_nonce_0_b]
               }
 
               t_4.receiver = skeleton_two_nonce_0.skeleton_two_nonce_0_A
               inds[t_4.data] = 0
               some enc_30 : elems[t_4.data] | {
                 t_4.data[0] = enc_30
-                inds[(enc_30).plaintext] = 0+1
-                (enc_30).plaintext[0] = skeleton_two_nonce_0.skeleton_two_nonce_0_n1
-                (enc_30).plaintext[1] = skeleton_two_nonce_0.skeleton_two_nonce_0_n2
-                (enc_30).encryptionKey = getPUBK[skeleton_two_nonce_0.skeleton_two_nonce_0_a]
+                inds[((enc_30).plaintext)] = 0+1
+                ((enc_30).plaintext)[0] = skeleton_two_nonce_0.skeleton_two_nonce_0_n1
+                ((enc_30).plaintext)[1] = skeleton_two_nonce_0.skeleton_two_nonce_0_n2
+                ((enc_30).encryptionKey) = getPUBK[skeleton_two_nonce_0.skeleton_two_nonce_0_a]
               }
 
               t_5.sender = skeleton_two_nonce_0.skeleton_two_nonce_0_A
               inds[t_5.data] = 0
               some enc_33 : elems[t_5.data] | {
                 t_5.data[0] = enc_33
-                inds[(enc_33).plaintext] = 0
-                (enc_33).plaintext[0] in nonce
-                (enc_33).plaintext[0] = skeleton_two_nonce_0.skeleton_two_nonce_0_n2
-                (enc_33).encryptionKey = getPUBK[skeleton_two_nonce_0.skeleton_two_nonce_0_b]
+                inds[((enc_33).plaintext)] = 0
+                ((enc_33).plaintext)[0] in nonce
+                ((enc_33).plaintext)[0] = skeleton_two_nonce_0.skeleton_two_nonce_0_n2
+                ((enc_33).encryptionKey) = getPUBK[skeleton_two_nonce_0.skeleton_two_nonce_0_b]
               }
 
             }

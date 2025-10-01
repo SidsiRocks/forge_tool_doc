@@ -1,8 +1,8 @@
 # Intro
-This file contains explantion of difference between base_with_seq_text.frg and base_with_seq.frg. 
-base_with_seq_text.frg was created to have a message type seq which 
-holds multiple message terms. This was needed to model a protocol which 
-has a type flaw attack. 
+This file contains explantion of difference between base_with_seq_text.frg and base_with_seq.frg.
+base_with_seq_text.frg was created to have a message type seq which
+holds multiple message terms. This was needed to model a protocol which
+has a type flaw attack.
 See: prot_impl/type_flaw_prot_seq/
 This approach has shortcomings so may remove this seq approach and instead defined a new tuple message datatype which also has nesting. This should be sufficient for modeling type flaw attack and is conceptually simpler to understand.
 # Differences
@@ -20,7 +20,7 @@ Ciphertext   text     Key      name
                     akey   skey
                     |
             -----------------
-            |               |            
+            |               |
             PrivateKey      PublicKey
 ```
 
@@ -33,7 +33,7 @@ text
 -----------
 |          |
 atomic     seq
-|     
+|
 --------------------------------
 |            |         |       |
 Ciphertext   nonce     Key     name
@@ -42,8 +42,8 @@ Ciphertext   nonce     Key     name
                     |       |
                     akey    skey
                     |
-           --------------------- 
-           |                   |                   
+           ---------------------
+           |                   |
            PrivateKey          PublicKey
 ```
 The heirachy is mostly similar, new sigs seq,atomic and nonce have been introduced.
@@ -94,8 +94,8 @@ As mentioned before seq stores a sequence of atomic terms.
 ```
 The above two codeblocks have comments explaining the change
 ```frg
-    or 
-    { 
+    or
+    {
         t.receiver.agent = a and
         {some s : seq | {
             d in elems[s.components]
