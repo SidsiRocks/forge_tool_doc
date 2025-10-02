@@ -1,3 +1,9 @@
+#+TITLE: CPSA Grammar
+#+AUTHOR: Siddhartha Singh
+#+OPTIONS: num:nil
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+#+HTML_MATHJAX: align: left indent: 2em tagside: left font: Neo-Euler
+
 #+NAME: startup
 #+BEGIN_SRC elisp :exports none
   (setq org-confirm-babel-evaluate nil)
@@ -5,8 +11,74 @@
 
 #+RESULTS: startup
 
+#+NAME: latex-generate-func
+#+BEGIN_SRC python :results output :exports none :tangle temp.py :comments link
+  import io
+
+  ARROW = "->"
+  math_tokens = ['*',"+","?",")","("]
+
+  def parse_ebnf_one_line(ebnf_line):
+      result_stream = io.StringIO("")
+      result_stream.write(r"\begin{equation*}")
+      result_stream.write("\n")
+
+      tokens = ebnf_line.split()
+      new_tokens = []
+      for token in tokens:
+          if token[-1] in math_tokens:
+              if len(token[:-1]) != 0:
+                  new_tokens.append(token[:-1])
+              new_tokens.append(token[-1])
+          else:
+              new_tokens.append(token)
+      tokens = new_tokens
+
+      space_str = r"\space"
+      for indx,token in enumerate(tokens):
+          new_space_str = space_str
+          if token == ARROW:
+              result_stream.write(r"\rightarrow ")
+              new_space_str = r"\;"
+          elif token in math_tokens:
+              result_stream.write(token + " ")
+          else:
+              result_stream.write(r"\text{" + token + "} ")
+
+          next_token = None
+          if indx+1 < len(tokens):
+              next_token = tokens[indx+1]
+          if next_token not in math_tokens:
+              result_stream.write(space_str + " ")
+          space_str = new_space_str
+
+      result_stream.write("\n")
+      result_stream.write(r"\end{equation*}")
+      result_stream.write("\n")
+      result_stream.seek(0)
+      result = result_stream.read()
+      result_stream.close()
+      return result
+
+  def parse_ebnf(ebnf_lines:str):
+      ebnf_line_arr = ebnf_lines.split("\n")
+      ebnf_line_arr = [elm for elm in ebnf_line_arr if elm != ""]
+      result_arr = [parse_ebnf_one_line(ebnf_line) for ebnf_line in ebnf_line_arr]
+      return "\n".join(result_arr)
+  ebnf_line = "PROTOCOL -> (defprotcol PROTOCOL_NAME basic ROLE* )"
+  ebnf_lines = """
+    ROLE -> (defrole (vars VAR_MAP+) (trace SEND_RECV_MSG))
+    VAR_MAP -> (VAR_NAME VAR_TYPE+)
+    SEND_RECV_MSG -> (send MSG) | (recv MSG)
+    MSG -> (cat MSG+) | (enc MSG+) | (ltk MSG MSG) | (pubk MSG) | (privk MSG)
+  """
+  print(parse_ebnf(ebnf_line))
+  print("="*10)
+  print(parse_ebnf(ebnf_lines))
+#+END_SRC
+
 * Introduction
-This is the explanatiaon of CPSA syntax, the protocol description and some constraints on generated protocol run are given using this syntax.
+This is the explanatiaon of CPSA syntax and how it is translated to forge code. The protocol description and some constraints on generated protocol run are given using this syntax.
 The syntax conists of multiple nested s-expressions. The below sections contain an explanation of the different clauses that appear in the syntax.
 The documentation also incrementally gives the grammar for CPSA in EBNF form.
 
@@ -14,40 +86,126 @@ The documentation also incrementally gives the grammar for CPSA in EBNF form.
 \end{equation*}
 
 #+NAME: FILE
-#+BEGIN_SRC latex :exports none
-\begin{equation*}
-  FILE \rightarrow PROTOCOL SKELETON*
-\end{equation*}
+#+BEGIN_SRC ebnf :exports none
+  FILE -> PROTOCOL SKELETON *
 #+END_SRC
 
 #+BEGIN_SRC python :results html :exports results :noweb yes
+  <<latex-generate-func>>
   latex_code = r"""
   <<FILE>>
   """
-  result = ""
-  result += latex_code + "\n"
-  return result
+  return parse_ebnf(latex_code)
 #+END_SRC
+
 
 * defprotcol
 This clause contains the different roles present in the protocol and
 #+NAME: PROTOCOL
-#+BEGIN_SRC latex
-\begin{equation}
-  PROTOCOL \rightarrow (defprotcol PROTOCOL\_NAME basic ROLE* )
-\end{equation}
+#+BEGIN_SRC ebnf :exports none
+  PROTOCOL -> (defprotcol PROT_NAME basic ROLE* )
 #+END_SRC
 
 #+BEGIN_SRC python :results html :exports results :noweb yes
+  <<latex-generate-func>>
   latex_code = r"""
   <<PROTOCOL>>
   """
-  result = ""
-  result += latex_code + "\n"
-  return result
+  return parse_ebnf(latex_code)
 #+END_SRC
 
 ** defrole
+#+NAME: ROLE
+#+BEGIN_SRC ebnf :exports none
+  ROLE -> (defrole ROLE_NAME (vars VAR_MAP+) (trace SEND_RECV_MSG))
+  VAR_MAP -> (VAR_NAME VAR_TYPE+)
+  VAR_TYPE -> name | text | akey | skey | mesg
+  SEND_RECV_MSG -> (send MSG) | (recv MSG)
+  MSG -> (cat MSG+) | (enc MSG+)  | (ltk MSG MSG)
+  MSG -> (pubk MSG) | (privk MSG) | (seq MSG*)
+#+END_SRC
+
+#+BEGIN_SRC python :results html :exports results :noweb yes
+  <<latex-generate-func>>
+  latex_code = r"""
+  <<ROLE>>
+  """
+  return parse_ebnf(latex_code)
+#+END_SRC
+A role clause contains a description of one role present in the protocol. Each role consists of a sequence of sends and recieves (in alternating order) of particular messages. The vars clause consists of variable definitions along with their types which are later refrenced in the trace and skeleton (constraints) clause. Below is an example.
+#+BEGIN_SRC cpsa
+(defrole A
+  (vars (a b s name) (m na text) (kab skey))
+  (trace
+    (send (cat m a b (enc na m a b (ltk a s))))
+    (recv (cat m (enc na kab (ltk a s))))
+  )
+)
+#+END_SRC
+*** vars
+Each role is transcribed into a corresponding sig, the fields of the sig correspond to the variables defined in the vars clause of that role and example of this is seen in the snippet below.
+#+BEGIN_SRC forge
+sig ootway_rees_A extends strand {
+  ootway_rees_A_a : one name,
+  ootway_rees_A_b : one name,
+  ootway_rees_A_s : one name,
+  ootway_rees_A_m : one text,
+  ootway_rees_A_na : one text,
+  ootway_rees_A_kab : one skey
+}
+#+END_SRC
+*** trace
+Each role has has a corresponding predicate. The predicate imposes the constraint that any agent of that role only sends or recieves messages that matches the trace clause in its role declaration.
+#+BEGIN_SRC forge
+pred exec_ootway_rees_A {
+  all arbitrary_A_ootway_rees : ootway_rees_A | {
+    some t0 : Timeslot {
+      some t1 : t0.(^next) {
+        t0+t1 = sender.arbitrary_A_ootway_rees + receiver.arbitrary_A_ootway_rees
+        t0.sender = arbitrary_A_ootway_rees
+        inds[(t0.data)] = 0+1+2+3
+        some enc_1 : elems[(t0.data)] | {
+          (t0.data)[3] = enc_1
+          (t0.data)[0] in nonce
+          (t0.data)[0] = arbitrary_A_ootway_rees.ootway_rees_A_m
+          (t0.data)[1] = arbitrary_A_ootway_rees.ootway_rees_A_a
+          (t0.data)[2] = arbitrary_A_ootway_rees.ootway_rees_A_b
+          inds[((enc_1).plaintext)] = 0+1+2+3
+          ((enc_1).plaintext)[0] in nonce
+          ((enc_1).plaintext)[0] = arbitrary_A_ootway_rees.ootway_rees_A_na
+          ((enc_1).plaintext)[1] in nonce
+          ((enc_1).plaintext)[1] = arbitrary_A_ootway_rees.ootway_rees_A_m
+          ((enc_1).plaintext)[2] = arbitrary_A_ootway_rees.ootway_rees_A_a
+          ((enc_1).plaintext)[3] = arbitrary_A_ootway_rees.ootway_rees_A_b
+          ((enc_1).encryptionKey) = getLTK[arbitrary_A_ootway_rees.ootway_rees_A_a,arbitrary_A_ootway_rees.ootway_rees_A_s]
+        }
+
+        t1.receiver = arbitrary_A_ootway_rees
+        inds[(t1.data)] = 0+1
+        some enc_6 : elems[(t1.data)] | {
+          (t1.data)[1] = enc_6
+          (t1.data)[0] = arbitrary_A_ootway_rees.ootway_rees_A_m
+          learnt_term_by[getLTK[arbitrary_A_ootway_rees.ootway_rees_A_a,arbitrary_A_ootway_rees.ootway_rees_A_s],arbitrary_A_ootway_rees.agent,t1]
+          inds[((enc_6).plaintext)] = 0+1
+          ((enc_6).plaintext)[0] = arbitrary_A_ootway_rees.ootway_rees_A_na
+          ((enc_6).plaintext)[1] = arbitrary_A_ootway_rees.ootway_rees_A_kab
+          ((enc_6).encryptionKey) = getLTK[arbitrary_A_ootway_rees.ootway_rees_A_a,arbitrary_A_ootway_rees.ootway_rees_A_s]
+        }
+
+      }
+    }
+  }
+}
+#+END_SRC
+*** MSG
+Different message types are translated in different ways namely enc,cat,pubk,ltk
+etc. are translated in different ways, following sections have brief discussion
+on how they are translated.
+**** enc
+**** cat
+**** pubk
+**** ltk
+**** variables
 * defskeleton
 
 
