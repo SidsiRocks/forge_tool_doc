@@ -198,18 +198,163 @@ pred exec_ootway_rees_A {
 }
 #+END_SRC
 *** MSG
-Different message types are translated in different ways namely enc,cat,pubk,ltk
-etc. are translated in different ways, following sections have brief discussion
-on how they are translated.
-**** enc
-**** cat
-**** pubk
-**** ltk
-**** variables
+Message type is seen in [[file:~/data-4/another_fedora_home_folder/Documents/LearnFolder/forge_tool_doc/cspa_expanding/python_transcriber/type_and_helpers.py][type_and_helper.py]] and is summarized below:
+#+BEGIN_SRC python :tangle temp_types.py :comments link
+  Message = Variable | EncTerm | CatTerm | KeyTerm | SeqTerm
+  NonCatTerm = KeyTerm | EncTerm | SeqTerm
+  KeyTerm = LtkTerm | PubkTerm | PrivkTerm | Variable
+
+  class Variable:
+      var_name: str
+      var_type: MsgTypes
+  class EncTerm:
+      data: List[NonCatTerm]
+      key: KeyTerm
+  class CatTerm:
+      data: List[NonCatTerm]
+  class SeqTerm:
+      data: List[NonCatTerm]
+  class LtkTerm:
+      agent1_name: str
+      agent2_name: str
+  class PubkTerm:
+      agent_name:str
+  class PrivkTerm:
+      agent_name:str
+  class Variable:
+      var_name: str
+      var_type: MsgTypes
+#+END_SRC
+CatTerm, EncTerm, SeqTerm both contain a list of messages as their contents. Because of this EncTerm, SeqTerm etc. do not contain CatTerms within them and CatTerms cannot be nested.
+These message types are created when parsing trace clause within a role. When transcribing the trace these messages are transcribed recursively. The code for this can be seen at [[file:~/data-4/another_fedora_home_folder/Documents/LearnFolder/forge_tool_doc/cspa_expanding/python_transcriber/new_transcribe.py][new_transcribe.py]] (if you wish to better understand this part try running the code with some small protocol examples to see how some messages are transcribed).
 * defskeleton
+This is used to define some constraints on the generated run (like some terms being not equal, the generated run including some set of messages etc.) It follows the grammar given below with an example in the following section.
+#+NAME: SKEL
+#+BEGIN_SRC ebnf :exports none
+  SKEL -> (defskeleton SKEL_NAME VARS_CLAUSE CONSTRAINT*)
+  CONSTRAINT -> STRAND | NOT_EQ | UNIQ_ORIG
+  CONSTRAINT -> NON_ORIG | TRACE_CONSTRAINT
+  STRAND -> (defstrand ROLE_NAME TRACE_LEN SKEL_ROLE_MAP+)
+  SKEL_ROLE_MAP -> (VAR_NAME VAR_NAME)
+  NOT_EQ -> (not-eq MSG MSG)
+  UNIQ_ORIG -> (uniq-orig MSG+)
+  NON_ORIG -> (non-orig MSG+)
+  TRACE_CONSTRAINT -> (deftrace TRACE_NAME SEND_RECV_BY)
+  SEND_RECV_BY -> (send-from VAR_NAME MSG) | (recv-by VAR_NAME MSG)
+#+END_SRC
 
+#+BEGIN_SRC python :results html :exports results :noweb yes
+  <<latex-generate-func>>
+  latex_code = r"""
+  <<SKEL>>
+  """
+  return parse_ebnf(latex_code)
+#+END_SRC
 
+#+BEGIN_SRC cpsa
+(defskeleton ootway_rees
+  (vars (a b s name) (m na nb text) (kab skey) (A role_A) (B role_B) (S role_S))
+  (defstrand A 2 (a a) (b b) (s s) (m m) (na na) (kab kab))
+  (defstrand B 2 (nb nb))
+  (not-eq a b) (not-eq a s) (not-eq b s)
+  (not-eq m na) (not-eq m nb) (not-eq na nb)
 
+  (deftrace honest_run
+    (send-from A (cat m a b (enc na m a b (ltk a s))))
+    (recv-by   B (cat m a b (enc na m a b (ltk a s))))
+    (send-from B (cat m a b (enc na m a b (ltk a s)) (enc nb m a b (ltk b s))))
+    (recv-by   S (cat m a b (enc na m a b (ltk a s)) (enc nb m a b (ltk b s))))
+    (send-from S (cat m (enc na kab (ltk a s)) (enc nb kab (ltk b s))))
+    (recv-by   A (cat m (enc na kab (ltk a s))))
+    (recv-by   B (cat m (enc na kab (ltk a s)) (enc nb kab (ltk b s))))
+    (send-from B (cat m (enc na kab (ltk a s))))
+  )
+
+  (non-orig (ltk a s) (ltk b s))
+  (uniq-orig m na kab nb)
+)
+#+END_SRC
+
+** vars clause
+The vars clause here is similar to the one in role the difference here is the vars are also allowed to include variables corresponding to a strand which fullfills a particular role. This is useful when stating our trace constraint where we need to state who is sending/receiving messages. The variables in the var clause appear as fields in the sig generated for this skeleton.
+
+#+BEGIN_SRC cpsa
+  (vars (a b s name) (m na nb text) (kab skey) (A role_A) (B role_B) (S role_S))
+#+END_SRC
+
+#+BEGIN_SRC forge
+one sig skeleton_ootway_rees_0 {
+  skeleton_ootway_rees_0_a : one name,
+  skeleton_ootway_rees_0_b : one name,
+  skeleton_ootway_rees_0_s : one name,
+  skeleton_ootway_rees_0_m : one text,
+  skeleton_ootway_rees_0_na : one text,
+  skeleton_ootway_rees_0_nb : one text,
+  skeleton_ootway_rees_0_kab : one skey,
+  skeleton_ootway_rees_0_A : one ootway_rees_A,
+  skeleton_ootway_rees_0_B : one ootway_rees_B,
+  skeleton_ootway_rees_0_S : one ootway_rees_S
+}
+#+END_SRC
+** Constraints
+Each skeleton also has a corresponding predicate where these constrains are translated to forge expressions are placed. Below section explains what each of the constrains corresponds to.
+*** defstrand
+The variables defined in the var clause of defskeleton by themselves do not correspond to the variables in the defrole clause. This defstrand mapping establishes a mapping between those variables. This allows to place constraints on the variables present in a defrole clause. Below is an example of how this clause is translated.
+#+BEGIN_SRC cpsa
+  (defstrand A 2 (a a) (b b) (s s) (m m) (na na) (kab kab))
+#+END_SRC
+The above is translated to below code block note how the constraint uses *some* meaning if there are multiple strands corresponding to the same role then this mapping would match one of them.
+#+BEGIN_SRC forge
+some skeleton_A_0_strand_0 : ootway_rees_A | {
+    skeleton_A_0_strand_0.ootway_rees_A_a = skeleton_ootway_rees_0.skeleton_ootway_rees_0_a
+    skeleton_A_0_strand_0.ootway_rees_A_b = skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
+    skeleton_A_0_strand_0.ootway_rees_A_s = skeleton_ootway_rees_0.skeleton_ootway_rees_0_s
+    skeleton_A_0_strand_0.ootway_rees_A_m = skeleton_ootway_rees_0.skeleton_ootway_rees_0_m
+    skeleton_A_0_strand_0.ootway_rees_A_na = skeleton_ootway_rees_0.skeleton_ootway_rees_0_na
+    skeleton_A_0_strand_0.ootway_rees_A_kab = skeleton_ootway_rees_0.skeleton_ootway_rees_0_kab
+}
+#+END_SRC
+
+*** not-eq
+The not-eq constraint is self explanatory it is useful to ensure two terms are unequal, this is useful if a protocol requires two nonces to be distinct for example or wanting to generate a protocol run with three distinct agents.
+#+BEGIN_SRC cpsa
+  (not-eq a b)
+#+END_SRC
+#+BEGIN_SRC forge
+  skeleton_ootway_rees_0.skeleton_ootway_rees_0_a != skeleton_ootway_rees_0.skeleton_ootway_rees_0_b
+#+END_SRC
+*** uniq-orig and non-orig
+These constraints are defined in terms of a strand originating and generating a particular term so we first have to define these two notions.
+**** originates[strand,term]:
+A strand originates a term if
+1) There exists some Timeslot in which the sender is *strand* and *term* is contained in the message sent in that Timeslot
+2) Every message sent before this message doesn't contain *term*
+**** generates[strand,term]:
+The model keeps tracks of terms generated by every agent in the generated_times relation so this just involves looking up if *term* is in generated_times relation of the agent corresponding to the *strand*
+
+The non-orig and uniq-orig constrains are translated as seen in the examples below.
+#+BEGIN_SRC cpsa
+  (uniq-orig m)
+#+END_SRC
+
+#+BEGIN_SRC forge
+  one aStrand : strand | {
+    originates[aStrand,skeleton_ootway_rees_0.skeleton_ootway_rees_0_m] or
+    generates [aStrand,skeleton_ootway_rees_0.skeleton_ootway_rees_0_m]
+  }
+#+END_SRC
+
+#+BEGIN_SRC cpsa
+  (non-orig (ltk a s))
+#+END_SRC
+
+#+BEGIN_SRC forge
+  no aStrand : strand | {
+    originates[aStrand,getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]] or
+    generates [aStrand,getLTK[skeleton_ootway_rees_0.skeleton_ootway_rees_0_a,skeleton_ootway_rees_0.skeleton_ootway_rees_0_s]]
+  }
+#+END_SRC
+One common use for uniq-orig is to ensure that a nonce is freshly generated, a common use for non-orig is to ensure that the Attacker cannot generate another agents private keys or long term shared keys.
 # Local variables
 # org-confirm-babel-evaluate: nil
 # eval: (progn (org-babel-goto-named-src-block "startup") (org-babel-execute-src-block) (outline-hide-sublevels 1))
