@@ -141,3 +141,72 @@ Finally non-orig on the long term keys ensures the attacker is not able to gener
 
 
 * The forge file
+The following text explains different snippets of the forge file in the order which they appear in in the final forge file.
+
+Below code choose what visualization script is used for generating visualization.
+#+BEGIN_SRC forge
+  option run_sterling "../../crypto_viz_seq.js"
+#+END_SRC
+
+wellformed,exec_ootway_rees_A, constrain_skeleton_ootway_rees_0 refer to predicates. wellformed is a predicate common for any protocol, it imposes constraints like agents only being able to send message terms they have learnt. In the CPSA syntax we had defined roles A,B,S. The predicates exec_ootway_rees_A,B,S ensure that strands with role A,B,S only send receive messages which were defined in our role trace clause. These three constraints would also be included in any trace we want to generate for this protocol. constrain_skeleton_ootway_rees_0 predicate corresponds to the defskeleton clause we had included in our CPSA file, the constraints there are transcribed and included in this predicate.
+#+BEGIN_SRC forge
+  new_ootway_prot_run : run {
+      wellformed
+      exec_ootway_rees_A
+      exec_ootway_rees_B
+      exec_ootway_rees_S
+      constrain_skeleton_ootway_rees_0
+#+END_SRC
+These impose the constraint that agents fulfilling the roles A,B,S and Attacker are all distinct since we want to generate an honest run where A,B,S roles wouldn't be played by the Attacker.
+#+BEGIN_SRC forge
+  let A = ootway_rees_A | { let B = ootway_rees_B | {
+  let S = ootway_rees_S | {
+      (A.agent != Attacker) and (B.agent != Attacker) and (S.agent != Attacker)
+      (A.agent != B.agent) and (A.agent != S.agent) and (B.agent != S.agent)
+#+END_SRC
+These impose the constraint that agents A,B,S agree on the names a,b,s.
+#+BEGIN_SRC forge
+  let A_a = ootway_rees_A_a | { let A_b = ootway_rees_A_b | {
+  let A_s = ootway_rees_A_s | {
+      (A.A_a = A.agent) and (A.A_b = B.agent) and (A.A_s = S.agent)
+  } } }
+  let B_a = ootway_rees_B_a | { let B_b = ootway_rees_B_b | {
+  let B_s = ootway_rees_B_s | {
+      (B.B_a = A.agent) and (B.B_b = B.agent) and (B.B_s = S.agent)
+  } } }
+  let S_a = ootway_rees_S_a | { let S_b = ootway_rees_S_b | {
+  let S_s = ootway_rees_S_s | {
+      (S.S_a = A.agent) and (S.S_b = B.agent) and (S.S_s = S.agent)
+  } } }
+#+END_SRC
+These ensure that k_ab is not equal to long term keys previously generated.
+#+BEGIN_SRC forge
+  let k_ab = S.ootway_rees_S_kab | {
+      (k_ab != getLTK[A.agent,S.agent]) and (k_ab != getLTK[B.agent,S.agent]) and (k_ab != getLTK[A.agent,B.agent])
+  }
+#+END_SRC
+This imposes the constraint on the size of different sets defined through sig, for an honest run one can compute these by hand.
+#+BEGIN_SRC forge
+      } } }
+  } for
+      exactly 8 Timeslot,exactly 24 mesg,exactly 24 text,exactly 24 atomic,
+      exactly 7 Key,exactly 0 akey,exactly 7 skey,exactly 0 PrivateKey,exactly 0 PublicKey,
+      exactly 4 name,exactly 9 Ciphertext,exactly 4 nonce,exactly 1 KeyPairs,
+      exactly 1 ootway_rees_A,exactly 1 ootway_rees_B,
+      exactly 1 ootway_rees_S
+  for { next is linear }
+#+END_SRC
+Only including the bound 24 mesg and a few other sets should be enough as mesg is the superset of most of the other sets. However solving is exteremly slow with this, on my machine it didn't terminate after around 25 minutes while with the given constraints it terminates in 2-3 minutes.
+
+
+* Running the protocol
+Now that we have created our CPSA and forge files we can now run this protocol using the following
+#+BEGIN_SRC shell
+  python3 main_seq_text.py racket_file forge_file --destination_forge_file_path destination_file
+#+END_SRC
+Above command generates a forge file which includes the content from our *forge_file* and the contents of our *racket_file* transcribed to forge predicates.
+To run the forge file you have to run the below command.
+#+BEGIN_SRC shell
+  racket destination_file
+#+END_SRC
+The visualizer opens up in your forge file.
