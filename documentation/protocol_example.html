@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2025-10-02 Thu 17:52 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Protocol creation example</title>
+<meta name="author" content="Siddhartha Singh" />
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/readtheorg.css"/>
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/code-copy.css"/>
+<link rel="stylesheet" type="text/css" href="src/readtheorg_theme/css/search.css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/lib/js/jquery.stickytableheaders.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/js/search.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/js/readtheorg.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/js/code-copy.js"></script>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Protocol creation example</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#orgaa24160">Introduction</a></li>
+<li><a href="#org7df309e">The protocol</a></li>
+<li><a href="#org052b049">The CPSA file</a>
+<ul>
+<li><a href="#org5b70b8a">defprotocol clause</a></li>
+<li><a href="#org0f9649b">defskeleton</a></li>
+</ul>
+</li>
+<li><a href="#org00d9f73">The forge file</a></li>
+<li><a href="#orga647d08">Running the protocol</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgaa24160" class="outline-2">
+<h2 id="orgaa24160">Introduction</h2>
+<div class="outline-text-2" id="text-orgaa24160">
+<p>
+Below is an example of how a protcol would be translated to cpsa syntax and forge predicates. This should be helpful to anyone trying to model a protocol in forge.<br />
+</p>
+</div>
+</div>
+<div id="outline-container-org7df309e" class="outline-2">
+<h2 id="org7df309e">The protocol</h2>
+<div class="outline-text-2" id="text-org7df309e">
+<p>
+Using the ootway rees protocol here from spore primarily because it is a relatively non trivial example (with more than 2 roles, using long term keys etc.) which can currently be modeled by the protocol (note however that we currently cannot model the attack). Below is the protocol stated in arrow notation:<br />
+</p>
+
+<div class="org-src-container">
+<pre class="src src-arrow" id="org5e07ab7">A, B, S :   	principal
+M, Na, Nb :   	nonce
+Kas, Kbs, Kab :   	key
+1. A -&gt; B: M, A, B, {Na, M, A, B}Kas
+2. B -&gt; S: M, A, B, {Na, M, A, B}Kas, {Nb, M, A, B}Kbs
+3. S -&gt; B: M, {Na, Kab}Kas, {Nb, Kab}Kbs
+4. B -&gt; A: M, {Na, Kab}Kas
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org052b049" class="outline-2">
+<h2 id="org052b049">The CPSA file</h2>
+<div class="outline-text-2" id="text-org052b049">
+<p>
+The CPSA file consists of the protocol description in the defprotocol clause and some of the constraints on the genereated run in the defskeleton clause we discuss both of these in turn.<br />
+</p>
+</div>
+<div id="outline-container-org5b70b8a" class="outline-3">
+<h3 id="org5b70b8a">defprotocol clause</h3>
+<div class="outline-text-3" id="text-org5b70b8a">
+<p>
+the defprotocol clause only consists of the distinct roles in the protocol, in this case there are 3 different roles (A,B,S)<br />
+we first have to separte out the sends and recieves corresponding to each giving us the below.<br />
+Trace of A:<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-arrow">A-&gt;: M,A,B,{Na,M,A,B}Kas
+-&gt;A: M,{Na,Kab}Kas
+</pre>
+</div>
+<p>
+Trace of B:<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-arrow">-&gt; B: M, A, B, {Na, M, A, B}Kas
+B -&gt;: M, A, B, {Na, M, A, B}Kas, {Nb, M, A, B}Kb
+-&gt; B: M, {Na, Kab}Kas, {Nb, Kab}Kbs
+B -&gt;: M, {Na, Kab}Kas
+</pre>
+</div>
+<p>
+Trace of S:<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-arrow">-&gt; S: M, A, B, {Na, M, A, B}Kas, {Nb, M, A, B}Kbs
+S -&gt;: M, {Na, Kab}Kas, {Nb, Kab}Kbs
+</pre>
+</div>
+
+<p>
+There is an additional step before we can translate these to CPSA syntax, if a role has an expression like below in its trace<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-cpsa"><span style="color: #4f97d7;">(</span><span style="color: #4f97d7;">recv</span> <span style="color: #bc6ec5;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> m1 m2 k<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
+</pre>
+</div>
+<p>
+Where m1,m2 are some message terms and k is the key, then an additional constraint is added that the agent fulfilling this role in any generated run must know the inverse of the key k. The reason behind this constraint is that if a particular role's trace is placing constraints on the content of an encrypted message means it should be able to see the content of the encrypted message. This protocol has an example of such a case in the trace of B, B receives the terms {Na, M, A, B}Kas and {Na, Kab}Kas whose inverse keys it doesn't know.<br />
+To fix this problem we add a new variables m1,m2 which are of type <b>mesg</b> meaning they can contain any message and replace the two encrypted terms with this. The trace of B looks like below:<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-arrow">-&gt; B: M, A, B, m1
+B -&gt;: M, A, B, m1, {Nb, M, A, B}Kb
+-&gt; B: M, m2, {Nb, Kab}Kbs
+B -&gt;: M, m2
+</pre>
+</div>
+<p>
+Now these can be translated to CPSA syntax which gives us the following code<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-cpsa"> <span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">defprotocol</span> ootway_rees <span style="color: #4f97d7;">basic</span>
+  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7; font-weight: bold;">defrole</span> A
+    <span style="color: #2d9574;">(</span><span style="color: #4f97d7;">vars</span> <span style="color: #67b11d;">(</span>a b s <span style="color: #ce537a; font-weight: bold;">name</span><span style="color: #67b11d;">)</span> <span style="color: #67b11d;">(</span>m na <span style="color: #ce537a; font-weight: bold;">text</span><span style="color: #67b11d;">)</span> <span style="color: #67b11d;">(</span>kab <span style="color: #ce537a; font-weight: bold;">skey</span><span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span>
+    <span style="color: #2d9574;">(</span><span style="color: #4f97d7;">trace</span>
+     <span style="color: #67b11d;">(</span><span style="color: #4f97d7;">send</span> <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">cat</span> m a b <span style="color: #4f97d7;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> na m a b <span style="color: #bc6ec5;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> a s<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span><span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span>
+     <span style="color: #67b11d;">(</span><span style="color: #4f97d7;">recv</span> <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">cat</span> m <span style="color: #4f97d7;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> na kab <span style="color: #bc6ec5;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> a s<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span><span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span>
+     <span style="color: #2d9574;">)</span>
+    <span style="color: #bc6ec5;">)</span>
+  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7; font-weight: bold;">defrole</span> B
+    <span style="color: #2d9574;">(</span><span style="color: #4f97d7;">vars</span> <span style="color: #67b11d;">(</span>a b s <span style="color: #ce537a; font-weight: bold;">name</span><span style="color: #67b11d;">)</span> <span style="color: #67b11d;">(</span>m nb <span style="color: #ce537a; font-weight: bold;">text</span><span style="color: #67b11d;">)</span> <span style="color: #67b11d;">(</span>kab <span style="color: #ce537a; font-weight: bold;">skey</span><span style="color: #67b11d;">)</span> <span style="color: #67b11d;">(</span>first_a_s_<span style="color: #ce537a; font-weight: bold;">mesg</span> second_a_s_<span style="color: #ce537a; font-weight: bold;">mesg</span> <span style="color: #ce537a; font-weight: bold;">mesg</span><span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span>
+    <span style="color: #2d9574;">(</span><span style="color: #4f97d7;">trace</span>
+     <span style="color: #67b11d;">(</span><span style="color: #4f97d7;">recv</span> <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">cat</span> m a b first_a_s_<span style="color: #ce537a; font-weight: bold;">mesg</span><span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span>
+     <span style="color: #67b11d;">(</span><span style="color: #4f97d7;">send</span> <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">cat</span> m a b first_a_s_<span style="color: #ce537a; font-weight: bold;">mesg</span>  <span style="color: #4f97d7;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> nb m a b <span style="color: #bc6ec5;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> b s<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>  <span style="color: #b1951d;">)</span>   <span style="color: #67b11d;">)</span>
+     <span style="color: #67b11d;">(</span><span style="color: #4f97d7;">recv</span> <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">cat</span> m second_a_s_<span style="color: #ce537a; font-weight: bold;">mesg</span> <span style="color: #4f97d7;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> nb kab <span style="color: #bc6ec5;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> b s<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span><span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span>
+     <span style="color: #67b11d;">(</span><span style="color: #4f97d7;">send</span> <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">cat</span> m second_a_s_<span style="color: #ce537a; font-weight: bold;">mesg</span><span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span>
+     <span style="color: #2d9574;">)</span>
+    <span style="color: #bc6ec5;">)</span>
+  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7; font-weight: bold;">defrole</span> S
+    <span style="color: #2d9574;">(</span><span style="color: #4f97d7;">vars</span> <span style="color: #67b11d;">(</span>a b s <span style="color: #ce537a; font-weight: bold;">name</span><span style="color: #67b11d;">)</span> <span style="color: #67b11d;">(</span>m na nb <span style="color: #ce537a; font-weight: bold;">text</span><span style="color: #67b11d;">)</span> <span style="color: #67b11d;">(</span>kab <span style="color: #ce537a; font-weight: bold;">skey</span><span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span>
+    <span style="color: #2d9574;">(</span><span style="color: #4f97d7;">trace</span>
+     <span style="color: #67b11d;">(</span><span style="color: #4f97d7;">recv</span> <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">cat</span> m a b <span style="color: #4f97d7;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> na m a b <span style="color: #bc6ec5;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> a s<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>  <span style="color: #4f97d7;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> nb m a b <span style="color: #bc6ec5;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> b s<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>  <span style="color: #b1951d;">)</span>   <span style="color: #67b11d;">)</span>
+     <span style="color: #67b11d;">(</span><span style="color: #4f97d7;">send</span> <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">cat</span> m <span style="color: #4f97d7;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> na kab <span style="color: #bc6ec5;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> a s<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span> <span style="color: #4f97d7;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> nb kab <span style="color: #bc6ec5;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> b s<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span><span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span>
+     <span style="color: #2d9574;">)</span>
+    <span style="color: #bc6ec5;">)</span>
+<span style="color: #4f97d7;">)</span>
+</pre>
+</div>
+<p>
+Here m1,m2 have been replaced by first<sub>a</sub><sub>S</sub><sub>mesg</sub> and second<sub>a</sub><sub>s</sub><sub>mesg</sub> respectively.<br />
+</p>
+</div>
+</div>
+<div id="outline-container-org0f9649b" class="outline-3">
+<h3 id="org0f9649b">defskeleton</h3>
+<div class="outline-text-3" id="text-org0f9649b">
+<p>
+The defskeleton clause in the CPSA grammar is used to state some constraints on the protocol run. Not all constraints can be stated in this form but any additional constraints can be stated through the forge file.<br />
+Below is the list of snippets used to generate an honest run, with an explanation of their functions.<br />
+</p>
+
+<p>
+Variables clause declares some variables and their types (you will notice these correspond to the initial part of the description of the protocol in the arrow notation which serves the same purpose.<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-cpsa"><span style="color: #4f97d7;">(</span><span style="color: #4f97d7;">vars</span> <span style="color: #bc6ec5;">(</span>a b s <span style="color: #ce537a; font-weight: bold;">name</span><span style="color: #bc6ec5;">)</span> <span style="color: #bc6ec5;">(</span>m na nb <span style="color: #ce537a; font-weight: bold;">text</span><span style="color: #bc6ec5;">)</span> <span style="color: #bc6ec5;">(</span>kab <span style="color: #ce537a; font-weight: bold;">skey</span><span style="color: #bc6ec5;">)</span> <span style="color: #bc6ec5;">(</span>A role_A<span style="color: #bc6ec5;">)</span> <span style="color: #bc6ec5;">(</span>B role_B<span style="color: #bc6ec5;">)</span> <span style="color: #bc6ec5;">(</span>S role_S<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
+</pre>
+</div>
+
+<p>
+The variables we defines previously have no correspondence with the variables in the role we declared previously, do establish this correspondence we have to add the below defstrand constraints. (Note how the nonces m,na are generated by A and nb is generated by B, since we later place a constraint that these nonces are freshly generated we ensure m,na are present in defstrand A and nb in defstrand B.)<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-cpsa"><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">defstrand</span> A <span style="color: #a45bad;">2</span> <span style="color: #bc6ec5;">(</span>a a<span style="color: #bc6ec5;">)</span> <span style="color: #bc6ec5;">(</span>b b<span style="color: #bc6ec5;">)</span> <span style="color: #bc6ec5;">(</span>s s<span style="color: #bc6ec5;">)</span> <span style="color: #bc6ec5;">(</span>m m<span style="color: #bc6ec5;">)</span> <span style="color: #bc6ec5;">(</span>na na<span style="color: #bc6ec5;">)</span> <span style="color: #bc6ec5;">(</span>kab kab<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
+<span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">defstrand</span> B <span style="color: #a45bad;">2</span> <span style="color: #bc6ec5;">(</span>nb nb<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
+</pre>
+</div>
+
+<p>
+This constraint ensures that the nonces m,na,nb are distinct hence no nonce is resused. The variables a,b,s mapped to variables of the same name a,b,s in A's role are also marked as being distinct to ensure A doesn't communicate with the same agents for B and S.<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-cpsa"><span style="color: #4f97d7;">(</span><span style="color: #4f97d7;">not-eq</span> a b<span style="color: #4f97d7;">)</span> <span style="color: #4f97d7;">(</span><span style="color: #4f97d7;">not-eq</span> a s<span style="color: #4f97d7;">)</span> <span style="color: #4f97d7;">(</span><span style="color: #4f97d7;">not-eq</span> b s<span style="color: #4f97d7;">)</span>
+<span style="color: #4f97d7;">(</span><span style="color: #4f97d7;">not-eq</span> m na<span style="color: #4f97d7;">)</span> <span style="color: #4f97d7;">(</span><span style="color: #4f97d7;">not-eq</span> m nb<span style="color: #4f97d7;">)</span> <span style="color: #4f97d7;">(</span><span style="color: #4f97d7;">not-eq</span> na nb<span style="color: #4f97d7;">)</span>
+</pre>
+</div>
+
+<p>
+This deftrace constraint is not strictly required to generate an honest run, one could expand the defstrand constraint to ensure A,B,S agree on the names a,b,s but deftrace is used here as a useful example. (deftrace is also useful for debugging a protocol specification if we see that some run which we expect to be generated is not generated)<br />
+The deftrace constraint here enumerates the sequence of sends and recieves which would take place in an honest run of the protocol. The deftrace constraint ensures that the generated run contains this sequence of sends and recieves but allows for other sends/recieves to be interleaved.<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-cpsa"><span style="color: #4f97d7;">(</span><span style="color: #4f97d7;">deftrace</span> honest_run
+  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7;">send-from</span> A <span style="color: #2d9574;">(</span><span style="color: #bc6ec5; font-weight: bold;">cat</span> m a b <span style="color: #67b11d;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> na m a b <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> a s<span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span><span style="color: #bc6ec5;">)</span>
+  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7;">recv-by</span>   B <span style="color: #2d9574;">(</span><span style="color: #bc6ec5; font-weight: bold;">cat</span> m a b <span style="color: #67b11d;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> na m a b <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> a s<span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span><span style="color: #bc6ec5;">)</span>
+  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7;">send-from</span> B <span style="color: #2d9574;">(</span><span style="color: #bc6ec5; font-weight: bold;">cat</span> m a b <span style="color: #67b11d;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> na m a b <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> a s<span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span> <span style="color: #67b11d;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> nb m a b <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> b s<span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span><span style="color: #bc6ec5;">)</span>
+  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7;">recv-by</span>   S <span style="color: #2d9574;">(</span><span style="color: #bc6ec5; font-weight: bold;">cat</span> m a b <span style="color: #67b11d;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> na m a b <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> a s<span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span> <span style="color: #67b11d;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> nb m a b <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> b s<span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span><span style="color: #bc6ec5;">)</span>
+  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7;">send-from</span> S <span style="color: #2d9574;">(</span><span style="color: #bc6ec5; font-weight: bold;">cat</span> m <span style="color: #67b11d;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> na kab <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> a s<span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span> <span style="color: #67b11d;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> nb kab <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> b s<span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span><span style="color: #bc6ec5;">)</span>
+  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7;">recv-by</span>   A <span style="color: #2d9574;">(</span><span style="color: #bc6ec5; font-weight: bold;">cat</span> m <span style="color: #67b11d;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> na kab <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> a s<span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span><span style="color: #bc6ec5;">)</span>
+  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7;">recv-by</span>   B <span style="color: #2d9574;">(</span><span style="color: #bc6ec5; font-weight: bold;">cat</span> m <span style="color: #67b11d;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> na kab <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> a s<span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span> <span style="color: #67b11d;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> nb kab <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> b s<span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span><span style="color: #bc6ec5;">)</span>
+  <span style="color: #bc6ec5;">(</span><span style="color: #4f97d7;">send-from</span> B <span style="color: #2d9574;">(</span><span style="color: #bc6ec5; font-weight: bold;">cat</span> m <span style="color: #67b11d;">(</span><span style="color: #bc6ec5; font-weight: bold;">enc</span> na kab <span style="color: #b1951d;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> a s<span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span><span style="color: #bc6ec5;">)</span>
+<span style="color: #4f97d7;">)</span>
+</pre>
+</div>
+
+<p>
+Finally non-orig on the long term keys ensures the attacker is not able to generate the long term keys. The uniq-orig constraint ensures that all nonces are freshly generated.<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-cpsa"><span style="color: #4f97d7;">(</span><span style="color: #4f97d7;">non-orig</span> <span style="color: #bc6ec5;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> a s<span style="color: #bc6ec5;">)</span> <span style="color: #bc6ec5;">(</span><span style="color: #bc6ec5; font-weight: bold;">ltk</span> b s<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
+<span style="color: #4f97d7;">(</span><span style="color: #4f97d7;">uniq-orig</span> m na kab nb<span style="color: #4f97d7;">)</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-org00d9f73" class="outline-2">
+<h2 id="org00d9f73">The forge file</h2>
+<div class="outline-text-2" id="text-org00d9f73">
+<p>
+The following text explains different snippets of the forge file in the order which they appear in in the final forge file.<br />
+</p>
+
+<p>
+Below code choose what visualization script is used for generating visualization.<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-forge"><span style="color: #4f97d7; font-weight: bold;">option</span> run_sterling <span style="color: #2d9574;">"../../crypto_viz_seq.js"</span>
+</pre>
+</div>
+
+<p>
+wellformed,exec<sub>ootway</sub><sub>rees</sub><sub>A</sub>, constrain<sub>skeleton</sub><sub>ootway</sub><sub>rees</sub><sub>0</sub> refer to predicates. wellformed is a predicate common for any protocol, it imposes constraints like agents only being able to send message terms they have learnt. In the CPSA syntax we had defined roles A,B,S. The predicates exec<sub>ootway</sub><sub>rees</sub><sub>A,B,S</sub> ensure that strands with role A,B,S only send receive messages which were defined in our role trace clause. These three constraints would also be included in any trace we want to generate for this protocol. constrain<sub>skeleton</sub><sub>ootway</sub><sub>rees</sub><sub>0</sub> predicate corresponds to the defskeleton clause we had included in our CPSA file, the constraints there are transcribed and included in this predicate.<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-forge">new_ootway_prot_run : <span style="color: #4f97d7; font-weight: bold;">run</span> <span style="color: #4f97d7;">{</span>
+    wellformed
+    exec_ootway_rees_A
+    exec_ootway_rees_B
+    exec_ootway_rees_S
+    constrain_skeleton_ootway_rees_0
+</pre>
+</div>
+<p>
+These impose the constraint that agents fulfilling the roles A,B,S and Attacker are all distinct since we want to generate an honest run where A,B,S roles wouldn't be played by the Attacker.<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-forge"><span style="color: #4f97d7; font-weight: bold;">let</span> A = ootway_rees_A | <span style="color: #4f97d7;">{</span> <span style="color: #4f97d7; font-weight: bold;">let</span> B = ootway_rees_B | <span style="color: #bc6ec5;">{</span>
+<span style="color: #4f97d7; font-weight: bold;">let</span> S = ootway_rees_S | <span style="color: #2d9574;">{</span>
+    <span style="color: #67b11d;">(</span>A.agent != Attacker<span style="color: #67b11d;">)</span> <span style="color: #4f97d7; font-weight: bold;">and</span> <span style="color: #67b11d;">(</span>B.agent != Attacker<span style="color: #67b11d;">)</span> <span style="color: #4f97d7; font-weight: bold;">and</span> <span style="color: #67b11d;">(</span>S.agent != Attacker<span style="color: #67b11d;">)</span>
+    <span style="color: #67b11d;">(</span>A.agent != B.agent<span style="color: #67b11d;">)</span> <span style="color: #4f97d7; font-weight: bold;">and</span> <span style="color: #67b11d;">(</span>A.agent != S.agent<span style="color: #67b11d;">)</span> <span style="color: #4f97d7; font-weight: bold;">and</span> <span style="color: #67b11d;">(</span>B.agent != S.agent<span style="color: #67b11d;">)</span>
+</pre>
+</div>
+<p>
+These impose the constraint that agents A,B,S agree on the names a,b,s.<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-forge"><span style="color: #4f97d7; font-weight: bold;">let</span> A_a = ootway_rees_A_a | <span style="color: #4f97d7;">{</span> <span style="color: #4f97d7; font-weight: bold;">let</span> A_b = ootway_rees_A_b | <span style="color: #bc6ec5;">{</span>
+<span style="color: #4f97d7; font-weight: bold;">let</span> A_s = ootway_rees_A_s | <span style="color: #2d9574;">{</span>
+    <span style="color: #67b11d;">(</span>A.A_a = A.agent<span style="color: #67b11d;">)</span> <span style="color: #4f97d7; font-weight: bold;">and</span> <span style="color: #67b11d;">(</span>A.A_b = B.agent<span style="color: #67b11d;">)</span> <span style="color: #4f97d7; font-weight: bold;">and</span> <span style="color: #67b11d;">(</span>A.A_s = S.agent<span style="color: #67b11d;">)</span>
+<span style="color: #2d9574;">}</span> <span style="color: #bc6ec5;">}</span> <span style="color: #4f97d7;">}</span>
+<span style="color: #4f97d7; font-weight: bold;">let</span> B_a = ootway_rees_B_a | <span style="color: #4f97d7;">{</span> <span style="color: #4f97d7; font-weight: bold;">let</span> B_b = ootway_rees_B_b | <span style="color: #bc6ec5;">{</span>
+<span style="color: #4f97d7; font-weight: bold;">let</span> B_s = ootway_rees_B_s | <span style="color: #2d9574;">{</span>
+    <span style="color: #67b11d;">(</span>B.B_a = A.agent<span style="color: #67b11d;">)</span> <span style="color: #4f97d7; font-weight: bold;">and</span> <span style="color: #67b11d;">(</span>B.B_b = B.agent<span style="color: #67b11d;">)</span> <span style="color: #4f97d7; font-weight: bold;">and</span> <span style="color: #67b11d;">(</span>B.B_s = S.agent<span style="color: #67b11d;">)</span>
+<span style="color: #2d9574;">}</span> <span style="color: #bc6ec5;">}</span> <span style="color: #4f97d7;">}</span>
+<span style="color: #4f97d7; font-weight: bold;">let</span> S_a = ootway_rees_S_a | <span style="color: #4f97d7;">{</span> <span style="color: #4f97d7; font-weight: bold;">let</span> S_b = ootway_rees_S_b | <span style="color: #bc6ec5;">{</span>
+<span style="color: #4f97d7; font-weight: bold;">let</span> S_s = ootway_rees_S_s | <span style="color: #2d9574;">{</span>
+    <span style="color: #67b11d;">(</span>S.S_a = A.agent<span style="color: #67b11d;">)</span> <span style="color: #4f97d7; font-weight: bold;">and</span> <span style="color: #67b11d;">(</span>S.S_b = B.agent<span style="color: #67b11d;">)</span> <span style="color: #4f97d7; font-weight: bold;">and</span> <span style="color: #67b11d;">(</span>S.S_s = S.agent<span style="color: #67b11d;">)</span>
+<span style="color: #2d9574;">}</span> <span style="color: #bc6ec5;">}</span> <span style="color: #4f97d7;">}</span>
+</pre>
+</div>
+<p>
+These ensure that k<sub>ab</sub> is not equal to long term keys previously generated.<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-forge"><span style="color: #4f97d7; font-weight: bold;">let</span> k_ab = S.ootway_rees_S_kab | <span style="color: #4f97d7;">{</span>
+    <span style="color: #bc6ec5;">(</span>k_ab != getLTK<span style="color: #2d9574;">[</span>A.agent,S.agent<span style="color: #2d9574;">]</span><span style="color: #bc6ec5;">)</span> <span style="color: #4f97d7; font-weight: bold;">and</span> <span style="color: #bc6ec5;">(</span>k_ab != getLTK<span style="color: #2d9574;">[</span>B.agent,S.agent<span style="color: #2d9574;">]</span><span style="color: #bc6ec5;">)</span> <span style="color: #4f97d7; font-weight: bold;">and</span> <span style="color: #bc6ec5;">(</span>k_ab != getLTK<span style="color: #2d9574;">[</span>A.agent,B.agent<span style="color: #2d9574;">]</span><span style="color: #bc6ec5;">)</span>
+<span style="color: #4f97d7;">}</span>
+</pre>
+</div>
+<p>
+This imposes the constraint on the size of different sets defined through sig, for an honest run one can compute these by hand.<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-forge">    <span style="color: #e0211d; text-decoration: overline;">}</span> <span style="color: #e0211d; text-decoration: overline;">}</span> <span style="color: #e0211d; text-decoration: overline;">}</span>
+<span style="color: #e0211d; text-decoration: overline;">}</span> <span style="color: #4f97d7; font-weight: bold;">for</span>
+    <span style="color: #4f97d7; font-weight: bold;">exactly</span> <span style="color: #a45bad;">8</span> Timeslot,<span style="color: #4f97d7; font-weight: bold;">exactly</span> <span style="color: #a45bad;">24</span> mesg,<span style="color: #4f97d7; font-weight: bold;">exactly</span> <span style="color: #a45bad;">24</span> text,<span style="color: #4f97d7; font-weight: bold;">exactly</span> <span style="color: #a45bad;">24</span> atomic,
+    <span style="color: #4f97d7; font-weight: bold;">exactly</span> <span style="color: #a45bad;">7</span> Key,<span style="color: #4f97d7; font-weight: bold;">exactly</span> <span style="color: #a45bad;">0</span> akey,<span style="color: #4f97d7; font-weight: bold;">exactly</span> <span style="color: #a45bad;">7</span> skey,<span style="color: #4f97d7; font-weight: bold;">exactly</span> <span style="color: #a45bad;">0</span> PrivateKey,<span style="color: #4f97d7; font-weight: bold;">exactly</span> <span style="color: #a45bad;">0</span> PublicKey,
+    <span style="color: #4f97d7; font-weight: bold;">exactly</span> <span style="color: #a45bad;">4</span> name,<span style="color: #4f97d7; font-weight: bold;">exactly</span> <span style="color: #a45bad;">9</span> Ciphertext,<span style="color: #4f97d7; font-weight: bold;">exactly</span> <span style="color: #a45bad;">4</span> nonce,<span style="color: #4f97d7; font-weight: bold;">exactly</span> <span style="color: #a45bad;">1</span> KeyPairs,
+    <span style="color: #4f97d7; font-weight: bold;">exactly</span> <span style="color: #a45bad;">1</span> ootway_rees_A,<span style="color: #4f97d7; font-weight: bold;">exactly</span> <span style="color: #a45bad;">1</span> ootway_rees_B,
+    <span style="color: #4f97d7; font-weight: bold;">exactly</span> <span style="color: #a45bad;">1</span> ootway_rees_S
+<span style="color: #4f97d7; font-weight: bold;">for</span> <span style="color: #e0211d; text-decoration: overline;">{</span> next <span style="color: #4f97d7; font-weight: bold;">is</span> linear <span style="color: #e0211d; text-decoration: overline;">}</span>
+</pre>
+</div>
+<p>
+Only including the bound 24 mesg and a few other sets should be enough as mesg is the superset of most of the other sets. However solving is exteremly slow with this, on my machine it didn't terminate after around 25 minutes while with the given constraints it terminates in 2-3 minutes.<br />
+</p>
+</div>
+</div>
+<div id="outline-container-orga647d08" class="outline-2">
+<h2 id="orga647d08">Running the protocol</h2>
+<div class="outline-text-2" id="text-orga647d08">
+<p>
+Now that we have created our CPSA and forge files we can now run this protocol using the following<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-shell">python3 main_seq_text.py racket_file forge_file --destination_forge_file_path destination_file
+</pre>
+</div>
+<p>
+Above command generates a forge file which includes the content from our <b>forge<sub>file</sub></b> and the contents of our <b>racket<sub>file</sub></b> transcribed to forge predicates.<br />
+To run the forge file you have to run the below command.<br />
+</p>
+<div class="org-src-container">
+<pre class="src src-shell">racket destination_file
+</pre>
+</div>
+<p>
+The visualizer opens up in your forge file.<br />
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Siddhartha Singh</p>
+<p class="date">Created: 2025-10-02 Thu 17:52</p>
+<p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
