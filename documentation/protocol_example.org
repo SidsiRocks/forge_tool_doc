@@ -1,0 +1,134 @@
+#+TITLE: Protocol creation example
+#+AUTHOR: Siddhartha Singh
+#+OPTIONS: num:nil \n:t
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+#+HTML_MATHJAX: align: left indent: 2em tagside: left font: Neo-Euler
+
+#+NAME: startup
+#+BEGIN_SRC elisp :exports none
+  (setq org-confirm-babel-evaluate nil)
+#+END_SRC
+
+#+RESULTS: startup
+
+* Introduction
+Below is an example of how a protcol would be translated to cpsa syntax and forge predicates. This should be helpful to anyone trying to model a protocol in forge.
+* The protocol
+Using the ootway rees protocol here from spore primarily because it is a relatively non trivial example (with more than 2 roles, using long term keys etc.) which can currently be modeled by the protocol (note however that we currently cannot model the attack). Below is the protocol stated in arrow notation:
+
+#+NAME: otway-rees-arrow-notation
+#+BEGIN_SRC arrow :tangle temp_arrow.txt :comments link
+  A, B, S :   	principal
+  M, Na, Nb :   	nonce
+  Kas, Kbs, Kab :   	key
+  1. A -> B: M, A, B, {Na, M, A, B}Kas
+  2. B -> S: M, A, B, {Na, M, A, B}Kas, {Nb, M, A, B}Kbs
+  3. S -> B: M, {Na, Kab}Kas, {Nb, Kab}Kbs
+  4. B -> A: M, {Na, Kab}Kas
+#+END_SRC
+
+* The CPSA file
+The CPSA file consists of the protocol description in the defprotocol clause and some of the constraints on the genereated run in the defskeleton clause we discuss both of these in turn.
+** defprotocol clause
+the defprotocol clause only consists of the distinct roles in the protocol, in this case there are 3 different roles (A,B,S)
+we first have to separte out the sends and recieves corresponding to each giving us the below.
+Trace of A:
+#+BEGIN_SRC arrow :tangle temp_arrow.txt :comments link
+  A->: M,A,B,{Na,M,A,B}Kas
+  ->A: M,{Na,Kab}Kas
+#+END_SRC
+Trace of B:
+#+BEGIN_SRC arrow :tangle temp_arrow.txt :comments link
+  -> B: M, A, B, {Na, M, A, B}Kas
+  B ->: M, A, B, {Na, M, A, B}Kas, {Nb, M, A, B}Kb
+  -> B: M, {Na, Kab}Kas, {Nb, Kab}Kbs
+  B ->: M, {Na, Kab}Kas
+#+END_SRC
+Trace of S:
+#+BEGIN_SRC arrow :tangle temp_arrow.txt :comments link
+  -> S: M, A, B, {Na, M, A, B}Kas, {Nb, M, A, B}Kbs
+  S ->: M, {Na, Kab}Kas, {Nb, Kab}Kbs
+#+END_SRC
+
+There is an additional step before we can translate these to CPSA syntax, if a role has an expression like below in its trace
+#+BEGIN_SRC cpsa
+  (recv (enc m1 m2 k))
+#+END_SRC
+Where m1,m2 are some message terms and k is the key, then an additional constraint is added that the agent fulfilling this role in any generated run must know the inverse of the key k. The reason behind this constraint is that if a particular role's trace is placing constraints on the content of an encrypted message means it should be able to see the content of the encrypted message. This protocol has an example of such a case in the trace of B, B receives the terms {Na, M, A, B}Kas and {Na, Kab}Kas whose inverse keys it doesn't know.
+To fix this problem we add a new variables m1,m2 which are of type *mesg* meaning they can contain any message and replace the two encrypted terms with this. The trace of B looks like below:
+#+BEGIN_SRC arrow
+  -> B: M, A, B, m1
+  B ->: M, A, B, m1, {Nb, M, A, B}Kb
+  -> B: M, m2, {Nb, Kab}Kbs
+  B ->: M, m2
+#+END_SRC
+Now these can be translated to CPSA syntax which gives us the following code
+#+BEGIN_SRC cpsa
+ (defprotocol ootway_rees basic
+  (defrole A
+    (vars (a b s name) (m na text) (kab skey))
+    (trace
+     (send (cat m a b (enc na m a b (ltk a s))))
+     (recv (cat m (enc na kab (ltk a s))))
+     )
+    )
+  (defrole B
+    (vars (a b s name) (m nb text) (kab skey) (first_a_s_mesg second_a_s_mesg mesg))
+    (trace
+     (recv (cat m a b first_a_s_mesg))
+     (send (cat m a b first_a_s_mesg  (enc nb m a b (ltk b s))  )   )
+     (recv (cat m second_a_s_mesg (enc nb kab (ltk b s))))
+     (send (cat m second_a_s_mesg))
+     )
+    )
+  (defrole S
+    (vars (a b s name) (m na nb text) (kab skey))
+    (trace
+     (recv (cat m a b (enc na m a b (ltk a s))  (enc nb m a b (ltk b s))  )   )
+     (send (cat m (enc na kab (ltk a s)) (enc nb kab (ltk b s))))
+     )
+    )
+)
+#+END_SRC
+Here m1,m2 have been replaced by first_a_S_mesg and second_a_s_mesg respectively.
+** defskeleton
+The defskeleton clause in the CPSA grammar is used to state some constraints on the protocol run. Not all constraints can be stated in this form but any additional constraints can be stated through the forge file.
+Below is the list of snippets used to generate an honest run, with an explanation of their functions.
+
+#+BEGIN_SRC cpsa
+  (vars (a b s name) (m na nb text) (kab skey) (A role_A) (B role_B) (S role_S))
+#+END_SRC
+
+#+BEGIN_SRC cpsa
+  (defstrand A 2 (a a) (b b) (s s) (m m) (na na) (kab kab))
+  (defstrand B 2 (nb nb))
+#+END_SRC
+
+#+BEGIN_SRC cpsa
+  (not-eq a b) (not-eq a s) (not-eq b s)
+  (not-eq m na) (not-eq m nb) (not-eq na nb)
+#+END_SRC
+
+#+BEGIN_SRC cpsa
+  (deftrace honest_run
+    (send-from A (cat m a b (enc na m a b (ltk a s))))
+    (recv-by   B (cat m a b (enc na m a b (ltk a s))))
+    (send-from B (cat m a b (enc na m a b (ltk a s)) (enc nb m a b (ltk b s))))
+    (recv-by   S (cat m a b (enc na m a b (ltk a s)) (enc nb m a b (ltk b s))))
+    (send-from S (cat m (enc na kab (ltk a s)) (enc nb kab (ltk b s))))
+    (recv-by   A (cat m (enc na kab (ltk a s))))
+    (recv-by   B (cat m (enc na kab (ltk a s)) (enc nb kab (ltk b s))))
+    (send-from B (cat m (enc na kab (ltk a s))))
+  )
+#+END_SRC
+
+#+BEGIN_SRC cpsa
+  (non-orig (ltk a s) (ltk b s))
+  (uniq-orig m na kab nb)
+#+END_SRC
+
+
+# Local variables
+# org-confirm-babel-evaluate: nil
+# eval: (progn (org-babel-goto-named-src-block "startup") (org-babel-execute-src-block) (outline-hide-sublevels 1))
+# End:
