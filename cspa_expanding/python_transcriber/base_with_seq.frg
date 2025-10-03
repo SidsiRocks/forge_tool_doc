@@ -64,7 +64,7 @@ sig Timeslot {
   sender: one strand,
   receiver: one strand,  
   -- data: set mesg, 
-  data: pfunc Int -> mesg,
+  data: one mesg,
   -- relation is: Tick x Microtick x learned-mesg
   -- Only one agent per tick is receiving, so always know which agent's workspace it is
   workspace: set Timeslot -> mesg
@@ -91,12 +91,14 @@ sig Ciphertext extends mesg {
    encryptionKey: one Key,
    -- result in concating plaintexts
    --plaintext: set mesg
-   plaintext: pfunc Int -> mesg
+   plaintext: one mesg
 }
 
 -- Non-name base value (e.g., nonces)
 sig text extends mesg {}
-
+sig tuple extends mesg {
+    components: pfunc Int -> mesg
+}
 /** The starting knowledge base for all agents */
 fun baseKnown[a: name]: set mesg {
     -- name knows all public keys
@@ -116,10 +118,12 @@ fun baseKnown[a: name]: set mesg {
 pred wellformed {
   -- Design choice: only one message event per timeslot;
   --   assume we have a shared notion of time
-  all m: Timeslot | isSeqOf[m.data,mesg]
-  all t: Ciphertext | isSeqOf[t.plaintext,mesg]
+  -- all m: Timeslot | isSeqOf[m.data,mesg]
+  -- all t: Ciphertext | isSeqOf[t.plaintext,mesg]
   -- You cannot send a message with no data
-  all m: Timeslot | some elems[m.data]
+  -- all m: Timeslot | some elems[m.data]
+
+  all m: tuple | isSeqOf[m.tuple,mesg]
 
   -- someone cannot send a message to themselves
   all m: Timeslot | m.sender not in m.receiver
@@ -129,7 +133,7 @@ pred wellformed {
   all d: mesg | all t, microt: Timeslot | let a = t.receiver.agent | d in (workspace[t])[microt] iff {
     -- Base case:
     -- received the data in the clear just now 
-    {d in elems[t.data] and no microt.~next}
+    {d in t.data and no microt.~next}
     or
     -- Inductive case:
     -- breaking down a ciphertext we learned *previously*, or that we've produced from 
@@ -144,7 +148,12 @@ pred wellformed {
       d in elems[superterm.plaintext] and     
       superterm in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a] and
       getInv[superterm.encryptionKey] in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a]
-    }}}
+    }}
+    {some superterm: tuple | {
+      d in elmes[superterm.components] and
+      superterm in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a]
+    }}
+    }
   }
  
   -- names only learn information that associated strands are explicitly sent 
@@ -175,7 +184,7 @@ pred wellformed {
     -- NOTE WELL: if ever allow an agent to send/receive at same time, need rewrite 
     {d in Ciphertext and 
 	   d.encryptionKey in (a.learned_times).(Timeslot - t.^next) and        
-	   elems[d.plaintext] in (a.learned_times).(Timeslot - t.^next)
+	   d.plaintext in (a.learned_times).(Timeslot - t.^next)
      {a not in t.receiver.agent} -- non-reception
     }
     or
