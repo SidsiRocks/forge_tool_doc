@@ -1,6 +1,9 @@
-#lang forge
+option run_sterling "../../crypto_viz_tuple.js"
 
-open "simple_enc.rkt"
+option solver MiniSatProver
+option logtranslation 1
+option coregranularity 1
+option core_minimization rce
 
 simple_enc_responder_pov: run {
     wellformed
@@ -24,5 +27,5 @@ simple_enc_responder_pov: run {
     --the execution is not rendered properly
     exactly 3 name,0 text,exactly 4 Ciphertext,
     exactly 1 simple_enc_init,exactly 1 simple_enc_resp,
-    1 Int
+    2 Int
 for {next is linear}
