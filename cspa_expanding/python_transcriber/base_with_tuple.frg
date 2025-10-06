@@ -271,7 +271,7 @@ fun subterm[supers: set mesg]: set mesg {
   -- do cross check that it actually returns the correct thing and not an empty set
   -- or something
   let components_relation = {tpl:tuple,msg:mesg | {msg in elems[tuple.components]}} | {
-    supers + supers.^(components_realtion + plaintext) -- union on new subterm relations inside parens
+    supers + supers.^(components_relation + plaintext) -- union on new subterm relations inside parens
   }
 }
 
