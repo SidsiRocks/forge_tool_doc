@@ -118,12 +118,8 @@ fun baseKnown[a: name]: set mesg {
 pred wellformed {
   -- Design choice: only one message event per timeslot;
   --   assume we have a shared notion of time
-  -- all m: Timeslot | isSeqOf[m.data,mesg]
-  -- all t: Ciphertext | isSeqOf[t.plaintext,mesg]
-  -- You cannot send a message with no data
-  -- all m: Timeslot | some elems[m.data]
-
-  all m: tuple | isSeqOf[m.tuple,mesg]
+  -- Constraint ensures that m.components is a well formed sequence
+  all m: tuple | isSeqOf[m.components,mesg]
 
   -- someone cannot send a message to themselves
   all m: Timeslot | m.sender not in m.receiver
@@ -145,12 +141,13 @@ pred wellformed {
     { 
       --d not in ((a.workspace)[t])[Timeslot - microt.^next] and -- first time appearing
       {some superterm : Ciphertext | {      
-      d in elems[superterm.plaintext] and     
+      d in superterm.plaintext and     
       superterm in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a] and
       getInv[superterm.encryptionKey] in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a]
     }}
+    or
     {some superterm: tuple | {
-      d in elmes[superterm.components] and
+      d in elems[superterm.components] and
       superterm in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a]
     }}
     }
@@ -189,6 +186,14 @@ pred wellformed {
     }
     or
 
+    -- Only build up tuples when sending a message no need to breakdown when receiving a message
+    -- (breakdown of tuples handled inside microtick idea probably do not need it inside)
+    -- NOTE: this means maximum nesting which can be broken down currently depends on the number of timeslots in the trae
+    -- this is undesirable as with the addition of a tuple inside every encrypted term the depth will certainly increase
+    { d in tuple and 
+      elems[d.components] in (a.learned_times).(Timeslot - t.^next) and
+      {a not in t.receiver.agent}
+     }
     {d in baseKnown[a]}
 
     or
@@ -200,20 +205,20 @@ pred wellformed {
   all a: name | all d: text | lone t: Timeslot | d in (a.generated_times).t
 
   -- Messages comprise only values known by the sender
-  all m: Timeslot | elems[m.data] in (((m.sender).agent).learned_times).(Timeslot - m.^next) 
+  all m: Timeslot | m.data in (((m.sender).agent).learned_times).(Timeslot - m.^next) 
   -- Always send or receive to the adversary
   all m: Timeslot | m.sender = AttackerStrand or m.receiver = AttackerStrand 
 
   -- plaintext relation is acyclic  
   --  NOTE WELL: if ever add another type of mesg that contains data, add with + inside ^.
-  --old_plainw ould be unique so some or all doesn't
-  let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
-    all d: mesg | d not in d.^(old_plain)
+  -- Now the only type contatining data is tuple and Ciphertext so only have to write 
+  -- constraint for those two
+  let components_relation = {tpl:tuple,msg:mesg | {msg in elems[tuple.components]}} | {
+    all d: mesg | d not in d.^(components_relation + plaintext)
   }
-  
-  -- Disallow empty ciphertexts
-  -- might not need elemes here just some works
-  all c: Ciphertext | some elems[c.plaintext]
+  -- Disallow empty tuples
+  -- TODO might not need elemes here just some works
+  all t: tuple | some elems[t.components]
 
   (KeyPairs.pairs).PublicKey = PrivateKey -- total
   PrivateKey.(KeyPairs.pairs) = PublicKey -- total
@@ -265,8 +270,8 @@ fun subterm[supers: set mesg]: set mesg {
   -- VITAL: if you add a new subterm relation, needs to be added here, too!
   -- do cross check that it actually returns the correct thing and not an empty set
   -- or something
-  let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
-    supers + supers.^(old_plain) -- union on new subterm relations inside parens
+  let components_relation = {tpl:tuple,msg:mesg | {msg in elems[tuple.components]}} | {
+    supers + supers.^(components_realtion + plaintext) -- union on new subterm relations inside parens
   }
 }
 
@@ -281,12 +286,12 @@ pred originates[s: strand, d: mesg] {
   --   whenever n' precedes n on the same strand, t is not subterm of n'
 
   some m: sender.s | { -- messages sent by strand s (positive term)     
-      d in subterm[elems[m.data]] -- d is a sub-term of m     
+      d in subterm[m.data] -- d is a sub-term of m     
       all m2: (sender.s + receiver.s) - m | { -- everything else on the strand
           -- ASSUME: messages are sent/received in same timeslot
           {m2 in m.^(~(next))}
           implies          
-          {d not in subterm[elems[m2.data]]}
+          {d not in subterm[m2.data]}
       }
   }
 }
