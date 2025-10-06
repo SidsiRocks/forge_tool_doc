@@ -79,6 +79,12 @@ class Transcribe_obj:
                 transcribe_subterms()
         else:
             transcribe_subterms()
+    # TODO: think about how one can express tuples being nested this is needed for a later protocol after all
+    def write_tuple_constraint(self,tuple_exr:str,seq_terms:List[NonCatTerm],send_recv:SendRecv,timeslot_expr:str,sig_context:"RoleOrSkelTranscrContext"):
+        sig_context.transcr.print_to_file(f"{tuple_exr} in tuple\n")
+        seq_expr = f"({tuple_exr}.components)"
+        self.write_new_seq_constraint(seq_expr,seq_terms,send_recv,timeslot_expr,sig_context)
+
     def role_var_name_in_prot_pred(self, role_name, prot_name):
         return f"arbitrary_{role_name}_{prot_name}"
 
@@ -372,7 +378,7 @@ def transcribe_enc(elm_expr: str, enc_term: EncTerm,send_recv:SendRecv ,timeslot
                     transcr.print_to_file(f"learnt_term_by[{term_str},{sig_context.role_var_name}.agent,{timeslot_expr}]\n")
                 case SkeletonTranscribeContext(_):
                     pass
-    transcr.write_new_seq_constraint(data_expr,enc_term.data,send_recv,timeslot_expr,sig_context)
+    transcr.write_tuple_constraint(data_expr,enc_term.data,send_recv,timeslot_expr,sig_context)
     transcribe_base_term(key_expr,enc_term.key,send_recv,sig_context)
 
 
@@ -403,11 +409,11 @@ def transcribe_indv_trace(role: Role, indx: int,
             transcr.print_to_file(f"t{indx}.receiver = {role_var_name}\n")
     match mesg:
         case CatTerm(_) as cat:
-            transcr.write_new_seq_constraint(f"(t{indx}.data)",cat.data,send_recv,f"t{indx}",role_context)
+            transcr.write_tuple_constraint(f"(t{indx}.data)",cat.data,send_recv,f"t{indx}",role_context)
 
         case non_cat_mesg:
             atom_name = f"atom_{transcr.get_fresh_num()}"
-            transcr.write_new_seq_constraint(f"(t{indx}.data)",[non_cat_mesg],send_recv,f"t{indx}",role_context)
+            transcr.write_tuple_constraint(f"(t{indx}.data)",[non_cat_mesg],send_recv,f"t{indx}",role_context)
 
 def transcribe_trace(role: Role, role_context: RoleTranscribeContext):
     trace_len = len(role.trace)
@@ -545,7 +551,7 @@ def transcribe_indv_trace_constraint(skeleton:Skeleton,indv_trace_constraint:Ind
             data_in_timeslot = data
         case _:
             data_in_timeslot = [message]
-    transcr.write_new_seq_constraint(f"{timeslot_name}.data",data_in_timeslot,
+    transcr.write_tuple_constraint(f"({timeslot_name}.data)",data_in_timeslot,
                                      send_recv,timeslot_name,skel_transcr_context)
 def transcribe_trace_constraint(trace_constraint:TraceConstraint,
                                 skeleton:Skeleton,skel_num:int,

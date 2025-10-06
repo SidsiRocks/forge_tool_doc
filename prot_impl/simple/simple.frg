@@ -1,8 +1,9 @@
-#lang forge 
-
-open "simple.rkt"
-
 option run_sterling "../vis/crypto_viz.js"
+
+option solver MiniSatProver
+option logtranslation 1
+option coregranularity 1
+option core_minimization rce
 
 --seem to be working now, haven't added restriction on attacker to send own name so 
 --
@@ -34,5 +35,5 @@ simple_responder_pov: run {
     --need one name for attacker as well so 3 name not 2 name
     exactly 3 name, 0 text,exactly 0 Ciphertext,
     exactly 1 simple_init, exactly 1 simple_resp,
-    1 Int
+    2 Int
 for {next is linear}

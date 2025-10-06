@@ -337,3 +337,101 @@ run {
 }
 */
 
+
+
+
+fun getPRIVK[name_a:name] : lone Key{
+    (KeyPairs.owners).name_a
+}
+fun getPUBK[name_a:name] : lone Key {
+    (KeyPairs.owners.(name_a)).(KeyPairs.pairs)
+}
+pred learnt_term_by[m:mesg,a:name,t:Timeslot] {
+    m in (a.learned_times).(Timeslot - t.^next)
+}
+
+sig simple_init extends strand {
+  simple_init_a : one name,
+  simple_init_b : one name
+}
+pred exec_simple_init {
+  all arbitrary_init_simple : simple_init | {
+    some t0 : Timeslot {
+      some t1 : t0.(^next) {
+        t0+t1 = sender.arbitrary_init_simple + receiver.arbitrary_init_simple
+        t0.sender = arbitrary_init_simple
+        (t0.data) in tuple
+        inds[((t0.data).components)] = 0
+        ((t0.data).components)[0] = arbitrary_init_simple.simple_init_a
+
+        t1.receiver = arbitrary_init_simple
+        (t1.data) in tuple
+        inds[((t1.data).components)] = 0
+        ((t1.data).components)[0] = arbitrary_init_simple.simple_init_b
+
+      }
+    }
+  }
+}
+sig simple_resp extends strand {
+  simple_resp_a : one name,
+  simple_resp_b : one name
+}
+pred exec_simple_resp {
+  all arbitrary_resp_simple : simple_resp | {
+    some t0 : Timeslot {
+      some t1 : t0.(^next) {
+        t0+t1 = sender.arbitrary_resp_simple + receiver.arbitrary_resp_simple
+        t0.receiver = arbitrary_resp_simple
+        (t0.data) in tuple
+        inds[((t0.data).components)] = 0
+        ((t0.data).components)[0] = arbitrary_resp_simple.simple_resp_a
+
+        t1.sender = arbitrary_resp_simple
+        (t1.data) in tuple
+        inds[((t1.data).components)] = 0
+        ((t1.data).components)[0] = arbitrary_resp_simple.simple_resp_b
+
+      }
+    }
+  }
+}
+option run_sterling "../vis/crypto_viz.js"
+
+option solver MiniSatProver
+option logtranslation 1
+option coregranularity 1
+option core_minimization rce
+
+--seem to be working now, haven't added restriction on attacker to send own name so 
+--
+simple_responder_pov: run {
+    wellformed 
+
+    exec_simple_init
+    exec_simple_resp
+
+    --this prevents talking to itself
+    simple_resp.agent != simple_init.agent
+
+    --these ensure name a,b not same problems 
+    --still doesn't ensure the name sent is their own
+    --simple_resp.simple_resp_a != simple_resp.simple_resp_b
+    --simple_init.simple_init_a != simple_init.simple_init_b
+
+    --simple_resp.simple_resp_a = simple_init.simple_init_a
+    simple_resp.simple_resp_b = simple_resp.agent
+    simple_init.simple_init_a = simple_init.agent --assuming like .agent .name is also present
+    --seems like init/resp getting same name as attacker
+    --simple_resp.agent != AttackerStrand.agent
+    --simple_init.agent != AttackerStrand.agent
+} for 
+    --seems like not all agents getting same name 
+    exactly 4 Timeslot, 10 mesg,
+    exactly 1 KeyPairs, exactly 0 Key,exactly 0 akey, 0 skey,
+    exactly 0 PrivateKey, exactly 0 PublicKey,
+    --need one name for attacker as well so 3 name not 2 name
+    exactly 3 name, 0 text,exactly 0 Ciphertext,
+    exactly 1 simple_init, exactly 1 simple_resp,
+    2 Int
+for {next is linear}
