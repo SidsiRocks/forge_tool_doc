@@ -1,4 +1,4 @@
-option run_sterling "../vis/crypto_viz.js"
+option run_sterling "../../crypto_viz_tuple.js"
 
 option solver MiniSatProver
 option logtranslation 1
