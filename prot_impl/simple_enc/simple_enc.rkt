@@ -22,3 +22,4 @@
   (defstrand resp 2 (a a) (b b))
 )
 
+
