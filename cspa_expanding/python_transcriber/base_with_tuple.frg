@@ -214,8 +214,8 @@ pred wellformed {
   --  NOTE WELL: if ever add another type of mesg that contains data, add with + inside ^.
   -- Now the only type contatining data is tuple and Ciphertext so only have to write 
   -- constraint for those two
-  let components_relation = {tpl:tuple,msg:mesg | {msg in elems[tuple.components]}} | {
-    all d: mesg | d not in d.^(components_relation + plaintext)
+    let components_relation = {msg1:mesg,msg2:mesg | {msg2 in (elems[msg1.components] + msg1.plaintext)}} | {
+    all d: mesg | d not in d.^(components_relation)
   }
   -- Disallow empty tuples
   -- TODO might not need elemes here just some works

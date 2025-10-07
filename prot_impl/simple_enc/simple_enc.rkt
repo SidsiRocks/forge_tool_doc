@@ -16,3 +16,9 @@
     )
 )
 
+(defskeleton simple_enc
+  (vars (a b name))
+  (defstrand init 2 (a a) (b b))
+  (defstrand resp 2 (a a) (b b))
+)
+

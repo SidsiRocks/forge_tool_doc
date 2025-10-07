@@ -195,7 +195,7 @@ KeyPairs0.ltks.tuples().forEach(x => {
 plaintext.tuples().forEach((tuple) => {
     let atoms = tuple.atoms();
     let key = atoms[0].toString();
-    let val = atoms[2];
+    let val = atoms[1];
 
     if (!ciphertextMap[key]) {
         ciphertextMap[key] = [];
@@ -394,7 +394,7 @@ function parseTerms(items) {
             const parsedKey = parseTerms([key])[0];
 
             return {
-                content: parseTerms(pt),
+                content: parseTerms([pt]),
                 subscript: parsedKey
             }
         } else if (seqStrings.includes(itemString)){
@@ -412,6 +412,23 @@ function parseTerms(items) {
     });
 
     return newItems;
+
+    // let newItem = {}
+    // if (pubKeyMap[itemString]){
+    //     return parseKey(itemString,"pubK",pubKeyMap);
+    // }else if(privKeyMap[itemString]){
+
+    // }else if(ltksMap[itemString]){
+
+    // }else if(ciphertextStrings.includes(itemString)){
+    //     const pt = ciphertextMap[itemString];
+    //     const key = ciphertextMap[itemString];
+    //     const parsedKey = parseTerms
+    // }
+    // return [{
+    //     content : items.toString(),
+    //     isText : true
+    // }];
 }
 
 function flattenParsedTerms(parsedTerms) {
@@ -565,7 +582,7 @@ function printFlattenedTerms(terms, container, x, y, color, shouldPrint) {
  */
 function labelText(m) {
     const data = m.data.tuples().map(x => x.toString());
-    const parsed = parseTerms(data);
+    const parsed = parseTerms([data]);
     return parsedTermsToString(parsed, "");
 }
 
@@ -849,7 +866,7 @@ function render() {
         let labelY = y(m) - 20;
 
         const data = m.data.tuples().map(x => x.toString());
-        const parsed = parseTerms(data);
+        const parsed = parseTerms([data]);
         const flattened = flattenParsedTerms(parsed);
 
         const w = printFlattenedTerms(flattened, g, labelX, labelY, BLACK, false);

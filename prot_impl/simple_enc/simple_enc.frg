@@ -10,6 +10,7 @@ simple_enc_responder_pov: run {
 
     exec_simple_enc_init
     exec_simple_enc_resp
+    constrain_skeleton_simple_enc_0
 
     simple_enc_resp.agent != simple_enc_init.agent
 
