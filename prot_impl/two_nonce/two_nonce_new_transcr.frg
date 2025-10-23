@@ -44,13 +44,13 @@ fun getLTK[name_a: name, name_b: name]: lone skey {
   (KeyPairs.ltks)[name_a][name_b]
 }
 
-/** Get the inverse key for a given key (if any) */
+/** Get the inverse key for a given key (if any). The structure of this predicate 
+    is due to Forge's typechecking as of January 2025. The (none & Key) is a workaround
+    to give Key type to none, which has univ type by default.  */
 fun getInv[k: Key]: one Key {
-  (k in PublicKey => ((KeyPairs.pairs).k) else none)
+  (k in PublicKey => ((KeyPairs.pairs).k) else (k.(KeyPairs.pairs)))
   +
-  (k in PrivateKey => (k.(KeyPairs.pairs)) else none)
-  +
-  (k in skey => k else none)
+  (k in skey => k else (none & Key))
 }
 
 
@@ -341,89 +341,41 @@ sig two_nonce_init extends strand {
 }
 pred exec_two_nonce_init {
   all arbitrary_init_two_nonce : two_nonce_init | {
-    some t0,t1,t2 : Timeslot | {
-      t1 in t0.(^next)
-      t0+t1+t2 = sender.arbitrary_init_two_nonce + receiver.arbitrary_init_two_nonce
-      t0.sender = arbitrary_init_two_nonce
-      inds[(t0.data)] = 0
-      some atom_1 : elems[(t0.data)] | {
-        (t0.data)[0] = atom_1
-        inds[(atom_1).plaintext] = 0
-        some atom_2 : elems[(atom_1).plaintext] | {
-          (atom_1).plaintext[0] = atom_2
-          atom_2 = arbitrary_init_two_nonce.two_nonce_init_n1
+    some t0 : Timeslot {
+      some t1 : t0.(^next) {
+        some t2 : t1.(^next) {
+          t0+t1+t2 = sender.arbitrary_init_two_nonce + receiver.arbitrary_init_two_nonce
+          t0.sender = arbitrary_init_two_nonce
+          inds[(t0.data)] = 0
+          some enc_2 : elems[(t0.data)] | {
+            (t0.data)[0] = enc_2
+            inds[(enc_2).plaintext] = 0
+            (enc_2).plaintext[0] = arbitrary_init_two_nonce.two_nonce_init_n1
+            (enc_2).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
+          }
+
+          t1.receiver = arbitrary_init_two_nonce
+          inds[(t1.data)] = 0
+          some enc_5 : elems[(t1.data)] | {
+            (t1.data)[0] = enc_5
+            learnt_term_by[getPRIVK[arbitrary_init_two_nonce.two_nonce_init_a],arbitrary_init_two_nonce.agent,t1]
+            inds[(enc_5).plaintext] = 0+1
+            (enc_5).plaintext[0] = arbitrary_init_two_nonce.two_nonce_init_n1
+            (enc_5).plaintext[1] = arbitrary_init_two_nonce.two_nonce_init_n2
+            (enc_5).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_a]
+          }
+
+          t2.sender = arbitrary_init_two_nonce
+          inds[(t2.data)] = 0
+          some enc_9 : elems[(t2.data)] | {
+            (t2.data)[0] = enc_9
+            inds[(enc_9).plaintext] = 0
+            (enc_9).plaintext[0] = arbitrary_init_two_nonce.two_nonce_init_n2
+            (enc_9).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
+          }
+
         }
-        (atom_1).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
       }
-      
-      t1.receiver = arbitrary_init_two_nonce
-      inds[(t1.data)] = 0
-      some atom_3 : elems[(t1.data)] | {
-        (t1.data)[0] = atom_3
-        learnt_term_by[getPRIVK[arbitrary_init_two_nonce.two_nonce_init_a],arbitrary_init_two_nonce.agent,t1]
-        inds[(atom_3).plaintext] = 0+1
-        some atom_4,atom_5 : elems[(atom_3).plaintext] | {
-          (atom_3).plaintext[0] = atom_4
-          (atom_3).plaintext[1] = atom_5
-          atom_4 = arbitrary_init_two_nonce.two_nonce_init_n1
-          atom_5 = arbitrary_init_two_nonce.two_nonce_init_n2
-        }
-        (atom_3).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_a]
-      }
-      
-      t2.sender = arbitrary_init_two_nonce
-      inds[(t2.data)] = 0
-      some atom_6 : elems[(t2.data)] | {
-        (t2.data)[0] = atom_6
-        inds[(atom_6).plaintext] = 0
-        some atom_7 : elems[(atom_6).plaintext] | {
-          (atom_6).plaintext[0] = atom_7
-          atom_7 = arbitrary_init_two_nonce.two_nonce_init_n2
-        }
-        (atom_6).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
-      }
-      
-      t2 in t1.(^next)
-      t0+t1+t2 = sender.arbitrary_init_two_nonce + receiver.arbitrary_init_two_nonce
-      t0.sender = arbitrary_init_two_nonce
-      inds[(t0.data)] = 0
-      some atom_8 : elems[(t0.data)] | {
-        (t0.data)[0] = atom_8
-        inds[(atom_8).plaintext] = 0
-        some atom_9 : elems[(atom_8).plaintext] | {
-          (atom_8).plaintext[0] = atom_9
-          atom_9 = arbitrary_init_two_nonce.two_nonce_init_n1
-        }
-        (atom_8).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
-      }
-      
-      t1.receiver = arbitrary_init_two_nonce
-      inds[(t1.data)] = 0
-      some atom_10 : elems[(t1.data)] | {
-        (t1.data)[0] = atom_10
-        learnt_term_by[getPRIVK[arbitrary_init_two_nonce.two_nonce_init_a],arbitrary_init_two_nonce.agent,t1]
-        inds[(atom_10).plaintext] = 0+1
-        some atom_11,atom_12 : elems[(atom_10).plaintext] | {
-          (atom_10).plaintext[0] = atom_11
-          (atom_10).plaintext[1] = atom_12
-          atom_11 = arbitrary_init_two_nonce.two_nonce_init_n1
-          atom_12 = arbitrary_init_two_nonce.two_nonce_init_n2
-        }
-        (atom_10).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_a]
-      }
-      
-      t2.sender = arbitrary_init_two_nonce
-      inds[(t2.data)] = 0
-      some atom_13 : elems[(t2.data)] | {
-        (t2.data)[0] = atom_13
-        inds[(atom_13).plaintext] = 0
-        some atom_14 : elems[(atom_13).plaintext] | {
-          (atom_13).plaintext[0] = atom_14
-          atom_14 = arbitrary_init_two_nonce.two_nonce_init_n2
-        }
-        (atom_13).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
-      }
-      
     }
   }
 }
@@ -435,91 +387,42 @@ sig two_nonce_resp extends strand {
 }
 pred exec_two_nonce_resp {
   all arbitrary_resp_two_nonce : two_nonce_resp | {
-    some t0,t1,t2 : Timeslot | {
-      t1 in t0.(^next)
-      t0+t1+t2 = sender.arbitrary_resp_two_nonce + receiver.arbitrary_resp_two_nonce
-      t0.receiver = arbitrary_resp_two_nonce
-      inds[(t0.data)] = 0
-      some atom_15 : elems[(t0.data)] | {
-        (t0.data)[0] = atom_15
-        learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t0]
-        inds[(atom_15).plaintext] = 0
-        some atom_16 : elems[(atom_15).plaintext] | {
-          (atom_15).plaintext[0] = atom_16
-          atom_16 = arbitrary_resp_two_nonce.two_nonce_resp_n1
+    some t0 : Timeslot {
+      some t1 : t0.(^next) {
+        some t2 : t1.(^next) {
+          t0+t1+t2 = sender.arbitrary_resp_two_nonce + receiver.arbitrary_resp_two_nonce
+          t0.receiver = arbitrary_resp_two_nonce
+          inds[(t0.data)] = 0
+          some enc_12 : elems[(t0.data)] | {
+            (t0.data)[0] = enc_12
+            learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t0]
+            inds[(enc_12).plaintext] = 0
+            (enc_12).plaintext[0] = arbitrary_resp_two_nonce.two_nonce_resp_n1
+            (enc_12).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
+          }
+
+          t1.sender = arbitrary_resp_two_nonce
+          inds[(t1.data)] = 0
+          some enc_15 : elems[(t1.data)] | {
+            (t1.data)[0] = enc_15
+            inds[(enc_15).plaintext] = 0+1
+            (enc_15).plaintext[0] = arbitrary_resp_two_nonce.two_nonce_resp_n1
+            (enc_15).plaintext[1] = arbitrary_resp_two_nonce.two_nonce_resp_n2
+            (enc_15).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_a]
+          }
+
+          t2.receiver = arbitrary_resp_two_nonce
+          inds[(t2.data)] = 0
+          some enc_19 : elems[(t2.data)] | {
+            (t2.data)[0] = enc_19
+            learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t2]
+            inds[(enc_19).plaintext] = 0
+            (enc_19).plaintext[0] = arbitrary_resp_two_nonce.two_nonce_resp_n2
+            (enc_19).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
+          }
+
         }
-        (atom_15).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
       }
-      
-      t1.sender = arbitrary_resp_two_nonce
-      inds[(t1.data)] = 0
-      some atom_17 : elems[(t1.data)] | {
-        (t1.data)[0] = atom_17
-        inds[(atom_17).plaintext] = 0+1
-        some atom_18,atom_19 : elems[(atom_17).plaintext] | {
-          (atom_17).plaintext[0] = atom_18
-          (atom_17).plaintext[1] = atom_19
-          atom_18 = arbitrary_resp_two_nonce.two_nonce_resp_n1
-          atom_19 = arbitrary_resp_two_nonce.two_nonce_resp_n2
-        }
-        (atom_17).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_a]
-      }
-      
-      t2.receiver = arbitrary_resp_two_nonce
-      inds[(t2.data)] = 0
-      some atom_20 : elems[(t2.data)] | {
-        (t2.data)[0] = atom_20
-        learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t2]
-        inds[(atom_20).plaintext] = 0
-        some atom_21 : elems[(atom_20).plaintext] | {
-          (atom_20).plaintext[0] = atom_21
-          atom_21 = arbitrary_resp_two_nonce.two_nonce_resp_n2
-        }
-        (atom_20).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
-      }
-      
-      t2 in t1.(^next)
-      t0+t1+t2 = sender.arbitrary_resp_two_nonce + receiver.arbitrary_resp_two_nonce
-      t0.receiver = arbitrary_resp_two_nonce
-      inds[(t0.data)] = 0
-      some atom_22 : elems[(t0.data)] | {
-        (t0.data)[0] = atom_22
-        learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t0]
-        inds[(atom_22).plaintext] = 0
-        some atom_23 : elems[(atom_22).plaintext] | {
-          (atom_22).plaintext[0] = atom_23
-          atom_23 = arbitrary_resp_two_nonce.two_nonce_resp_n1
-        }
-        (atom_22).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
-      }
-      
-      t1.sender = arbitrary_resp_two_nonce
-      inds[(t1.data)] = 0
-      some atom_24 : elems[(t1.data)] | {
-        (t1.data)[0] = atom_24
-        inds[(atom_24).plaintext] = 0+1
-        some atom_25,atom_26 : elems[(atom_24).plaintext] | {
-          (atom_24).plaintext[0] = atom_25
-          (atom_24).plaintext[1] = atom_26
-          atom_25 = arbitrary_resp_two_nonce.two_nonce_resp_n1
-          atom_26 = arbitrary_resp_two_nonce.two_nonce_resp_n2
-        }
-        (atom_24).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_a]
-      }
-      
-      t2.receiver = arbitrary_resp_two_nonce
-      inds[(t2.data)] = 0
-      some atom_27 : elems[(t2.data)] | {
-        (t2.data)[0] = atom_27
-        learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t2]
-        inds[(atom_27).plaintext] = 0
-        some atom_28 : elems[(atom_27).plaintext] | {
-          (atom_27).plaintext[0] = atom_28
-          atom_28 = arbitrary_resp_two_nonce.two_nonce_resp_n2
-        }
-        (atom_27).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
-      }
-      
     }
   }
 }
@@ -566,11 +469,11 @@ pred corrected_attacker_learns[d:mesg]{
 two_nonce_init_pov : run {
     wellformed
 
-exec_two_nonce_init
+    exec_two_nonce_init
     exec_two_nonce_resp
 
     constrain_skeleton_two_nonce_0
-    
+
     two_nonce_resp.agent != two_nonce_init.agent
     --should not need restriction on a and b this time?
 
@@ -582,17 +485,33 @@ exec_two_nonce_init
     two_nonce_resp.two_nonce_resp_n1 != two_nonce_resp.two_nonce_resp_n2
     --prevents attacker from sending duplicate n1,n2 in a run of protocol
     two_nonce_init.two_nonce_init_n1 != two_nonce_init.two_nonce_init_n2
-    
+
     --attacker_learns[AttackerStrand,two_nonce_resp.two_nonce_resp_n2]
-    
-    --finding attack where init beleives it is talking to resp 
+
+    --finding attack where init beleives it is talking to resp
     --but attacker knows the nonce
     two_nonce_init.two_nonce_init_b = two_nonce_resp.agent
     corrected_attacker_learns[two_nonce_init.two_nonce_init_n2]
     --same nonce problem seems to be resolved
     --have to deal with initiator trying tot talk to attacker, may want to change that
     --when planning to detect an attack
-}for 
+}for
+--    exactly 6 Timeslot,exactly 25 mesg,exactly 25 text,
+--    exactly 25 atomic,exactly 6 nonce,
+--    exactly 1 KeyPairs,exactly 6 Key,
+--    exactly 6 akey,0 skey,
+--    exactly 3 PrivateKey,exactly 3 PublicKey,
+--    exactly 3 name,exactly 10 Ciphertext,
+--    exactly 1 two_nonce_init,exactly 1 two_nonce_resp,
+--    4 Int
+
+--    exactly 6 Timeslot,exactly 25 mesg,exactly 6 Key,
+--    exactly 6 akey,exactly 3 PublicKey,exactly 3 PrivateKey,
+--    exactly 3 name,exactly 6 Ciphertext,exactly 2 text,exactly 8 tuple,
+--    exactly 1 KeyPairs,
+--    exactly 1 two_nonce_init,exactly 1 two_nonce_resp,
+--    3 Int
+
     exactly 6 Timeslot,25 mesg,
     exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,0 skey,
     exactly 3 PrivateKey,exactly 3 PublicKey,

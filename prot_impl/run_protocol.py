@@ -11,7 +11,7 @@ def path_rel_to_script(path):
 
 if __name__ == "__main__":
     new_python_transcribe_main = path_rel_to_script( "../cspa_expanding/python_transcriber/main.py")
-    python_transcriber_seq_main = path_rel_to_script("../cspa_expanding/python_transcriber/transcribe_seq.py")
+    # python_transcriber_seq_main = path_rel_to_script("../cspa_expanding/python_transcriber/transcribe_seq.py")
 
     parser = argparse.ArgumentParser(prog="run_protocol",description="small helper script to run protocol")
     parser.add_argument("folder_path")
@@ -38,9 +38,9 @@ if __name__ == "__main__":
     destination_forge_file_path = os.path.join(args.folder_path,f"{base_prot_name}_new_transcr.frg")
     seq_destination_forge_file_path = os.path.join(args.folder_path,f"{base_prot_name}_transcr_seq.frg")
     new_transcribe_cmd = f"python3 {new_python_transcribe_main} {rkt_file} {forge_file_name} --destination_forge_file_path {destination_forge_file_path}"
-    old_transcribe_cmd = f"python3 {python_transcriber_seq_main} {rkt_file} {forge_file_name} {seq_destination_forge_file_path}"
+    # old_transcribe_cmd = f"python3 {python_transcriber_seq_main} {rkt_file} {forge_file_name} {seq_destination_forge_file_path}"
     print(f"new_transcribe_cmd = {new_transcribe_cmd}")
     subprocess.run(new_transcribe_cmd,shell=True)
-    print(f"old_transcribe_cmd = {old_transcribe_cmd}")
-    subprocess.run(old_transcribe_cmd,shell=True)
+    # print(f"old_transcribe_cmd = {old_transcribe_cmd}")
+    # subprocess.run(old_transcribe_cmd,shell=True)
 
