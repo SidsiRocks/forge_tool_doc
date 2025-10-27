@@ -93,14 +93,21 @@ if __name__ == "__main__":
         description=
         'takes in CPSA code and converts it to appropiate forge predicates to model the protocol'
     )
+
     argument_parser.add_argument('cpsa_file_path')
     argument_parser.add_argument('run_forge_file_path')
     argument_parser.add_argument("--destination_forge_file_path")
     argument_parser.add_argument("--strip_lang_open_from_run_file",
                                  action='store_true')
+    argument_parser.add_argument("--use_hash_base_file",action='store_true')
     argument_parser.add_argument("--visualization_script_path",type=str)
+
     args = argument_parser.parse_args()
-    base_file_path = path_rel_to_script( "./base_with_seq.frg" )
+    base_file_path = None
+    if args.use_hash_base_file:
+        base_file_path = path_rel_to_script("./base_with_seq_and_hash.frg")
+    else:
+        base_file_path = path_rel_to_script("./base_with_seq.frg")
     extra_func_path = path_rel_to_script( "./extra_funcs.frg" )
     cpsa_file_path = args.cpsa_file_path
     run_forge_file_path = args.run_forge_file_path

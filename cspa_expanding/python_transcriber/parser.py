@@ -145,6 +145,18 @@ def parse_seq_term(s_expr,var_dict:VarMap) -> Message:
                 raise ParseException(f"Expected EncTerm,LtkTerm,PubkTerm,PrivkTermf or seq not {msg_subterm}")
     return SeqTerm(non_cat_data)
 
+def parse_hash_term(s_expr,var_dict:VarMap) -> Message:
+    if len(s_expr) != 2:
+        raise ParseException(f"expected hash keyword and exactly one message term not {s_expr}")
+    match_type_and_str(s_expr[0],HASH_STR)
+    #TODO cannot have hash inside cat yet so shouldn't be parsing that but will deal with that later
+    hash_of: Message = parse_message_term(s_expr[1],var_dict)
+    match hash_of:
+        case CatTerm(_):
+            raise ParseException(f"Currently cannot have CatTerm inside hash term here yet")
+        case _:
+            return HashTerm(hash_of)
+
 def parse_message_term(s_expr, var_dict: VarMap) -> Message:
     if is_symbol_type(s_expr):
         variable_name = get_str_from_symbol(s_expr, "variable name")
@@ -196,6 +208,8 @@ def parse_message_term(s_expr, var_dict: VarMap) -> Message:
         return CatTerm(data=condensed_data)
     elif message_category == SEQ_STR:
         return parse_seq_term(s_expr,var_dict)
+    elif message_category == HASH_STR:
+        return parse_hash_term(s_expr,var_dict)
     elif message_category in KEY_CATEGORIES:
         return parse_key_term(s_expr, var_dict)
     else:

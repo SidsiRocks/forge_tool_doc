@@ -15,6 +15,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(prog="run_protocol",description="small helper script to run protocol")
     parser.add_argument("folder_path")
+    parser.add_argument("--use_hash_base_file",action="store_true")
     args = parser.parse_args()
 
     base_prot_name = None
@@ -35,9 +36,12 @@ if __name__ == "__main__":
         exit(-1)
     forge_file_name = os.path.join(args.folder_path, forge_file_name[0] )
 
-    destination_forge_file_path = os.path.join(args.folder_path,f"{base_prot_name}_new_transcr.frg")
+    file_suffix = "transcr_with_hash.frg" if args.use_hash_base_file else "new_transcr.frg"
+    destination_forge_file_path = os.path.join(args.folder_path,f"{base_prot_name}_{file_suffix}")
     seq_destination_forge_file_path = os.path.join(args.folder_path,f"{base_prot_name}_transcr_seq.frg")
     new_transcribe_cmd = f"python3 {new_python_transcribe_main} {rkt_file} {forge_file_name} --destination_forge_file_path {destination_forge_file_path}"
+    if args.use_hash_base_file:
+        new_transcribe_cmd = f"{new_transcribe_cmd} --use_hash_base_file"
     # old_transcribe_cmd = f"python3 {python_transcriber_seq_main} {rkt_file} {forge_file_name} {seq_destination_forge_file_path}"
     print(f"new_transcribe_cmd = {new_transcribe_cmd}")
     subprocess.run(new_transcribe_cmd,shell=True)

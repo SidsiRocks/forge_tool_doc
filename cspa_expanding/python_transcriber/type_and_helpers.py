@@ -83,11 +83,19 @@ class SeqTerm:
     def __str__(self) -> str:
         return self.__repr__()
 
+@dataclass
+class HashTerm:
+    hash_of: "NonCatTerm"
+    def __repr__(self) -> str:
+        return f"(hash {self.hash_of})"
+    def __str__(self) -> str:
+        return self.__repr__()
+
 class SendRecv(Enum):
     SEND = 0
     RECV = 1
-Message = Variable | EncTerm | CatTerm | KeyTerm | SeqTerm
-NonCatTerm = KeyTerm | EncTerm | SeqTerm
+Message = Variable | EncTerm | CatTerm | KeyTerm | SeqTerm | HashTerm
+NonCatTerm = KeyTerm | EncTerm | SeqTerm | HashTerm
 IndvTrace = Tuple[SendRecv,Message]
 MessageTrace = List[IndvTrace]
 
@@ -250,6 +258,7 @@ RECV_BY_STR = "recv-by"
 ENC_STR = "enc"
 CAT_STR = "cat"
 SEQ_STR = "seq"
+HASH_STR = "hash"
 LTK_STR = "ltk"
 PUBK_STR = "pubk"
 PRIVK_STR = "privk"
@@ -261,7 +270,7 @@ AKEY_STR = "akey"
 ATTACKER_STR = "Attacker"
 
 KEY_CATEGORIES = [PRIVK_STR,PUBK_STR,LTK_STR]
-MESSAGE_CATEGORIES = [ENC_STR,CAT_STR,LTK_STR,PUBK_STR,PRIVK_STR,SEQ_STR]
+MESSAGE_CATEGORIES = [ENC_STR,CAT_STR,LTK_STR,PUBK_STR,PRIVK_STR,SEQ_STR,HASH_STR]
 
 Sexp = sexpdata.Symbol | int | List[sexpdata.Symbol]
 

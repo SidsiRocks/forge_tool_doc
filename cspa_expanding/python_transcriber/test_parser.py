@@ -125,3 +125,8 @@ def test_seq_text_trace_test_parsing():
     helper_for_test_rkt_file(
         r"../../prot_impl/test_seq_text_trace_test/test_seq_text_trace_test.rkt"
     )
+
+def test_hash_term_test_parsing():
+    helper_for_test_rkt_file(
+        r"../../prot_impl/hash_term_test/hash_term_test.rkt"
+    )

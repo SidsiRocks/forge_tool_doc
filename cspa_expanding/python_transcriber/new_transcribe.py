@@ -375,6 +375,12 @@ def transcribe_enc(elm_expr: str, enc_term: EncTerm,send_recv:SendRecv ,timeslot
     transcr.write_new_seq_constraint(data_expr,enc_term.data,send_recv,timeslot_expr,sig_context)
     transcribe_base_term(key_expr,enc_term.key,send_recv,sig_context)
 
+def transcribe_hash(elm_expr: str,hash_term:HashTerm,send_recv:SendRecv,timeslot_expr:str,sig_context:RoleOrSkelTranscrContext):
+    transcr = sig_context.get_transcr()
+    transcr.print_to_file(f"{elm_expr} in Hashed\n")
+    hash_of_expr = f"({elm_expr}).hash_of"
+    transcribe_non_cat(hash_of_expr,hash_term.hash_of,send_recv,timeslot_expr,sig_context)
+
 def transcribe_base_term(elm_expr:str,msg:BaseTerm,send_recv:SendRecv,role_context:SigContext):
     constraint_expr = f"{elm_expr} = {role_context.get_base_term_str(msg)}\n"
     role_context.get_transcr().print_to_file(constraint_expr)
@@ -384,6 +390,10 @@ def transcribe_non_cat(elm_expr: str, msg: NonCatTerm,send_recv:SendRecv,timeslo
     match msg:
         case EncTerm(_, _) as enc_term:
             transcribe_enc(elm_expr, enc_term,send_recv,timeslot_expr, role_context)
+        case HashTerm(_) as hash_term:
+            transcribe_hash(elm_expr,hash_term,send_recv,timeslot_expr,role_context)
+        case SeqTerm(_):
+            raise ParseException(f"not handling SeqTerm in this transcriber")
         case base_term:
             transcribe_base_term(elm_expr,base_term,send_recv,role_context)
 
