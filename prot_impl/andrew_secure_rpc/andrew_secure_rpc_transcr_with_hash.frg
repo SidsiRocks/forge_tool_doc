@@ -541,6 +541,7 @@ andrew_rpc_term_test : run {
             B0.andrew_secure_rpc_B_a != Attacker
 
             uniq_orig_strand[B0,B0.nb] and uniq_orig_strand[B0,B0.nb_]
+            B0.nb != B0.nb_
             not ( B0.nb in andrew_secure_rpc_A.andrew_secure_rpc_A_na )
             not ( B0.nb_ in andrew_secure_rpc_A.andrew_secure_rpc_A_na )
         }}}}
