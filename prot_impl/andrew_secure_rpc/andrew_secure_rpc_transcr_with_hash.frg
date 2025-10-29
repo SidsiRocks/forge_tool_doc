@@ -54,8 +54,9 @@ fun getInv[k: Key]: one Key {
 }
 
 
--- Time indexes (t=0, t=1, ...). These are also used as micro-tick indexes, so the 
--- bound on `Timeslot` will also affect how many microticks are available between ticks.
+/** Time indexes corresponding to one message being sent and received.
+    Dropped messages are modeled as the medium receiving the message but 
+    not forwarding it. */
 sig Timeslot {
   -- structure of time (must be rendered linear in every run via `next is linear`)
   next: lone Timeslot,
@@ -67,7 +68,16 @@ sig Timeslot {
   data: pfunc Int -> mesg,
   -- relation is: Tick x Microtick x learned-mesg
   -- Only one agent per tick is receiving, so always know which agent's workspace it is
-  workspace: set Timeslot -> mesg
+  workspace: set Microtick -> mesg
+}
+
+/** A Microtick represents a step of _learning_ that is part of processing a single 
+    message reception. */
+sig Microtick {
+  -- structure of microticks. (must be rendered linear in every run via `next is linear`)
+  -- The `wellformed` predicate below contains constraints that enforce this, in case 
+  -- a user forgets the add the linear annotation, but doing so would harm performance. 
+  mt_next: lone Microtick
 }
 
 -- As names process received messages, they learn pieces of data
@@ -125,11 +135,29 @@ pred hash_wellformed {
     }
 }
 
+/** Time and micro-time are ordered. 
+    (This constraint should be tautologous if the user has given an `is linear` 
+    for `next` and `mt_next`.) */
+pred timeSafety {
+  some firstTimeslot: Timeslot | {
+    all ts: Timeslot | ts in firstTimeslot.*next
+    no firstTimeslot.~next
+    -- field declaration ensures at most one successor
+  }
+  some firstMicro: Microtick | {
+    all ts: Microtick  | ts in firstMicro.*mt_next
+    no firstMicro.~mt_next
+    -- field declaration ensures at most one successor
+  }
+}
+
 /** This (large) predicate contains the vast majority of domain axioms */
 pred wellformed {
   hash_wellformed
   -- Design choice: only one message event per timeslot;
   --   assume we have a shared notion of time
+
+  timeSafety 
   all m: Timeslot | isSeqOf[m.data,mesg]
   all t: Ciphertext | isSeqOf[t.plaintext,mesg]
   -- You cannot send a message with no data
@@ -140,10 +168,10 @@ pred wellformed {
 
   -- workspace: workaround to avoid cyclic justification within just deconstructions
   -- AGENT -> TICK -> MICRO-TICK LEARNED_SUBTERM
-  all d: mesg | all t, microt: Timeslot | let a = t.receiver.agent | d in (workspace[t])[microt] iff {
+  all d: mesg | all t: Timeslot, microt: Microtick | let a = t.receiver.agent | d in (workspace[t])[microt] iff {
     -- Base case:
     -- received the data in the clear just now 
-    {d in elems[t.data] and no microt.~next}
+    {d in elems[t.data] and no microt.~mt_next}
     or
     -- Inductive case:
     -- breaking down a ciphertext we learned *previously*, or that we've produced from 
@@ -156,8 +184,8 @@ pred wellformed {
       --d not in ((a.workspace)[t])[Timeslot - microt.^next] and -- first time appearing
       {some superterm : Ciphertext | {      
       d in elems[superterm.plaintext] and     
-      superterm in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a] and
-      getInv[superterm.encryptionKey] in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a]
+      superterm in (a.learned_times).(Timeslot - t.*next) + workspace[t][Microtick - microt.*mt_next] + baseKnown[a] and
+      getInv[superterm.encryptionKey] in (a.learned_times).(Timeslot - t.*next) + workspace[t][Microtick - microt.*mt_next] + baseKnown[a]
     }}}
   }
  
@@ -182,7 +210,7 @@ pred wellformed {
     -- consider: (k1, enc(k2, enc(n1, invk(k2)), invk(k1)))
     -- or, worse: (k1, enc(x, invk(k3)), enc(k2, enc(k3, invk(k2)), invk(k1)))
     { t.receiver.agent = a
-      d in workspace[t][Timeslot] -- derived in any micro-tick in this (reception) timeslot
+      d in workspace[t][Microtick] -- derived in any micro-tick in this (reception) timeslot
     }   
     or 
     -- construct encrypted terms (only allow at NON-reception time; see above)
@@ -368,6 +396,9 @@ pred exec_andrew_secure_rpc_A {
       some t1 : t0.(^next) {
         some t2 : t1.(^next) {
           some t3 : t2.(^next) {
+            (arbitrary_A_andrew_secure_rpc.agent) -> (arbitrary_A_andrew_secure_rpc.andrew_secure_rpc_A_na) -> t0 in generated_times
+
+
             t0+t1+t2+t3 = sender.arbitrary_A_andrew_secure_rpc + receiver.arbitrary_A_andrew_secure_rpc
             t0.sender = arbitrary_A_andrew_secure_rpc
             inds[(t0.data)] = 0+1
@@ -432,6 +463,10 @@ pred exec_andrew_secure_rpc_B {
       some t1 : t0.(^next) {
         some t2 : t1.(^next) {
           some t3 : t2.(^next) {
+            (arbitrary_B_andrew_secure_rpc.agent) -> (arbitrary_B_andrew_secure_rpc.andrew_secure_rpc_B_nb) -> t1 in generated_times
+            (arbitrary_B_andrew_secure_rpc.agent) -> (arbitrary_B_andrew_secure_rpc.andrew_secure_rpc_B_nb_) -> t3 in generated_times
+            (arbitrary_B_andrew_secure_rpc.agent) -> (arbitrary_B_andrew_secure_rpc.andrew_secure_rpc_B_kab_) -> t3 in generated_times
+
             t0+t1+t2+t3 = sender.arbitrary_B_andrew_secure_rpc + receiver.arbitrary_B_andrew_secure_rpc
             t0.receiver = arbitrary_B_andrew_secure_rpc
             inds[(t0.data)] = 0+1
@@ -525,12 +560,12 @@ andrew_rpc_term_test : run {
         let kab_ = andrew_secure_rpc_A_kab_ | {
             A0.andrew_secure_rpc_A_a = A0.agent
             -- next line constraint only for generating honest run
-            A0.andrew_secure_rpc_A_b != Attacker
+            A0.andrew_secure_rpc_A_b != Attacker and A0.andrew_secure_rpc_A_b != A0.agent
 
             uniq_orig_strand[A0,A0.na] and uniq_orig_strand[A0,A0.kab_]
             A0.kab_ != getLTK[a_name,b_name]
-            not ( A0.na in andrew_secure_rpc_B.(andrew_secure_rpc_B_nb + andrew_secure_rpc_B_nb_)
- )        }}}}
+            not ( A0.na in andrew_secure_rpc_B.(andrew_secure_rpc_B_nb + andrew_secure_rpc_B_nb_) )
+         }}}}
 
         all arbitrary_B_andrew_secure_rpc : andrew_secure_rpc_B | {
         let B0 = arbitrary_B_andrew_secure_rpc | {
@@ -538,7 +573,7 @@ andrew_rpc_term_test : run {
         let nb_ = andrew_secure_rpc_B_nb_ | {
             B0.andrew_secure_rpc_B_b = B0.agent
             -- next line constraint only for generating honest run
-            B0.andrew_secure_rpc_B_a != Attacker
+            B0.andrew_secure_rpc_B_a != Attacker and B0.andrew_secure_rpc_B_a != B0.agent
 
             uniq_orig_strand[B0,B0.nb] and uniq_orig_strand[B0,B0.nb_]
             B0.nb != B0.nb_
@@ -549,11 +584,56 @@ andrew_rpc_term_test : run {
         non_orig[getLTK[a_name,b_name]]
     }}
 
+    // all disj arbitrary_B_andrew_secure_rpc_0,arbitrary_B_andrew_secure_rpc_1 : andrew_secure_rpc_B | {
+    //     let B0 = arbitrary_B_andrew_secure_rpc_0 | {
+    //     let B1 = arbitrary_B_andrew_secure_rpc_1 | {
+    //     let nb = andrew_secure_rpc_B_nb | {
+    //     let nb_ = andrew_secure_rpc_B_nb_ | {
+    //         no (B0.(nb + nb_) & B1.(nb + nb_))
+    //     }}}}
+    // }
+
+    // all disj arbitrary_A_andrew_secure_rpc_0,arbitrary_A_andrew_secure_rpc_1 : andrew_secure_rpc_A | {
+    //     let A0 = arbitrary_A_andrew_secure_rpc_0 | {
+    //     let A1 = arbitrary_A_andrew_secure_rpc_1 | {
+    //     let na = andrew_secure_rpc_A_na | {
+    //     let kab_ = andrew_secure_rpc_A_kab_ | {
+    //         ((A0.na != A1.na) and (A0.kab_ != A1.kab_))
+    //     }}}}
+    // }
 }for
-    exactly 8 Timeslot,22 mesg,
-    exactly 1 KeyPairs,exactly 3 Key,exactly 0 akey,3 skey,
+--    exactly 8 Timeslot,22 mesg,
+--    exactly 1 KeyPairs,exactly 3 Key,exactly 0 akey,3 skey,
+--    exactly 0 PrivateKey,exactly 0 PublicKey,
+--    exactly 3 name,exactly 6 text,exactly 6 Ciphertext,
+--    exactly 1 andrew_secure_rpc_A,exactly 1 andrew_secure_rpc_B,
+--    exactly 3 Microtick,
+--    3 Int
+
+--    exactly 8 Timeslot,14 mesg,
+--    exactly 1 KeyPairs,exactly 2 Key,exactly 0 akey,2 skey,
+--    exactly 0 PrivateKey,exactly 0 PublicKey,
+--    exactly 3 name,exactly 3 text,exactly 4 Ciphertext,
+--    exactly 1 andrew_secure_rpc_A,exactly 1 andrew_secure_rpc_B,
+--    exactly 3 Microtick,
+--   3 Int
+
+
+--    exactly 16 Timeslot,38 mesg,
+--    exactly 1 KeyPairs,exactly 3 Key,exactly 0 akey,3 skey,
+--    exactly 0 PrivateKey,exactly 0 PublicKey,
+--    exactly 3 name,exactly 12 text,exactly 12 Ciphertext,
+--    exactly 2 andrew_secure_rpc_A,exactly 2 andrew_secure_rpc_B,
+--    exactly 3 Microtick,
+--    3 Int
+
+    exactly 16 Timeslot,25 mesg,
+    exactly 1 KeyPairs,exactly 4 Key,exactly 0 akey,4 skey,
     exactly 0 PrivateKey,exactly 0 PublicKey,
-    exactly 3 name,exactly 6 text,exactly 6 Ciphertext,
-    exactly 1 andrew_secure_rpc_A,exactly 1 andrew_secure_rpc_B,
-    3 Int
+    exactly 3 name,exactly 6 text,exactly 8 Ciphertext,
+    exactly 4 Hashed,
+    exactly 2 andrew_secure_rpc_A,exactly 2 andrew_secure_rpc_B,
+    exactly 3 Microtick,
+   4 Int
+
 for {next is linear}

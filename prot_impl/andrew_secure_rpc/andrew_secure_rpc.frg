@@ -33,12 +33,12 @@ andrew_rpc_term_test : run {
         let kab_ = andrew_secure_rpc_A_kab_ | {
             A0.andrew_secure_rpc_A_a = A0.agent
             -- next line constraint only for generating honest run
-            A0.andrew_secure_rpc_A_b != Attacker
+            A0.andrew_secure_rpc_A_b != Attacker and A0.andrew_secure_rpc_A_b != A0.agent
 
             uniq_orig_strand[A0,A0.na] and uniq_orig_strand[A0,A0.kab_]
             A0.kab_ != getLTK[a_name,b_name]
-            not ( A0.na in andrew_secure_rpc_B.(andrew_secure_rpc_B_nb + andrew_secure_rpc_B_nb_)
- )        }}}}
+            not ( A0.na in andrew_secure_rpc_B.(andrew_secure_rpc_B_nb + andrew_secure_rpc_B_nb_) )
+         }}}}
 
         all arbitrary_B_andrew_secure_rpc : andrew_secure_rpc_B | {
         let B0 = arbitrary_B_andrew_secure_rpc | {
@@ -46,7 +46,7 @@ andrew_rpc_term_test : run {
         let nb_ = andrew_secure_rpc_B_nb_ | {
             B0.andrew_secure_rpc_B_b = B0.agent
             -- next line constraint only for generating honest run
-            B0.andrew_secure_rpc_B_a != Attacker
+            B0.andrew_secure_rpc_B_a != Attacker and B0.andrew_secure_rpc_B_a != B0.agent
 
             uniq_orig_strand[B0,B0.nb] and uniq_orig_strand[B0,B0.nb_]
             B0.nb != B0.nb_
@@ -57,11 +57,56 @@ andrew_rpc_term_test : run {
         non_orig[getLTK[a_name,b_name]]
     }}
 
+    // all disj arbitrary_B_andrew_secure_rpc_0,arbitrary_B_andrew_secure_rpc_1 : andrew_secure_rpc_B | {
+    //     let B0 = arbitrary_B_andrew_secure_rpc_0 | {
+    //     let B1 = arbitrary_B_andrew_secure_rpc_1 | {
+    //     let nb = andrew_secure_rpc_B_nb | {
+    //     let nb_ = andrew_secure_rpc_B_nb_ | {
+    //         no (B0.(nb + nb_ + kab_) & B1.(nb + nb_ + kab_))
+    //     }}}}
+    // }
+
+    // all disj arbitrary_A_andrew_secure_rpc_0,arbitrary_A_andrew_secure_rpc_1 : andrew_secure_rpc_A | {
+    //     let A0 = arbitrary_A_andrew_secure_rpc_0 | {
+    //     let A1 = arbitrary_A_andrew_secure_rpc_1 | {
+    //     let na = andrew_secure_rpc_A_na | {
+    //     let kab_ = andrew_secure_rpc_A_kab_ | {
+    //         (A0.na != A1.na)
+    //     }}}}
+    // }
 }for
-    exactly 8 Timeslot,22 mesg,
-    exactly 1 KeyPairs,exactly 3 Key,exactly 0 akey,3 skey,
+--    exactly 8 Timeslot,22 mesg,
+--    exactly 1 KeyPairs,exactly 3 Key,exactly 0 akey,3 skey,
+--    exactly 0 PrivateKey,exactly 0 PublicKey,
+--    exactly 3 name,exactly 6 text,exactly 6 Ciphertext,
+--    exactly 1 andrew_secure_rpc_A,exactly 1 andrew_secure_rpc_B,
+--    exactly 3 Microtick,
+--    3 Int
+
+--    exactly 8 Timeslot,14 mesg,
+--    exactly 1 KeyPairs,exactly 2 Key,exactly 0 akey,2 skey,
+--    exactly 0 PrivateKey,exactly 0 PublicKey,
+--    exactly 3 name,exactly 3 text,exactly 4 Ciphertext,
+--    exactly 1 andrew_secure_rpc_A,exactly 1 andrew_secure_rpc_B,
+--    exactly 3 Microtick,
+--   3 Int
+
+
+--    exactly 16 Timeslot,38 mesg,
+--    exactly 1 KeyPairs,exactly 3 Key,exactly 0 akey,3 skey,
+--    exactly 0 PrivateKey,exactly 0 PublicKey,
+--    exactly 3 name,exactly 12 text,exactly 12 Ciphertext,
+--    exactly 2 andrew_secure_rpc_A,exactly 2 andrew_secure_rpc_B,
+--    exactly 3 Microtick,
+--    3 Int
+
+    exactly 16 Timeslot,25 mesg,
+    exactly 1 KeyPairs,exactly 4 Key,exactly 0 akey,4 skey,
     exactly 0 PrivateKey,exactly 0 PublicKey,
-    exactly 3 name,exactly 6 text,exactly 6 Ciphertext,
-    exactly 1 andrew_secure_rpc_A,exactly 1 andrew_secure_rpc_B,
-    3 Int
+    exactly 3 name,exactly 6 text,exactly 8 Ciphertext,
+    exactly 4 Hashed,
+    exactly 2 andrew_secure_rpc_A,exactly 2 andrew_secure_rpc_B,
+    exactly 3 Microtick,
+   4 Int
+
 for {next is linear}
