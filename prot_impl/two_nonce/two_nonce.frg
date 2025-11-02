@@ -61,7 +61,7 @@ two_nonce_init_pov : run {
     exactly 6 Timeslot,25 mesg,
     exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,0 skey,
     exactly 3 PrivateKey,exactly 3 PublicKey,
-
+    exactly 0 Hashed,
     exactly 3 name,exactly 6 text,exactly 10 Ciphertext,
     exactly 1 two_nonce_init,exactly 1 two_nonce_resp,
     4 Int

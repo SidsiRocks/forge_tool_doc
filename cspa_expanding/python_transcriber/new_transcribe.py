@@ -53,32 +53,79 @@ class Transcribe_obj:
         self.end_block()
         self.print_to_file("}\n")
 
+    # def write_new_seq_constraint(self,seq_expr:str,seq_terms:List[NonCatTerm],send_recv:SendRecv,timeslot_expr:str,sig_context:"RoleOrSkelTranscrContext"):
+    #     indices_str = "+".join([str(i) for i in range(len(seq_terms))])
+    #     self.print_to_file(f"inds[{seq_expr}] = {indices_str}\n")
+
+    #     seq_term_exprs : List[str]= []
+    #     quantifier_variables : List[Tuple[int,str]] = []
+    #     for indx,elm in enumerate(seq_terms):
+    #         match elm:
+    #             case EncTerm(_):
+    #                 seq_term_expr = "enc_" + str(self.get_fresh_num())
+    #                 seq_term_exprs.append(seq_term_expr)
+    #                 quantifier_variables.append((indx,seq_term_expr))
+    #             case _:
+    #                 seq_term_expr = f"{seq_expr}[{indx}]"
+    #                 seq_term_exprs.append(seq_term_expr)
+
+    #     def transcribe_subterms():
+    #         for indx,quantifier_variable in quantifier_variables:
+    #             self.print_to_file(f"{seq_expr}[{indx}] = {quantifier_variable}\n")
+    #         for indx,(seq_term_expr,seq_term) in enumerate(zip(seq_term_exprs,seq_terms)):
+    #             transcribe_non_cat(seq_term_expr,seq_term,send_recv,timeslot_expr,sig_context)
+    #     if len(quantifier_variables) != 0:
+    #         # with QuantifierPredicate(QuantiferEnum.SOME,[txt for indx,txt in quantifier_variables],f"elems[{seq_expr}]",self):
+    #         #     transcribe_subterms()
+    #         enc_var_names = [seq_term_expr for _,seq_term_expr in quantifier_variables]
+    #         enc_expressions = [f"({seq_expr})[{indx}]" for indx,_ in quantifier_variables]
+    #         with LetClauseContext(enc_var_names,enc_expressions,self):
+    #             transcribe_subterms()
+    #     else:
+    #         transcribe_subterms()
+
+    def get_name_for_msg_term(self,non_cat_term:NonCatTerm) -> str:
+        """returns a name for a message term, to be used for let clauses and
+        existential quantification"""
+        fresh_num = str(self.get_fresh_num())
+        match non_cat_term:
+            case EncTerm(_):
+                return "enc_" + fresh_num
+            case SeqTerm(_):
+                return "seq_" + fresh_num
+            case HashTerm(_):
+                return "hash_"+ fresh_num
+            case LtkTerm(_):
+                return "ltk_" + fresh_num
+            case PubkTerm(_):
+                return "pubk_"+fresh_num
+            case PrivkTerm(_):
+                return "privk_"+fresh_num
+            case Variable(_) as var:
+                match var.var_type:
+                    case MsgTypes.NAME:
+                        return "name_"+fresh_num
+                    case MsgTypes.TEXT:
+                        return "text_"+fresh_num
+                    case MsgTypes.SKEY:
+                        return "skey_"+fresh_num
+                    case MsgTypes.AKEY:
+                        return "akey_"+fresh_num
+                    case MsgTypes.MESG:
+                        return "mesg_"+fresh_num
+
     def write_new_seq_constraint(self,seq_expr:str,seq_terms:List[NonCatTerm],send_recv:SendRecv,timeslot_expr:str,sig_context:"RoleOrSkelTranscrContext"):
+        seq_component_names = [self.get_name_for_msg_term(seq_component) for seq_component in seq_terms]
+        seq_component_exprs = [f"({seq_expr})[{indx}]" for indx in range(len(seq_terms))]
+
         indices_str = "+".join([str(i) for i in range(len(seq_terms))])
         self.print_to_file(f"inds[{seq_expr}] = {indices_str}\n")
+        with LetClauseContext(seq_component_names,seq_component_exprs,self):
+            all_seq_components = " + ".join([f"{indx}->{comp_name}" for indx,comp_name in enumerate(seq_component_names)])
+            self.print_to_file(f"{seq_expr} = {all_seq_components}\n")
+            for comp_name,comp_term in zip(seq_component_names,seq_terms):
+                transcribe_non_cat(comp_name,comp_term,send_recv,timeslot_expr,sig_context)
 
-        seq_term_exprs : List[str]= []
-        quantifier_variables : List[Tuple[int,str]] = []
-        for indx,elm in enumerate(seq_terms):
-            match elm:
-                case EncTerm(_):
-                    seq_term_expr = "enc_" + str(self.get_fresh_num())
-                    seq_term_exprs.append(seq_term_expr)
-                    quantifier_variables.append((indx,seq_term_expr))
-                case _:
-                    seq_term_expr = f"{seq_expr}[{indx}]"
-                    seq_term_exprs.append(seq_term_expr)
-
-        def transcribe_subterms():
-            for indx,quantifier_variable in quantifier_variables:
-                self.print_to_file(f"{seq_expr}[{indx}] = {quantifier_variable}\n")
-            for indx,(seq_term_expr,seq_term) in enumerate(zip(seq_term_exprs,seq_terms)):
-                transcribe_non_cat(seq_term_expr,seq_term,send_recv,timeslot_expr,sig_context)
-        if len(quantifier_variables) != 0:
-            with QuantifierPredicate(QuantiferEnum.SOME,[txt for indx,txt in quantifier_variables],f"elems[{seq_expr}]",self):
-                transcribe_subterms()
-        else:
-            transcribe_subterms()
     def role_var_name_in_prot_pred(self, role_name, prot_name):
         return f"arbitrary_{role_name}_{prot_name}"
 
@@ -129,6 +176,26 @@ class PredicateContext:
     def __exit__(self, exc_type, exc_value, traceback):
         self.transcr.end_block()
         self.transcr.print_to_file(f"}}\n")
+
+@dataclass
+class LetClauseContext:
+    var_name: List[str]
+    var_expression: List[str]
+    transcr: Transcribe_obj
+
+    def __enter__(self):
+        if len(self.var_name) != len(self.var_expression):
+            raise ParseException("For let clause should have equal number of variable names and expressions")
+        for var_name,var_expression in zip(self.var_name,self.var_expression):
+            self.transcr.print_to_file(f"let {var_name}  = {var_expression} | {{\n")
+        self.transcr.start_block()
+
+    def __exit__(self,exc_type,exc_value,traceback):
+        num_blocks = len(self.var_name)
+        close_str = "}" * num_blocks
+        self.transcr.end_block()
+        self.transcr.print_to_file(close_str + "\n")
+
 @dataclass
 class TimeslotContext:
     timeslot_names: List[str]
