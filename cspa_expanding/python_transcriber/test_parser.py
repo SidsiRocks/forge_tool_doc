@@ -3,6 +3,8 @@ import sexpdata
 import subprocess
 from main import get_root_s_expr_lst
 
+#TODO: tests appear broken specifically the pretty print step look into
+# it
 
 #TODO: current approach for tests is one or two string examples and
 # all existing example files, can maybe improve approach for testing

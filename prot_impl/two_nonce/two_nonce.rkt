@@ -7,6 +7,11 @@
             (recv (enc n1 n2 (pubk a)))
             (send (enc n2 (pubk b)))
         )
+        (constraint
+            (non-orig (privk a))
+            (uniq-orig n1)
+            (fresh-gen n1)
+        )
     )
     (defrole resp
         (vars (a b name) (n1 n2 text))
@@ -14,6 +19,11 @@
             (recv (enc n1 (pubk b)))
             (send (enc n1 n2 (pubk a)))
             (recv (enc n2 (pubk b)))
+        )
+        (constraint
+            (non-orig (privk b))
+            (uniq-orig n2)
+            (fresh-gen n2)
         )
     )
 )

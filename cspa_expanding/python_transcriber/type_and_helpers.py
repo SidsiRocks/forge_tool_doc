@@ -124,14 +124,30 @@ class Role:
     role_name: str
     var_map: VarMap
     trace:MessageTrace
+    role_constraints:List["RoleConstraints"]
     def __repr__(self):
         var_map_str = var_declarations_to_str(self.var_map)
         trace_str = '\n'.join([trace_to_str(send_recv_msg) for send_recv_msg in self.trace])
-        return (f"(defrole {self.role_name}"
-                f"(vars {var_map_str})"
-                f"(trace"
-                f"{trace_str})"
-                f")")
+        role_constrain_strs = '\n'.join(f"{constr}" for constr in self.role_constraints)
+        result = None
+        if len(self.role_constraints) == 0:
+            result = (f"(defrole {self.role_name}"
+                      f"(vars {var_map_str})"
+                      f"(trace"
+                      f"{trace_str})"
+                      f")"
+                      f")")
+        else:
+            result = (f"(defrole {self.role_name}"
+                      f"(vars {var_map_str})"
+                      f"(trace"
+                      f"{trace_str})"
+                      f")"
+                      f"(constraint"
+                      f"{role_constrain_strs}"
+                      f")"
+                      f")")
+        return result
     def __str__(self):
         return self.__repr__()
 @dataclass
@@ -174,6 +190,14 @@ class UniqOrig:
     def __str__(self):
         return self.__repr__()
 @dataclass
+class FreshlyGenConstraint:
+    terms: List[BaseTerm]
+    def __repr__(self) -> str:
+        terms_str = ' '.join(f"{term}" for term in self.terms)
+        return f"(fresh-gen {terms_str})"
+    def __str__(self):
+        return self.__repr__()
+@dataclass
 class IndvSendRecvInConstraint:
     trace_type: SendRecv
     sender_reciever_strand: str
@@ -206,6 +230,7 @@ class NotEqConstraint:
     def __str__(self) -> str:
         return self.__repr__()
 Constraint = Strand | NonOrig | UniqOrig | TraceConstraint | NotEqConstraint
+RoleConstraints = NonOrig | UniqOrig | NotEqConstraint | FreshlyGenConstraint
 
 def strand_var_map_to_str(strand_vars_map:Dict[str,str]):
     strand_type_to_vars : Dict[str,List[str]] = {}
@@ -268,6 +293,8 @@ TEXT_STR = "text"
 SKEY_STR = "skey"
 AKEY_STR = "akey"
 ATTACKER_STR = "Attacker"
+ROLE_CONSTR_STR = "constraint"
+FRESH_GEN_STR = "fresh-gen"
 
 KEY_CATEGORIES = [PRIVK_STR,PUBK_STR,LTK_STR]
 MESSAGE_CATEGORIES = [ENC_STR,CAT_STR,LTK_STR,PUBK_STR,PRIVK_STR,SEQ_STR,HASH_STR]

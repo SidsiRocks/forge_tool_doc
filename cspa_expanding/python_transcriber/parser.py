@@ -249,11 +249,29 @@ def parse_trace(s_expr, var_map: VarMap) -> MessageTrace:
         result += [parse_indv_trace(indv_trace, var_map)]
     return result
 
+def parse_role_constraints(s_expr,var_map:VarMap) -> List[RoleConstraints]:
+    if len(s_expr) < 2:
+        raise ParseException(f"Expected 'constraint' and atleast one constraint in the clause")
+    match_type_and_str(s_expr[0],ROLE_CONSTR_STR)
+    constraints_list = []
+    for constr_expr in s_expr[1:]:
+        if type(s_expr) == sexpdata.Symbol:
+            raise ParseException(f"Expected s-expression for clause in constraint not simple symbol")
+        clause_type = get_str_from_symbol(constr_expr[0],"constraint type")
+        if clause_type == NON_ORIG_STR:
+            constraints_list.append(parse_non_orig(constr_expr,var_map))
+        elif clause_type == UNIQ_ORIG_STR:
+            constraints_list.append(parse_uniq_orig(constr_expr,var_map))
+        elif clause_type == NOT_EQ_STR:
+            constraints_list.append(parse_non_orig(constr_expr,var_map))
+        elif clause_type == FRESH_GEN_STR:
+            constraints_list.append(parse_fresh_gen(constr_expr,var_map))
+    return constraints_list
 
 def parse_role(s_expr) -> Role:
     """parses role clause present in a protocol clause.
     Ex: (defrole role_name (vars (a b name) ..) (trace (send ...) (recv ...)))"""
-    if len(s_expr) != 4:
+    if len(s_expr) != 4 and len(s_expr) != 5:
         raise ParseException(
             f"Expected 'defrole',role_name,variables list and trace of sends and receives but length of s expr is {len(s_expr)}"
         )
@@ -261,8 +279,11 @@ def parse_role(s_expr) -> Role:
     role_name = get_str_from_symbol(s_expr[1], "role name")
     var_map = parse_vars_clause(s_expr[2])
     msg_trace = parse_trace(s_expr[3], var_map)
+    constraints = []
+    if len(s_expr) == 5:
+        constraints = parse_role_constraints(s_expr[4],var_map)
 
-    return Role(role_name=role_name, var_map=var_map, trace=msg_trace)
+    return Role(role_name=role_name, var_map=var_map, trace=msg_trace,role_constraints=constraints)
 
 
 def parse_protocol(s_expr) -> Protocol:
@@ -368,6 +389,23 @@ def parse_not_eq(s_expr,skeleton_vars_dict:VarMap) -> NotEqConstraint:
     term1 = parse_base_term(s_expr[1],skeleton_vars_dict)
     term2 = parse_base_term(s_expr[2],skeleton_vars_dict)
     return NotEqConstraint(term1,term2)
+
+def parse_fresh_gen(s_expr,vars_dict:VarMap) -> FreshlyGenConstraint:
+    if len(s_expr) < 2:
+        raise ParseException("expecred 'fresh-gen' and variable in the s-expr")
+    base_terms = [parse_base_term(sub_expr,vars_dict) for sub_expr in s_expr[1:]]
+    for base_term in base_terms:
+        match base_term:
+            case Variable(_) as var:
+                match var.var_type:
+                    case MsgTypes.TEXT | MsgTypes.SKEY | MsgTypes.AKEY:
+                        pass
+                    case _:
+                        raise ParseException(f"can only talk about generating text skey and akey")
+            case _:
+                raise ParseException(f"Cannot talk about pubk,ltk,privk being freshly generated it is already known")
+
+    return FreshlyGenConstraint(terms=base_terms)
 
 def parse_indv_send_recv_constraint(s_expr,non_strand_vars_map:VarMap,strand_vars_map:Dict[str,str]) -> IndvSendRecvInConstraint:
     send_or_recv = get_str_from_symbol(s_expr[0],"send or recv type of constraint")
