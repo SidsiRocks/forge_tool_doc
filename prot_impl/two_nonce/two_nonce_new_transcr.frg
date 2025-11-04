@@ -341,42 +341,54 @@ sig two_nonce_init extends strand {
 }
 pred exec_two_nonce_init {
   all arbitrary_init_two_nonce : two_nonce_init | {
-    some t0 : Timeslot {
-      some t1 : t0.(^next) {
-        some t2 : t1.(^next) {
-          t0+t1+t2 = sender.arbitrary_init_two_nonce + receiver.arbitrary_init_two_nonce
-          t0.sender = arbitrary_init_two_nonce
-          inds[(t0.data)] = 0
-          some enc_2 : elems[(t0.data)] | {
-            (t0.data)[0] = enc_2
-            inds[(enc_2).plaintext] = 0
-            (enc_2).plaintext[0] = arbitrary_init_two_nonce.two_nonce_init_n1
-            (enc_2).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
-          }
-
-          t1.receiver = arbitrary_init_two_nonce
-          inds[(t1.data)] = 0
-          some enc_5 : elems[(t1.data)] | {
-            (t1.data)[0] = enc_5
-            learnt_term_by[getPRIVK[arbitrary_init_two_nonce.two_nonce_init_a],arbitrary_init_two_nonce.agent,t1]
-            inds[(enc_5).plaintext] = 0+1
-            (enc_5).plaintext[0] = arbitrary_init_two_nonce.two_nonce_init_n1
-            (enc_5).plaintext[1] = arbitrary_init_two_nonce.two_nonce_init_n2
-            (enc_5).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_a]
-          }
-
-          t2.sender = arbitrary_init_two_nonce
-          inds[(t2.data)] = 0
-          some enc_9 : elems[(t2.data)] | {
-            (t2.data)[0] = enc_9
-            inds[(enc_9).plaintext] = 0
-            (enc_9).plaintext[0] = arbitrary_init_two_nonce.two_nonce_init_n2
-            (enc_9).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
-          }
-
-        }
-      }
+    no aStrand : strand | {
+      originates[aStrand,getPRIVK[arbitrary_init_two_nonce.two_nonce_init_a]] or generates [aStrand,getPRIVK[arbitrary_init_two_nonce.two_nonce_init_a]]
     }
+    some t0 : Timeslot {
+    some t1 : t0.(^next) {
+    some t2 : t1.(^next) {
+      ((arbitrary_init_two_nonce.two_nonce_init_n1)->t0) in (arbitrary_init_two_nonce.agent).generated_times
+      t0+t1+t2 = sender.arbitrary_init_two_nonce + receiver.arbitrary_init_two_nonce
+      t0.sender = arbitrary_init_two_nonce
+      inds[(t0.data)] = 0
+      let enc_2  = ((t0.data))[0] | {
+        (t0.data) = 0->enc_2
+        inds[(enc_2).plaintext] = 0
+        let text_4  = ((enc_2).plaintext)[0] | {
+          (enc_2).plaintext = 0->text_4
+          text_4 = arbitrary_init_two_nonce.two_nonce_init_n1
+        }
+        (enc_2).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
+      }
+
+      t1.receiver = arbitrary_init_two_nonce
+      inds[(t1.data)] = 0
+      let enc_6  = ((t1.data))[0] | {
+        (t1.data) = 0->enc_6
+        learnt_term_by[getPRIVK[arbitrary_init_two_nonce.two_nonce_init_a],arbitrary_init_two_nonce.agent,t1]
+        inds[(enc_6).plaintext] = 0+1
+        let text_9  = ((enc_6).plaintext)[0] | {
+        let text_10  = ((enc_6).plaintext)[1] | {
+          (enc_6).plaintext = 0->text_9 + 1->text_10
+          text_9 = arbitrary_init_two_nonce.two_nonce_init_n1
+          text_10 = arbitrary_init_two_nonce.two_nonce_init_n2
+        }}
+        (enc_6).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_a]
+      }
+
+      t2.sender = arbitrary_init_two_nonce
+      inds[(t2.data)] = 0
+      let enc_12  = ((t2.data))[0] | {
+        (t2.data) = 0->enc_12
+        inds[(enc_12).plaintext] = 0
+        let text_14  = ((enc_12).plaintext)[0] | {
+          (enc_12).plaintext = 0->text_14
+          text_14 = arbitrary_init_two_nonce.two_nonce_init_n2
+        }
+        (enc_12).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
+      }
+
+    }}}
   }
 }
 sig two_nonce_resp extends strand {
@@ -388,42 +400,50 @@ sig two_nonce_resp extends strand {
 pred exec_two_nonce_resp {
   all arbitrary_resp_two_nonce : two_nonce_resp | {
     some t0 : Timeslot {
-      some t1 : t0.(^next) {
-        some t2 : t1.(^next) {
-          t0+t1+t2 = sender.arbitrary_resp_two_nonce + receiver.arbitrary_resp_two_nonce
-          t0.receiver = arbitrary_resp_two_nonce
-          inds[(t0.data)] = 0
-          some enc_12 : elems[(t0.data)] | {
-            (t0.data)[0] = enc_12
-            learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t0]
-            inds[(enc_12).plaintext] = 0
-            (enc_12).plaintext[0] = arbitrary_resp_two_nonce.two_nonce_resp_n1
-            (enc_12).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
-          }
-
-          t1.sender = arbitrary_resp_two_nonce
-          inds[(t1.data)] = 0
-          some enc_15 : elems[(t1.data)] | {
-            (t1.data)[0] = enc_15
-            inds[(enc_15).plaintext] = 0+1
-            (enc_15).plaintext[0] = arbitrary_resp_two_nonce.two_nonce_resp_n1
-            (enc_15).plaintext[1] = arbitrary_resp_two_nonce.two_nonce_resp_n2
-            (enc_15).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_a]
-          }
-
-          t2.receiver = arbitrary_resp_two_nonce
-          inds[(t2.data)] = 0
-          some enc_19 : elems[(t2.data)] | {
-            (t2.data)[0] = enc_19
-            learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t2]
-            inds[(enc_19).plaintext] = 0
-            (enc_19).plaintext[0] = arbitrary_resp_two_nonce.two_nonce_resp_n2
-            (enc_19).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
-          }
-
+    some t1 : t0.(^next) {
+    some t2 : t1.(^next) {
+      t0+t1+t2 = sender.arbitrary_resp_two_nonce + receiver.arbitrary_resp_two_nonce
+      t0.receiver = arbitrary_resp_two_nonce
+      inds[(t0.data)] = 0
+      let enc_16  = ((t0.data))[0] | {
+        (t0.data) = 0->enc_16
+        learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t0]
+        inds[(enc_16).plaintext] = 0
+        let text_18  = ((enc_16).plaintext)[0] | {
+          (enc_16).plaintext = 0->text_18
+          text_18 = arbitrary_resp_two_nonce.two_nonce_resp_n1
         }
+        (enc_16).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
       }
-    }
+
+      t1.sender = arbitrary_resp_two_nonce
+      inds[(t1.data)] = 0
+      let enc_20  = ((t1.data))[0] | {
+        (t1.data) = 0->enc_20
+        inds[(enc_20).plaintext] = 0+1
+        let text_23  = ((enc_20).plaintext)[0] | {
+        let text_24  = ((enc_20).plaintext)[1] | {
+          (enc_20).plaintext = 0->text_23 + 1->text_24
+          text_23 = arbitrary_resp_two_nonce.two_nonce_resp_n1
+          text_24 = arbitrary_resp_two_nonce.two_nonce_resp_n2
+        }}
+        (enc_20).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_a]
+      }
+
+      t2.receiver = arbitrary_resp_two_nonce
+      inds[(t2.data)] = 0
+      let enc_26  = ((t2.data))[0] | {
+        (t2.data) = 0->enc_26
+        learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t2]
+        inds[(enc_26).plaintext] = 0
+        let text_28  = ((enc_26).plaintext)[0] | {
+          (enc_26).plaintext = 0->text_28
+          text_28 = arbitrary_resp_two_nonce.two_nonce_resp_n2
+        }
+        (enc_26).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
+      }
+
+    }}}
   }
 }
 one sig skeleton_two_nonce_0 {
@@ -515,7 +535,7 @@ two_nonce_init_pov : run {
     exactly 6 Timeslot,25 mesg,
     exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,0 skey,
     exactly 3 PrivateKey,exactly 3 PublicKey,
-
+    exactly 0 Hashed,
     exactly 3 name,exactly 6 text,exactly 10 Ciphertext,
     exactly 1 two_nonce_init,exactly 1 two_nonce_resp,
     4 Int

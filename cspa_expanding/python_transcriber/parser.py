@@ -1,4 +1,6 @@
+from typing import Optional
 from type_and_helpers import *
+from functools import reduce
 import sexpdata
 
 
@@ -249,7 +251,7 @@ def parse_trace(s_expr, var_map: VarMap) -> MessageTrace:
         result += [parse_indv_trace(indv_trace, var_map)]
     return result
 
-def parse_role_constraints(s_expr,var_map:VarMap) -> List[RoleConstraints]:
+def parse_role_constraints(s_expr,var_map:VarMap,role_trace:MessageTrace) -> List[RoleConstraints]:
     if len(s_expr) < 2:
         raise ParseException(f"Expected 'constraint' and atleast one constraint in the clause")
     match_type_and_str(s_expr[0],ROLE_CONSTR_STR)
@@ -263,9 +265,9 @@ def parse_role_constraints(s_expr,var_map:VarMap) -> List[RoleConstraints]:
         elif clause_type == UNIQ_ORIG_STR:
             constraints_list.append(parse_uniq_orig(constr_expr,var_map))
         elif clause_type == NOT_EQ_STR:
-            constraints_list.append(parse_non_orig(constr_expr,var_map))
+            constraints_list.append(parse_not_eq(constr_expr,var_map))
         elif clause_type == FRESH_GEN_STR:
-            constraints_list.append(parse_fresh_gen(constr_expr,var_map))
+            constraints_list.append(parse_fresh_gen(constr_expr,var_map,role_trace))
     return constraints_list
 
 def parse_role(s_expr) -> Role:
@@ -281,7 +283,7 @@ def parse_role(s_expr) -> Role:
     msg_trace = parse_trace(s_expr[3], var_map)
     constraints = []
     if len(s_expr) == 5:
-        constraints = parse_role_constraints(s_expr[4],var_map)
+        constraints = parse_role_constraints(s_expr[4],var_map,msg_trace)
 
     return Role(role_name=role_name, var_map=var_map, trace=msg_trace,role_constraints=constraints)
 
@@ -390,7 +392,35 @@ def parse_not_eq(s_expr,skeleton_vars_dict:VarMap) -> NotEqConstraint:
     term2 = parse_base_term(s_expr[2],skeleton_vars_dict)
     return NotEqConstraint(term1,term2)
 
-def parse_fresh_gen(s_expr,vars_dict:VarMap) -> FreshlyGenConstraint:
+def var_in_msg_term(variable:Variable,msg_term:Message) -> bool:
+    func_or = lambda x,y: x or y
+    var_in_msg_lam = lambda msg: var_in_msg_term(variable,msg)
+    match msg_term:
+        case Variable(_) as var:
+            return variable == var
+        case EncTerm(_) as enc:
+            return reduce(func_or,map(var_in_msg_lam,enc.data + [enc.key]))
+        case CatTerm(_) as cat:
+            return reduce(func_or,map(var_in_msg_lam,cat.data))
+        case LtkTerm(_) as ltk:
+            return (variable == ltk.agent1_name) or (variable == ltk.agent2_name)
+        case PrivkTerm(_) as privk:
+            return (variable == privk.agent_name)
+        case PubkTerm(_) as pubk:
+            return (variable == pubk.agent_name)
+        case SeqTerm(_) as seq:
+            return reduce(func_or,map(var_in_msg_lam,seq.data))
+        case HashTerm(_) as hash:
+            return hash.hash_of == variable
+
+def var_first_occur_in_trace(trace:MessageTrace,variable:Variable) -> Optional[Tuple[int,SendRecv,Message]]:
+    for indx,(send_recv,msg_term) in enumerate(trace):
+        if var_in_msg_term(variable,msg_term):
+            return indx,send_recv,msg_term
+    return None
+
+
+def parse_fresh_gen(s_expr,vars_dict:VarMap,role_trace:MessageTrace) -> FreshlyGenConstraint:
     if len(s_expr) < 2:
         raise ParseException("expecred 'fresh-gen' and variable in the s-expr")
     base_terms = [parse_base_term(sub_expr,vars_dict) for sub_expr in s_expr[1:]]
@@ -402,9 +432,15 @@ def parse_fresh_gen(s_expr,vars_dict:VarMap) -> FreshlyGenConstraint:
                         pass
                     case _:
                         raise ParseException(f"can only talk about generating text skey and akey")
+                first_occur_trace = var_first_occur_in_trace(role_trace,var)
+                match first_occur_trace:
+                    case None:
+                        raise ParseException(f"can not talk about freshly generated nonce/key if never sent")
+                    case _,send_recv,_:
+                        if send_recv == SendRecv.RECV:
+                            raise ParseException(f"Variable is sent before it is recieved cannot talk about it being freshly generated")
             case _:
                 raise ParseException(f"Cannot talk about pubk,ltk,privk being freshly generated it is already known")
-
     return FreshlyGenConstraint(terms=base_terms)
 
 def parse_indv_send_recv_constraint(s_expr,non_strand_vars_map:VarMap,strand_vars_map:Dict[str,str]) -> IndvSendRecvInConstraint:
@@ -468,3 +504,42 @@ def parse_skeleton(s_expr, prot_obj: Protocol) -> Skeleton:
                     non_strand_vars_map=non_strand_vars_map,
                     strand_vars_map=strand_vars_map,
                     constraints_list=constraints_list)
+
+def parse_instance(s_expr,prot:Protocol) -> InstanceBounds:
+    if len(s_expr) < 3:
+        raise ParseException(f"Expected only definstance,instance name and a list of key value pairs for instance bound")
+    match_type_and_str(s_expr[0],DEF_INST_BOUNDS)
+    instance_name = get_str_from_symbol(s_expr[1],"instance name")
+    key_val_pairs:Dict[str,int] = {}
+    for sub_expr in s_expr[2:]:
+        if len(sub_expr) != 2:
+            raise ParseException(f"Expected only key val pair not {sub_expr}")
+        key = get_str_from_symbol(sub_expr[0],"key of key-val pair")
+        val = get_int_from_symbol(sub_expr[1],"val of key-val pair")
+        if key in key_val_pairs:
+            raise ParseException(f"Repeated key {key}")
+        key_val_pairs[key] = val
+
+    valid_sig_names = SIG_NAMES
+    valid_role_names = [role.role_name for role in prot.role_arr]
+    extra_constraints = [ENC_DEPTH_BOUND]
+
+    sig_counts : Dict[str,int] = {}
+    role_counts : Dict[str,int] = {}
+    encryption_depth : int = -1
+    for key,val in key_val_pairs.items():
+        if key in valid_sig_names:
+            sig_counts[key] = val
+        elif key in valid_role_names:
+            role_counts[key] = val
+        elif key in extra_constraints:
+            encryption_depth = val
+        else:
+            raise ParseException("")
+
+    if encryption_depth == -1:
+        raise ParseException(f"encryption depth bound (enc-depth) unspecified")
+
+    result = InstanceBounds(instance_name,sig_counts,role_counts,encryption_depth)
+    result.validate(prot)
+    return result

@@ -1,3 +1,4 @@
+from collections import defaultdict
 import io
 from abc import abstractmethod
 from typing import List, Tuple, override
@@ -197,21 +198,39 @@ class LetClauseContext:
         self.transcr.print_to_file(close_str + "\n")
 
 @dataclass
+class InstanceContext:
+    instance_name:str
+    transcr:Transcribe_obj
+    def __enter__(self):
+        self.transcr.print_to_file(f"inst {self.instance_name} {{\n")
+        self.transcr.start_block()
+    def __exit__(self,exc_type,exc_value,traceback):
+        self.transcr.end_block()
+        self.transcr.print_to_file(f"}}\n")
+@dataclass
 class TimeslotContext:
     timeslot_names: List[str]
     transcr:Transcribe_obj
+    nested_indent:bool
 
     def __enter__(self):
         cur_set = "Timeslot"
         for timeslot_name in self.timeslot_names:
             self.transcr.print_to_file(f"some {timeslot_name} : {cur_set} {{\n")
-            self.transcr.start_block()
+            if self.nested_indent:
+                self.transcr.start_block()
             cur_set = f"{timeslot_name}.(^next)"
+        if not self.nested_indent:
+            self.transcr.start_block()
 
     def __exit__(self,exc_type,exc_value,traceback):
-        for _ in self.timeslot_names:
+        if self.nested_indent:
+            for _ in self.timeslot_names:
+                self.transcr.end_block()
+                self.transcr.print_to_file(f"}}\n")
+        else:
             self.transcr.end_block()
-            self.transcr.print_to_file(f"}}\n")
+            self.transcr.print_to_file("}"*len(self.timeslot_names)+"\n")
 @dataclass
 class QuantifierPredicate:
     quantifer_enum: QuantiferEnum
@@ -327,6 +346,9 @@ class RoleTranscribeContext(SigContext):
 
     def get_agent(self):
         return f"{self.role_var_name}.agent"
+
+    def get_strand_var(self):
+        return self.role_var_name
 
     @override
     def get_inv_key(self, key_term: KeyTerm) -> str:
@@ -482,6 +504,30 @@ def transcribe_indv_trace(role: Role, indx: int,
             atom_name = f"atom_{transcr.get_fresh_num()}"
             transcr.write_new_seq_constraint(f"(t{indx}.data)",[non_cat_mesg],send_recv,f"t{indx}",role_context)
 
+def transcribe_freshly_gen_constr(role:Role,role_context:RoleTranscribeContext):
+    freshly_gen_constrs:List[FreshlyGenConstraint] = []
+    for role_contstr in role.role_constraints:
+        match role_contstr:
+            case FreshlyGenConstraint(_) as fresh_gen_constr:
+                freshly_gen_constrs.append(fresh_gen_constr)
+
+    var_first_occur : Dict[int,List[Variable]] = defaultdict(list)
+
+    for fresh_gen_constr in freshly_gen_constrs:
+        for variable in fresh_gen_constr.terms:
+            first_occur = var_first_occur_in_trace(role.trace,variable)
+            match first_occur:
+                case None:
+                    raise ParseException(f"cannot impose freshly generated constraint if not present in trace")
+                case indx,send_recv,msg_term:
+                    if send_recv == SendRecv.RECV:
+                        raise ParseException(f"cannot impose freshly generated constraint if get variable as recieving")
+                    var_first_occur[indx].append(variable)
+
+    for indx,variables in var_first_occur.items():
+        freshly_gen_tuples = " + ".join([f"({role_context.acess_variable(var.var_name)})->t{indx}" for var in variables])
+        role_context.transcr.print_to_file(f"({freshly_gen_tuples}) in ({role_context.get_agent()}).generated_times\n")
+
 def transcribe_trace(role: Role, role_context: RoleTranscribeContext):
     trace_len = len(role.trace)
     timeslot_names = [f"t{i}" for i in range(trace_len)]
@@ -504,7 +550,8 @@ def transcribe_trace(role: Role, role_context: RoleTranscribeContext):
     #     transcr.start_block()
     #     cur_set = f"{timeslot_name}.(^next)"
 
-    with TimeslotContext(timeslot_names,transcr):
+    with TimeslotContext(timeslot_names,transcr,False):
+        transcribe_freshly_gen_constr(role,role_context)
         all_timeslots_set = "+".join(timeslot_names)
         role_var_name = role_context.role_var_name
         transcr.print_to_file(f"{all_timeslots_set} = sender.{role_var_name} + receiver.{role_var_name}\n")
@@ -515,15 +562,31 @@ def transcribe_trace(role: Role, role_context: RoleTranscribeContext):
     # for _ in timeslot_names:
     #     transcr.end_block()
     #     transcr.print_to_file(f"}}\n")
+def transcribe_most_role_constr(role:Role,role_context:RoleTranscribeContext):
+    role_constratins = role.role_constraints
+    for constraint in role_constratins:
+        match constraint:
+            case NonOrig(_) as non_orig:
+                transcribe_non_orig(non_orig,role_context)
+            case UniqOrig(_) as uniq_orig:
+                transcribe_uniq_orig(uniq_orig,role_context)
+            case NotEqConstraint(_) as not_eq:
+                transcribe_not_eq(not_eq,role_context)
+            case FreshlyGenConstraint(_):
+                #this case has to be present inside the code where
+                #existential quantification over timeslots takes place
+                pass
 
 def transcribe_role(role: Role, role_context: RoleTranscribeContext):
     role_sig_name = role_context.role_sig_name
     transcr = role_context.transcr
     transcribe_role_to_sig(role, role_sig_name, transcr)
+
     with PredicateContext(transcr=transcr, pred_name=f"exec_{role_sig_name}"):
         with QuantifierPredicate(QuantiferEnum.ALL,
                                  [role_context.role_var_name], role_sig_name,
                                  transcr):
+            transcribe_most_role_constr(role,role_context)
             transcribe_trace(role, role_context)
 
 
@@ -574,7 +637,7 @@ def transcribe_strand(strand: Strand,
 
 #TODO: Can simplifly functions related to transcribing publick key privk and others since they are very small
 def transcribe_non_orig(non_orig: NonOrig,
-                        skeleton_transcr_context: SkeletonTranscribeContext):
+                        skeleton_transcr_context: RoleOrSkelTranscrContext):
     transcr = skeleton_transcr_context.transcr
     for base_term in non_orig.terms:
         base_term_str = skeleton_transcr_context.get_base_term_str(base_term)
@@ -584,20 +647,30 @@ def transcribe_non_orig(non_orig: NonOrig,
                 f"originates[aStrand,{base_term_str}] or generates [aStrand,{base_term_str}]\n"
             )
 
-
 def transcribe_uniq_orig(uniq_orig: UniqOrig,
-                         skeleton_transcr_context: SkeletonTranscribeContext):
+                         skeleton_transcr_context: RoleOrSkelTranscrContext):
     transcr = skeleton_transcr_context.transcr
     for base_term in uniq_orig.terms:
         base_term_str = skeleton_transcr_context.get_base_term_str(base_term)
-        with QuantifierPredicate(QuantiferEnum.ONE, ["aStrand"], "strand",
-                                 transcr):
-            transcr.print_to_file(
-                f"originates[aStrand,{base_term_str}] or generates [aStrand,{base_term_str}]\n"
-            )
+        match skeleton_transcr_context:
+            case SkeletonTranscribeContext(_):
+                with QuantifierPredicate(QuantiferEnum.ONE, ["aStrand"], "strand",
+                                         transcr):
+                    transcr.print_to_file(
+                        f"originates[aStrand,{base_term_str}] or generates [aStrand,{base_term_str}]\n"
+                    )
+            case RoleTranscribeContext(_) as role_transcr:
+                #TODO: modify uniq-orig to only take in terms that can be generated
+                strand_name = role_transcr.get_agent()
+                transcr.print_to_file(f"(generated_times.Timeslot).({base_term_str}) = {strand_name}\n")
+                # with QuantifierPredicate(QuantiferEnum.ONE, ["aStrand"], "strand",
+                #                          transcr):
+                #     transcr.print_to_file(
+                #         f"originates[aStrand,{base_term_str}] or generates [aStrand,{base_term_str}]\n"
+                #     )
 
 def transcribe_not_eq(not_eq:NotEqConstraint,
-                      skeleton_transcr_context:SkeletonTranscribeContext):
+                      skeleton_transcr_context:RoleOrSkelTranscrContext):
     transcr = skeleton_transcr_context.transcr
     term1_str = skeleton_transcr_context.get_base_term_str(not_eq.term1)
     term2_str = skeleton_transcr_context.get_base_term_str(not_eq.term2)
@@ -632,7 +705,7 @@ def transcribe_trace_constraint(trace_constraint:TraceConstraint,
 
     timeslot_names = [f"t_{i}" for i in range(trace_len)]
     with PredicateContext(trace_pred_name,transcr):
-        with TimeslotContext(timeslot_names,transcr):
+        with TimeslotContext(timeslot_names,transcr,False):
             for timeslot_name,indv_trace_constraint in zip(timeslot_names,indv_trace_constraints):
                 transcribe_indv_trace_constraint(skeleton,indv_trace_constraint,
                                                  timeslot_name,transcr,skel_transcr_context)
@@ -695,3 +768,67 @@ def transcribe_skeleton(skeleton: Skeleton, protocol: Protocol,
     transcribe_skeleton_to_sig(skeleton,protocol, skeleton_sig_name, transcr)
     transcribe_skeleton_to_predicate(skeleton, skel_num, skeleton_pred_name,
                                      transcr, protocol,skel_transcr_context)
+def write_bound_expressions(cur_node:str,instance_bound:InstanceBounds,transcr:Transcribe_obj):
+    instance_counts = instance_bound.sig_counts
+    if cur_node in subtypes:
+        cur_node_subs = subtypes[cur_node]
+        for subtype in cur_node_subs:
+            write_bound_expressions(subtype,instance_bound,transcr)
+        non_zero_count_subtype = list(filter(lambda sub: (instance_counts[sub] != 0),cur_node_subs))
+        if cur_node in subtypes_are_exhaustive:
+            subtype_sigs = " + ".join(non_zero_count_subtype)
+            transcr.print_to_file(f"{cur_node} = {subtype_sigs}\n")
+        else:
+            child_sigs = non_zero_count_subtype
+            total_child_elms = sum([instance_counts[child] for child in child_sigs])
+            extra_no_elms = instance_counts[cur_node] - total_child_elms
+            extra_elms = [f"`{cur_node}{indx}" for indx in range(extra_no_elms)]
+            total_elms = " + ".join(extra_elms + child_sigs)
+            transcr.print_to_file(f"{cur_node} = {total_elms}\n")
+    else:
+        cur_count = instance_counts[cur_node]
+        if cur_count != 0:
+            sig_elements = " + ".join([f"`{cur_node}{indx}" for indx in range(instance_counts[cur_node])])
+            transcr.print_to_file(f"{cur_node} = {sig_elements}\n")
+
+def transcribe_instance(instance_bound:InstanceBounds,prot:Protocol,transcr:Transcribe_obj):
+    with InstanceContext(instance_bound.instance_name,transcr):
+        write_bound_expressions(MESG_SIG,instance_bound,transcr)
+        transcr.print_to_file("\n")
+        write_bound_expressions(TIMESLOT_SIG,instance_bound,transcr)
+        transcr.print_to_file("\n")
+
+        sig_counts = instance_bound.sig_counts
+        #write depth bound for plaintext
+        #set values for pairs and owners relation
+        possible_seq_len = "+".join([str(i) for i in range(instance_bound.encryption_depth)])
+        transcr.print_to_file(f"plaintext in {CIPHER_SIG} -> ({possible_seq_len}) -> {MESG_SIG}\n")
+        transcr.print_to_file("\n")
+        transcr.print_to_file(f"KeyPairs = `KeyPairs0\n")
+        pubk_count,privk_count,name_count = sig_counts[PUBK_SIG],sig_counts[PRIVK_SIG],sig_counts[NAME_SIG]
+        if pubk_count != privk_count or pubk_count != name_count or privk_count != name_count:
+            raise ParseException(f"pubk,privk and name bounds are {pubk_count},{privk_count},{name_count} are not all equal currently only supporting instances where they are all equal")
+
+        #keypairs pairs tuples
+        pubk_privk_tpls = " + ".join([f"`{PRIVK_SIG}{i}->`{PUBK_SIG}{i}" for i in range(pubk_count)])
+        transcr.print_to_file(f"pairs = KeyPairs -> ({pubk_privk_tpls})\n")
+
+        key_owner_tpls = " + ".join([f"`{PRIVK_SIG}{i}->`name{i}" for i in range(name_count-1)] + [f"`{PRIVK_SIG}{name_count-1}->`Attacker0"])
+        transcr.print_to_file(f"owners = KeyPairs -> ({key_owner_tpls})\n")
+        transcr.print_to_file(f"no ltks\n")
+        transcr.print_to_file("\n")
+        #next relation on Timeslot
+        num_timeslots = sig_counts[TIMESLOT_SIG]
+        time_next_tpls = " + ".join([f"`{TIMESLOT_SIG}{indx}->`{TIMESLOT_SIG}{indx+1}" for indx in range(num_timeslots-1)])
+        transcr.print_to_file(f"next = {time_next_tpls}\n")
+
+        transcr.print_to_file("\n")
+        role_sig_names = {role.role_name: get_role_sig_name(role,prot) for role in prot.role_arr}
+        for role_name,role_sig_name in role_sig_names.items():
+            cur_count = instance_bound.role_counts[role_name]
+            cur_role_elms = " + ".join([f"`{role_sig_name}{i}" for i in range(cur_count)])
+            transcr.print_to_file(f"{role_sig_name} = {cur_role_elms}\n")
+        transcr.print_to_file(f"AttackerStrand = `AttackerStrand0\n")
+        all_strands = " + ".join(list(role_sig_names.values()) + [ "AttackerStrand" ])
+        transcr.print_to_file(f"strand = {all_strands}\n")
+

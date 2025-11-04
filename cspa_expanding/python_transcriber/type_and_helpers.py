@@ -1,7 +1,8 @@
 import sexpdata
 from dataclasses import dataclass
 from enum import Enum
-from typing import List,Tuple,Dict
+from typing import List,Tuple,Dict,Optional
+from functools import reduce
 
 class MsgTypes(Enum):
     NAME = 0
@@ -191,7 +192,7 @@ class UniqOrig:
         return self.__repr__()
 @dataclass
 class FreshlyGenConstraint:
-    terms: List[BaseTerm]
+    terms: List[Variable]
     def __repr__(self) -> str:
         terms_str = ' '.join(f"{term}" for term in self.terms)
         return f"(fresh-gen {terms_str})"
@@ -254,9 +255,56 @@ class Skeleton:
         return (f"(defskeleton {self.protocol_name}"
                 f"(vars {var_declarations_to_str(self.non_strand_vars_map)} {strand_var_map_to_str(self.strand_vars_map)})"
                 f"{constraints_str})")
-"""list of strings appearing in CPSA syntax collected here so prevent
-repetion and avoid inconsistencies"""
 
+TIMESLOT_SIG = "Timeslot"
+MESG_SIG = "mesg"
+KEY_SIG,NAME_SIG,CIPHER_SIG,TEXT_SIG,HASH_SIG = "Key","name","Ciphertext","text","Hashed"
+AKEY_SIG,SKEY_SIG,ATTACKER_SIG = "akey","skey","Attacker"
+PUBK_SIG,PRIVK_SIG = "PublicKey","PrivateKey"
+SIG_NAMES = [TIMESLOT_SIG,MESG_SIG,KEY_SIG,NAME_SIG,CIPHER_SIG,TEXT_SIG,HASH_SIG,
+             AKEY_SIG,SKEY_SIG,ATTACKER_SIG,PUBK_SIG,PRIVK_SIG]
+ONE_SIG = [ATTACKER_SIG]
+
+subtypes = {
+    MESG_SIG: [KEY_SIG,NAME_SIG,CIPHER_SIG,TEXT_SIG,HASH_SIG],
+    NAME_SIG : [ATTACKER_SIG],
+    KEY_SIG: [AKEY_SIG,SKEY_SIG],
+    AKEY_SIG: [PUBK_SIG,PRIVK_SIG]
+}
+subtypes_are_exhaustive = [MESG_SIG,KEY_SIG,AKEY_SIG]
+ENC_DEPTH_BOUND = "enc-depth"
+@dataclass
+class InstanceBounds:
+    instance_name:str
+    sig_counts: Dict[str,int]
+    role_counts: Dict[str,int]
+    encryption_depth: int
+
+    def validate(self,prot:Protocol):
+        key_list = list(self.sig_counts.keys())
+        if key_list != SIG_NAMES:
+            raise ParseException(f"Expect instance to have counts for all signatures {key_list} present expected {SIG_NAMES}")
+        def check_subtype_count(cur_node):
+            if cur_node in ONE_SIG:
+                if self.sig_counts[cur_node] != 1:
+                    raise ParseException(f"Sig {cur_node} is marked as one only bound is one")
+            if cur_node not in subtypes:
+                return
+            for subtype in subtypes[cur_node]:
+                check_subtype_count(subtype)
+            child_count = sum([self.sig_counts[subtype] for subtype in subtypes[cur_node]])
+            if self.sig_counts[cur_node] < child_count:
+                raise ParseException(f"Bound for parent {cur_node} should be greater than or equal to that of children {subtypes[cur_node]}")
+            if cur_node in subtypes_are_exhaustive and  child_count != self.sig_counts[cur_node]:
+                raise ParseException(f"Count doesn't add up for node {cur_node}")
+
+        check_subtype_count(MESG_SIG)
+        check_subtype_count(TIMESLOT_SIG)
+
+        protocol_role_names = [role.role_name for role in prot.role_arr]
+        role_count_names = list(self.role_counts.keys())
+        if role_count_names != protocol_role_names:
+            raise ParseException(f"expected role counts for {protocol_role_names} not {role_count_names}")
 # TODO can add a helper function which handles parsing enums encoded as strings
 def get_role_sig_name(role:Role,protocol:Protocol):
     return f"{protocol.protocol_name}_{role.role_name}"
@@ -265,6 +313,8 @@ def rolesig_of_role_obj_type(protocol:Protocol,role_obj_type:str):
     role_name = role_obj_type[5:]
     return f"{protocol.protocol_name}_{role_name}"
 
+"""list of strings appearing in CPSA syntax collected here so prevent
+repetion and avoid inconsistencies"""
 DEF_PROT_STR = "defprotocol"
 DEF_SKEL_STR = "defskeleton"
 DEF_STRAND_STR = "defstrand"
@@ -295,6 +345,7 @@ AKEY_STR = "akey"
 ATTACKER_STR = "Attacker"
 ROLE_CONSTR_STR = "constraint"
 FRESH_GEN_STR = "fresh-gen"
+DEF_INST_BOUNDS = "definstance"
 
 KEY_CATEGORIES = [PRIVK_STR,PUBK_STR,LTK_STR]
 MESSAGE_CATEGORIES = [ENC_STR,CAT_STR,LTK_STR,PUBK_STR,PRIVK_STR,SEQ_STR,HASH_STR]
@@ -368,4 +419,29 @@ def vartype_to_str(var_type:MsgTypes):
     """convert vartype to string used when transcribing"""
     return f"{var_type}"
 
-# added comment here to test commit all command
+def var_in_msg_term(variable:Variable,msg_term:Message) -> bool:
+    func_or = lambda x,y: x or y
+    var_in_msg_lam = lambda msg: var_in_msg_term(variable,msg)
+    match msg_term:
+        case Variable(_) as var:
+            return variable == var
+        case EncTerm(_) as enc:
+            return reduce(func_or,map(var_in_msg_lam,enc.data + [enc.key]))
+        case CatTerm(_) as cat:
+            return reduce(func_or,map(var_in_msg_lam,cat.data))
+        case LtkTerm(_) as ltk:
+            return (variable == ltk.agent1_name) or (variable == ltk.agent2_name)
+        case PrivkTerm(_) as privk:
+            return (variable == privk.agent_name)
+        case PubkTerm(_) as pubk:
+            return (variable == pubk.agent_name)
+        case SeqTerm(_) as seq:
+            return reduce(func_or,map(var_in_msg_lam,seq.data))
+        case HashTerm(_) as hash:
+            return hash.hash_of == variable
+
+def var_first_occur_in_trace(trace:MessageTrace,variable:Variable) -> Optional[Tuple[int,SendRecv,Message]]:
+    for indx,(send_recv,msg_term) in enumerate(trace):
+        if var_in_msg_term(variable,msg_term):
+            return indx,send_recv,msg_term
+    return None

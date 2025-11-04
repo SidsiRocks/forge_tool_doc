@@ -1,4 +1,6 @@
 import argparse
+from typing import List
+from type_and_helpers import DEF_INST_BOUNDS, DEF_SKEL_STR, InstanceBounds, ParseException, Skeleton, get_str_from_symbol, match_type_and_str
 import parser
 import re
 import io
@@ -54,16 +56,32 @@ File = io.TextIOWrapper
 def main(cpsa_file:File,destination_forge_file:File,base_file:File,extra_func_file:File,run_forge_file:File,should_strip_lang_and_open:bool,visualization_script_path:str|None):
     s_expr_lst = load_cspa_as_s_expr_new(cpsa_file)
     protocol = parser.parse_protocol(s_expr_lst[0])
-    skeletons = [
-        parser.parse_skeleton(s_expr, protocol) for s_expr in s_expr_lst[1:]
-    ]
+    skeletons:List[Skeleton|InstanceBounds] = []
+
+    for s_expr in s_expr_lst[1:]:
+        if type(s_expr) == sexpdata.Symbol:
+            raise ParseException(f"Expected defskeleton and definstance clause not simple string {s_expr}")
+        clause_type = get_str_from_symbol(s_expr[0],"defskeleton/definstance")
+        if clause_type == DEF_SKEL_STR:
+            skeletons.append(parser.parse_skeleton(s_expr,protocol))
+        elif clause_type == DEF_INST_BOUNDS:
+            skeletons.append(parser.parse_instance(s_expr,protocol))
+        else:
+            raise ParseException(f"Expected {DEF_SKEL_STR} or {DEF_INST_BOUNDS}")
+
     transcribe_obj = new_transcribe.Transcribe_obj(destination_forge_file)
     transcribe_obj.import_file(base_file)
     transcribe_obj.import_file(extra_func_file)
     new_transcribe.transcribe_protocol(protocol, transcribe_obj)
-    for skel_indx, skeleton in enumerate(skeletons):
-        new_transcribe.transcribe_skeleton(skeleton, protocol,
-                                           transcribe_obj, skel_indx)
+
+    skel_indx = 0
+    for skel_or_instance in skeletons:
+        match skel_or_instance:
+            case Skeleton(_) as skeleton:
+                new_transcribe.transcribe_skeleton(skeleton,protocol,transcribe_obj,skel_indx)
+                skel_indx += 1
+            case InstanceBounds(_) as instance_bound:
+                new_transcribe.transcribe_instance(instance_bound,protocol,transcribe_obj)
     if should_strip_lang_and_open:
         # TODO add support for comments also here
         open_regex = re.compile(r"[\s]*open[\s]*\".*\"[\s]*\n")
