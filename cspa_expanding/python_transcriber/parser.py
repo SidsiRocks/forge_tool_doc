@@ -543,3 +543,42 @@ def parse_instance(s_expr,prot:Protocol) -> InstanceBounds:
     result = InstanceBounds(instance_name,sig_counts,role_counts,encryption_depth)
     result.validate(prot)
     return result
+
+def parse_alt_instance(s_expr,prot:Protocol) -> AltInstanceBounds:
+    if len(s_expr) < 3:
+        raise ParseException(f"Expected only definstance,instance name and a list of key value pairs for instance bound")
+    match_type_and_str(s_expr[0],DEF_ALT_INST_BOUNDS)
+    instance_name = get_str_from_symbol(s_expr[1],"instance name")
+    key_val_pairs:Dict[str,int] = {}
+    for sub_expr in s_expr[2:]:
+        if len(sub_expr) != 2:
+            raise ParseException(f"Expected only key val pair not {sub_expr}")
+        key = get_str_from_symbol(sub_expr[0],"key of key-val pair")
+        val = get_int_from_symbol(sub_expr[1],"val of key-val pair")
+        if key in key_val_pairs:
+            raise ParseException(f"Repeated key {key}")
+        key_val_pairs[key] = val
+
+    valid_sig_names = ALT_SIG_NAMES
+    valid_role_names = [role.role_name for role in prot.role_arr]
+    extra_constraints = [ENC_DEPTH_BOUND]
+
+    sig_counts : Dict[str,int] = {}
+    role_counts : Dict[str,int] = {}
+    encryption_depth : int = -1
+    for key,val in key_val_pairs.items():
+        if key in valid_sig_names:
+            sig_counts[key] = val
+        elif key in valid_role_names:
+            role_counts[key] = val
+        elif key in extra_constraints:
+            encryption_depth = val
+        else:
+            raise ParseException("")
+
+    if encryption_depth == -1:
+        raise ParseException(f"encryption depth bound (enc-depth) unspecified")
+
+    result = AltInstanceBounds(instance_name,sig_counts,role_counts,encryption_depth)
+    result.validate(prot)
+    return result

@@ -6,14 +6,27 @@ import re
 import io
 import sexpdata
 
-import new_transcribe
+import new_transcribe_tuple
 from pathlib import Path
 
+def remove_comments(txt):
+    lines = txt.split("\n")
+    comment_seq = ";;"
+    result = []
+    for line in lines:
+        indx = line.find(comment_seq)
+        if indx != -1:
+            result.append(line[:indx])
+        else:
+            result.append(line)
+    return "\n".join(result)
 
 def get_root_s_expr_lst(txt: str):
     """the sexpdata library can only parse one s-expr by itself,multiple
     s-expr must be present as an array or similar,hence this adds a wrapper
     around that to find all s-expr"""
+    txt_no_comment = remove_comments(txt)
+    txt = txt_no_comment
     brkt_count = 0
     brkt_started = False
     prev_indx = 0
@@ -71,19 +84,22 @@ def main(cpsa_file:File,destination_forge_file:File,base_file:File,extra_func_fi
         else:
             raise ParseException(f"Expected {DEF_SKEL_STR} or {DEF_INST_BOUNDS}")
 
-    transcribe_obj = new_transcribe.Transcribe_obj(destination_forge_file)
+    transcribe_obj = new_transcribe_tuple.Transcribe_obj(destination_forge_file)
     transcribe_obj.import_file(base_file)
     transcribe_obj.import_file(extra_func_file)
-    new_transcribe.transcribe_protocol(protocol, transcribe_obj)
+    new_transcribe_tuple.transcribe_protocol(protocol, transcribe_obj)
 
     skel_indx = 0
     for skel_or_instance in skeletons:
         match skel_or_instance:
             case Skeleton(_) as skeleton:
-                new_transcribe.transcribe_skeleton(skeleton,protocol,transcribe_obj,skel_indx)
+                new_transcribe_tuple.transcribe_skeleton(skeleton,protocol,transcribe_obj,skel_indx)
                 skel_indx += 1
             case InstanceBounds(_) as instance_bound:
-                new_transcribe.transcribe_instance(instance_bound,protocol,transcribe_obj)
+                # new_transcribe.transcribe_instance(instance_bound,protocol,transcribe_obj)
+                raise ParseException(f"For tuple expect alt instance bound")
+            case AltInstanceBounds(_) as alt_instance_bound:
+                new_transcribe_tuple.transcribe_instance(alt_instance_bound,protocol,transcribe_obj)
     if should_strip_lang_and_open:
         # TODO add support for comments also here
         open_regex = re.compile(r"[\s]*open[\s]*\".*\"[\s]*\n")
@@ -119,15 +135,12 @@ if __name__ == "__main__":
     argument_parser.add_argument("--destination_forge_file_path")
     argument_parser.add_argument("--strip_lang_open_from_run_file",
                                  action='store_true')
-    argument_parser.add_argument("--use_hash_base_file",action='store_true')
     argument_parser.add_argument("--visualization_script_path",type=str)
 
     args = argument_parser.parse_args()
     base_file_path = None
-    if args.use_hash_base_file:
-        base_file_path = path_rel_to_script("./base_with_seq_and_hash.frg")
-    else:
-        base_file_path = path_rel_to_script("./base_with_seq.frg")
+    base_file_path = path_rel_to_script("./base_with_seq_and_tuple.frg")
+
     extra_func_path = path_rel_to_script( "./extra_funcs.frg" )
     cpsa_file_path = args.cpsa_file_path
     run_forge_file_path = args.run_forge_file_path

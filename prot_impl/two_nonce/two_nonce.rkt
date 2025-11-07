@@ -35,22 +35,33 @@
     ;; (uniq-orig n1 n2)
 )
 
-(definstance single_session
+(defaltinstance alt_single_session
   (Timeslot 6)
-  (mesg 25)
-  (Key 6) (name 3) (Ciphertext 10) (text 6) (Hashed 0)
+  (mesg 33)
+  (Key 6) (name 3) (Ciphertext 10) (text 6) (tuple 8) (Hashed 0) ;; in tuple model Hashed has to be 0 currently as only storing hashed model
   (akey 6) (skey 0) (Attacker 1)
   (PublicKey 3) (PrivateKey 3)
   (enc-depth 2)
   (init 1) (resp 1)
-)
+  )
 
-(definstance two_sessions
-  (Timeslot 12)
-  (mesg 29)
-  (Key 6) (name 3) (Ciphertext 10) (text 10) (Hashed 0)
-  (akey 6) (skey 0) (Attacker 1)
-  (PublicKey 3) (PrivateKey 3)
-  (enc-depth 2)
-  (init 2) (resp 2)
-)
+;; (definstance single_session
+;;   (Timeslot 6)
+;;   (mesg 25)
+;;   (Key 6) (name 3) (Ciphertext 10) (text 6) (Hashed 0)
+;;   (akey 6) (skey 0) (Attacker 1)
+;;   (PublicKey 3) (PrivateKey 3)
+;;   (enc-depth 2)
+;;   (init 1) (resp 1)
+;; )
+
+;; (definstance two_sessions
+;;   (Timeslot 12)
+;;   (mesg 29)
+;;   (Key 6) (name 3) (Ciphertext 10) (text 10) (Hashed 0)
+;;   (akey 6) (skey 0) (Attacker 1)
+;;   (PublicKey 3) (PrivateKey 3)
+;;   (enc-depth 2)
+;;   (init 2) (resp 2)
+;; )
+

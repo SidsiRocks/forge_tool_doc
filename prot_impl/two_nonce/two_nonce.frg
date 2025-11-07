@@ -83,11 +83,16 @@ two_nonce_init_pov : run {
 --    3 Int
 --for {next is linear}
 
-    exactly 2 two_nonce_init,exactly 2 two_nonce_resp,
-    3 Int
+--    exactly 2 two_nonce_init,exactly 2 two_nonce_resp,
+--    3 Int
+--    for{
+--        next is linear
+--        two_sessions
+--    }
+
+    exactly 3 Int
     for{
         next is linear
-        two_sessions
+        alt_single_session
     }
-
 --run {} for 3

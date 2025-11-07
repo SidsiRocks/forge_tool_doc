@@ -261,13 +261,21 @@ MESG_SIG = "mesg"
 KEY_SIG,NAME_SIG,CIPHER_SIG,TEXT_SIG,HASH_SIG = "Key","name","Ciphertext","text","Hashed"
 AKEY_SIG,SKEY_SIG,ATTACKER_SIG = "akey","skey","Attacker"
 PUBK_SIG,PRIVK_SIG = "PublicKey","PrivateKey"
+TUPLE_SIG = "tuple"
 SIG_NAMES = [TIMESLOT_SIG,MESG_SIG,KEY_SIG,NAME_SIG,CIPHER_SIG,TEXT_SIG,HASH_SIG,
              AKEY_SIG,SKEY_SIG,ATTACKER_SIG,PUBK_SIG,PRIVK_SIG]
+ALT_SIG_NAMES = SIG_NAMES + [TUPLE_SIG]
 ONE_SIG = [ATTACKER_SIG]
 
 subtypes = {
     MESG_SIG: [KEY_SIG,NAME_SIG,CIPHER_SIG,TEXT_SIG,HASH_SIG],
     NAME_SIG : [ATTACKER_SIG],
+    KEY_SIG: [AKEY_SIG,SKEY_SIG],
+    AKEY_SIG: [PUBK_SIG,PRIVK_SIG]
+}
+alt_subtypes  = {
+    MESG_SIG: [KEY_SIG,NAME_SIG,CIPHER_SIG,TEXT_SIG,HASH_SIG,TUPLE_SIG],
+    NAME_SIG: [ATTACKER_SIG],
     KEY_SIG: [AKEY_SIG,SKEY_SIG],
     AKEY_SIG: [PUBK_SIG,PRIVK_SIG]
 }
@@ -305,6 +313,41 @@ class InstanceBounds:
         role_count_names = list(self.role_counts.keys())
         if role_count_names != protocol_role_names:
             raise ParseException(f"expected role counts for {protocol_role_names} not {role_count_names}")
+
+@dataclass
+class AltInstanceBounds:
+    instance_name:str
+    sig_counts: Dict[str,int]
+    role_counts: Dict[str,int]
+    encryption_depth: int
+
+    def validate(self,prot:Protocol):
+        key_list = list(self.sig_counts.keys())
+        if sorted(key_list) != sorted(ALT_SIG_NAMES):
+            raise ParseException(f"Expect instance to have counts for all signatures {key_list} present expected {ALT_SIG_NAMES}")
+        def check_subtype_count(cur_node):
+            if cur_node in ONE_SIG:
+                if self.sig_counts[cur_node] != 1:
+                    raise ParseException(f"Sig {cur_node} is marked as one only bound is one")
+            if cur_node not in alt_subtypes:
+                return
+            for subtype in alt_subtypes[cur_node]:
+                check_subtype_count(subtype)
+            child_count = sum([self.sig_counts[subtype] for subtype in alt_subtypes[cur_node]])
+            if self.sig_counts[cur_node] < child_count:
+                raise ParseException(f"Bound for parent {cur_node} should be greater than or equal to that of children {alt_subtypes[cur_node]}")
+            if cur_node in subtypes_are_exhaustive and  child_count != self.sig_counts[cur_node]:
+                raise ParseException(f"Count doesn't add up for node {cur_node}")
+
+        check_subtype_count(MESG_SIG)
+        check_subtype_count(TIMESLOT_SIG)
+
+        protocol_role_names = [role.role_name for role in prot.role_arr]
+        role_count_names = list(self.role_counts.keys())
+        if role_count_names != protocol_role_names:
+            raise ParseException(f"expected role counts for {protocol_role_names} not {role_count_names}")
+
+
 # TODO can add a helper function which handles parsing enums encoded as strings
 def get_role_sig_name(role:Role,protocol:Protocol):
     return f"{protocol.protocol_name}_{role.role_name}"
@@ -346,6 +389,7 @@ ATTACKER_STR = "Attacker"
 ROLE_CONSTR_STR = "constraint"
 FRESH_GEN_STR = "fresh-gen"
 DEF_INST_BOUNDS = "definstance"
+DEF_ALT_INST_BOUNDS = "defaltinstance"
 
 KEY_CATEGORIES = [PRIVK_STR,PUBK_STR,LTK_STR]
 MESSAGE_CATEGORIES = [ENC_STR,CAT_STR,LTK_STR,PUBK_STR,PRIVK_STR,SEQ_STR,HASH_STR]
