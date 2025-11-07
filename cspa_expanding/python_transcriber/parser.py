@@ -574,7 +574,7 @@ def parse_alt_instance(s_expr,prot:Protocol) -> AltInstanceBounds:
         elif key in extra_constraints:
             encryption_depth = val
         else:
-            raise ParseException("")
+            raise ParseException(f"unrecognized key {key}")
 
     if encryption_depth == -1:
         raise ParseException(f"encryption depth bound (enc-depth) unspecified")

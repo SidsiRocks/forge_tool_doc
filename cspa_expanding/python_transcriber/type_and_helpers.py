@@ -324,7 +324,7 @@ class AltInstanceBounds:
     def validate(self,prot:Protocol):
         key_list = list(self.sig_counts.keys())
         if sorted(key_list) != sorted(ALT_SIG_NAMES):
-            raise ParseException(f"Expect instance to have counts for all signatures {key_list} present expected {ALT_SIG_NAMES}")
+            raise ParseException(f"Expect instance to have counts for all signatures {sorted( key_list )} present expected {sorted( ALT_SIG_NAMES )}")
         def check_subtype_count(cur_node):
             if cur_node in ONE_SIG:
                 if self.sig_counts[cur_node] != 1:

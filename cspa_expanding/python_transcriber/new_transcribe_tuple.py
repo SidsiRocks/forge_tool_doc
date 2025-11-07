@@ -807,7 +807,7 @@ def transcribe_instance(instance_bound:AltInstanceBounds,prot:Protocol,transcr:T
         #transcr.print_to_file("\n")
 
         #no nested tuples
-        transcr.print_to_file(f"components in tuple -> ({possible_seq_len}) -> (Key + name + text)\n")
+        transcr.print_to_file(f"components in tuple -> ({possible_seq_len}) -> (Key + name + text + Ciphertext + tuple)\n")
 
         transcr.print_to_file(f"KeyPairs = `KeyPairs0\n")
         pubk_count,privk_count,name_count = sig_counts[PUBK_SIG],sig_counts[PRIVK_SIG],sig_counts[NAME_SIG]
