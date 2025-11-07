@@ -501,8 +501,9 @@ def transcribe_indv_trace(role: Role, indx: int,
             transcr.write_new_seq_constraint(f"(t{indx}.data.components)",cat.data,send_recv,f"t{indx}",role_context)
 
         case non_cat_mesg:
-            atom_name = f"atom_{transcr.get_fresh_num()}"
-            transcr.write_new_seq_constraint(f"(t{indx}.data.components)",[non_cat_mesg],send_recv,f"t{indx}",role_context)
+            #atom_name = f"atom_{transcr.get_fresh_num()}"
+            #transcr.write_new_seq_constraint(f"(t{indx}.data.components)",[non_cat_mesg],send_recv,f"t{indx}",role_context)
+            transcribe_non_cat(f"(t{indx}.data)",non_cat_mesg,send_recv,f"t{indx}",role_context)
 
 def transcribe_freshly_gen_constr(role:Role,role_context:RoleTranscribeContext):
     freshly_gen_constrs:List[FreshlyGenConstraint] = []
@@ -801,9 +802,13 @@ def transcribe_instance(instance_bound:AltInstanceBounds,prot:Protocol,transcr:T
         sig_counts = instance_bound.sig_counts
         #write depth bound for plaintext
         #set values for pairs and owners relation
-        #possible_seq_len = "+".join([str(i) for i in range(instance_bound.encryption_depth)])
+        possible_seq_len = "+".join([str(i) for i in range(instance_bound.encryption_depth)])
         #transcr.print_to_file(f"plaintext in {CIPHER_SIG} -> ({possible_seq_len}) -> {MESG_SIG}\n")
         #transcr.print_to_file("\n")
+
+        #no nested tuples
+        transcr.print_to_file(f"components in tuple -> ({possible_seq_len}) -> (Key + name + text)\n")
+
         transcr.print_to_file(f"KeyPairs = `KeyPairs0\n")
         pubk_count,privk_count,name_count = sig_counts[PUBK_SIG],sig_counts[PRIVK_SIG],sig_counts[NAME_SIG]
         if pubk_count != privk_count or pubk_count != name_count or privk_count != name_count:

@@ -8,6 +8,6 @@ fun getPUBK[name_a:name] : lone Key {
     (KeyPairs.owners.(name_a)).(KeyPairs.pairs)
 }
 pred learnt_term_by[m:mesg,a:name,t:Timeslot] {
-    m in (a.learned_times).(Timeslot - t.^next)
+    a->m in (learned_times).(Timeslot - t.^next)
 }
 

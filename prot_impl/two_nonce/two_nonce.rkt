@@ -45,6 +45,15 @@
   (init 1) (resp 1)
   )
 
+(defaltinstance alt_double_session
+  (Timeslot 12)
+  (mesg 49)
+  (Key 6) (name 3) (Ciphertext 15) (text 10) (tuple 15) (Hashed 0)
+  (akey 6) (skey 0) (Attacker 1)
+  (PublicKey 3) (PrivateKey 3)
+  (enc-depth 2)
+  (init 2) (resp 2)
+)
 ;; (definstance single_session
 ;;   (Timeslot 6)
 ;;   (mesg 25)

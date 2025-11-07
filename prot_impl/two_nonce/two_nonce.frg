@@ -1,4 +1,4 @@
-option run_sterling "../../crypto_viz_seq.js"
+option run_sterling "../../crypto_viz_seq_tuple.js"
 
 pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
@@ -24,21 +24,15 @@ two_nonce_init_pov : run {
     --should not need restriction on a and b this time?
 
     --this may prevent attack have to check
-    -- two_nonce_init.agent != AttackerStrand.agent
-    -- two_nonce_resp.agent != AttackerStrand.agent
     -- not (Attacker in (two_nonce_init + two_nonce_resp).agent)
-    --prevents responder from sending same nonce again
-    -- two_nonce_resp.two_nonce_resp_n1 != two_nonce_resp.two_nonce_resp_n2
-    --prevents attacker from sending duplicate n1,n2 in a run of protocol
-    -- two_nonce_init.two_nonce_init_n1 != two_nonce_init.two_nonce_init_n2
-
-    --attacker_learns[AttackerStrand,two_nonce_resp.two_nonce_resp_n2]
 
     --finding attack where init beleives it is talking to resp
     --but attacker knows the nonce
-    -- two_nonce_init.two_nonce_init_b = two_nonce_resp.agent
     -- not (Attacker in two_nonce_init.two_nonce_init_b)
+    -- two_nonce_init.two_nonce_init_b = two_nonce_resp.agent --this one is faster than the one above strangely conincidence or?
     -- corrected_attacker_learns[two_nonce_init.two_nonce_init_n2]
+    -- Attacker -> (two_nonce_init.two_nonce_init_n2) in learned_times.Timeslot
+
     --same nonce problem seems to be resolved
     --have to deal with initiator trying tot talk to attacker, may want to change that
     --when planning to detect an attack
@@ -90,9 +84,15 @@ two_nonce_init_pov : run {
 --        two_sessions
 --    }
 
+--    exactly 3 Int
+--    for{
+--        next is linear
+--        alt_single_session
+--    }
+
     exactly 3 Int
     for{
-        next is linear
-        alt_single_session
+         next is linear
+         alt_double_session
     }
 --run {} for 3

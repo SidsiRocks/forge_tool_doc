@@ -126,7 +126,7 @@ pred wellformed {
   -- all m: Timeslot | some elems[m.data]
 
   -- someone cannot send a message to themselves
-  all m: Timeslot | m.sender not in m.receiver
+  all m: Timeslot | m.sender.agent not in m.receiver.agent
 
   -- workspace: workaround to avoid cyclic justification within just deconstructions
   -- AGENT -> TICK -> MICRO-TICK LEARNED_SUBTERM

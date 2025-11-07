@@ -126,7 +126,7 @@ pred wellformed {
   -- all m: Timeslot | some elems[m.data]
 
   -- someone cannot send a message to themselves
-  all m: Timeslot | m.sender not in m.receiver
+  all m: Timeslot | m.sender.agent not in m.receiver.agent
 
   -- workspace: workaround to avoid cyclic justification within just deconstructions
   -- AGENT -> TICK -> MICRO-TICK LEARNED_SUBTERM
@@ -371,43 +371,31 @@ pred exec_two_nonce_init {
       ((arbitrary_init_two_nonce.two_nonce_init_n1)->t0) in (arbitrary_init_two_nonce.agent).generated_times
       t0+t1+t2 = sender.arbitrary_init_two_nonce + receiver.arbitrary_init_two_nonce
       t0.sender = arbitrary_init_two_nonce
-      inds[(t0.data.components)] = 0
-      let enc_2  = ((t0.data.components))[0] | {
-        (t0.data.components) = 0->enc_2
-        inds[(enc_2).plaintext.components] = 0
-        let text_4  = ((enc_2).plaintext.components)[0] | {
-          (enc_2).plaintext.components = 0->text_4
-          text_4 = arbitrary_init_two_nonce.two_nonce_init_n1
-        }
-        (enc_2).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
+      inds[((t0.data)).plaintext.components] = 0
+      let text_2  = (((t0.data)).plaintext.components)[0] | {
+        ((t0.data)).plaintext.components = 0->text_2
+        text_2 = arbitrary_init_two_nonce.two_nonce_init_n1
       }
+      ((t0.data)).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
 
       t1.receiver = arbitrary_init_two_nonce
-      inds[(t1.data.components)] = 0
-      let enc_6  = ((t1.data.components))[0] | {
-        (t1.data.components) = 0->enc_6
-        learnt_term_by[getPRIVK[arbitrary_init_two_nonce.two_nonce_init_a],arbitrary_init_two_nonce.agent,t1]
-        inds[(enc_6).plaintext.components] = 0+1
-        let text_9  = ((enc_6).plaintext.components)[0] | {
-        let text_10  = ((enc_6).plaintext.components)[1] | {
-          (enc_6).plaintext.components = 0->text_9 + 1->text_10
-          text_9 = arbitrary_init_two_nonce.two_nonce_init_n1
-          text_10 = arbitrary_init_two_nonce.two_nonce_init_n2
-        }}
-        (enc_6).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_a]
-      }
+      learnt_term_by[getPRIVK[arbitrary_init_two_nonce.two_nonce_init_a],arbitrary_init_two_nonce.agent,t1]
+      inds[((t1.data)).plaintext.components] = 0+1
+      let text_5  = (((t1.data)).plaintext.components)[0] | {
+      let text_6  = (((t1.data)).plaintext.components)[1] | {
+        ((t1.data)).plaintext.components = 0->text_5 + 1->text_6
+        text_5 = arbitrary_init_two_nonce.two_nonce_init_n1
+        text_6 = arbitrary_init_two_nonce.two_nonce_init_n2
+      }}
+      ((t1.data)).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_a]
 
       t2.sender = arbitrary_init_two_nonce
-      inds[(t2.data.components)] = 0
-      let enc_12  = ((t2.data.components))[0] | {
-        (t2.data.components) = 0->enc_12
-        inds[(enc_12).plaintext.components] = 0
-        let text_14  = ((enc_12).plaintext.components)[0] | {
-          (enc_12).plaintext.components = 0->text_14
-          text_14 = arbitrary_init_two_nonce.two_nonce_init_n2
-        }
-        (enc_12).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
+      inds[((t2.data)).plaintext.components] = 0
+      let text_8  = (((t2.data)).plaintext.components)[0] | {
+        ((t2.data)).plaintext.components = 0->text_8
+        text_8 = arbitrary_init_two_nonce.two_nonce_init_n2
       }
+      ((t2.data)).encryptionKey = getPUBK[arbitrary_init_two_nonce.two_nonce_init_b]
 
     }}}
   }
@@ -430,44 +418,32 @@ pred exec_two_nonce_resp {
       ((arbitrary_resp_two_nonce.two_nonce_resp_n2)->t1) in (arbitrary_resp_two_nonce.agent).generated_times
       t0+t1+t2 = sender.arbitrary_resp_two_nonce + receiver.arbitrary_resp_two_nonce
       t0.receiver = arbitrary_resp_two_nonce
-      inds[(t0.data.components)] = 0
-      let enc_16  = ((t0.data.components))[0] | {
-        (t0.data.components) = 0->enc_16
-        learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t0]
-        inds[(enc_16).plaintext.components] = 0
-        let text_18  = ((enc_16).plaintext.components)[0] | {
-          (enc_16).plaintext.components = 0->text_18
-          text_18 = arbitrary_resp_two_nonce.two_nonce_resp_n1
-        }
-        (enc_16).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
+      learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t0]
+      inds[((t0.data)).plaintext.components] = 0
+      let text_10  = (((t0.data)).plaintext.components)[0] | {
+        ((t0.data)).plaintext.components = 0->text_10
+        text_10 = arbitrary_resp_two_nonce.two_nonce_resp_n1
       }
+      ((t0.data)).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
 
       t1.sender = arbitrary_resp_two_nonce
-      inds[(t1.data.components)] = 0
-      let enc_20  = ((t1.data.components))[0] | {
-        (t1.data.components) = 0->enc_20
-        inds[(enc_20).plaintext.components] = 0+1
-        let text_23  = ((enc_20).plaintext.components)[0] | {
-        let text_24  = ((enc_20).plaintext.components)[1] | {
-          (enc_20).plaintext.components = 0->text_23 + 1->text_24
-          text_23 = arbitrary_resp_two_nonce.two_nonce_resp_n1
-          text_24 = arbitrary_resp_two_nonce.two_nonce_resp_n2
-        }}
-        (enc_20).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_a]
-      }
+      inds[((t1.data)).plaintext.components] = 0+1
+      let text_13  = (((t1.data)).plaintext.components)[0] | {
+      let text_14  = (((t1.data)).plaintext.components)[1] | {
+        ((t1.data)).plaintext.components = 0->text_13 + 1->text_14
+        text_13 = arbitrary_resp_two_nonce.two_nonce_resp_n1
+        text_14 = arbitrary_resp_two_nonce.two_nonce_resp_n2
+      }}
+      ((t1.data)).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_a]
 
       t2.receiver = arbitrary_resp_two_nonce
-      inds[(t2.data.components)] = 0
-      let enc_26  = ((t2.data.components))[0] | {
-        (t2.data.components) = 0->enc_26
-        learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t2]
-        inds[(enc_26).plaintext.components] = 0
-        let text_28  = ((enc_26).plaintext.components)[0] | {
-          (enc_26).plaintext.components = 0->text_28
-          text_28 = arbitrary_resp_two_nonce.two_nonce_resp_n2
-        }
-        (enc_26).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
+      learnt_term_by[getPRIVK[arbitrary_resp_two_nonce.two_nonce_resp_b],arbitrary_resp_two_nonce.agent,t2]
+      inds[((t2.data)).plaintext.components] = 0
+      let text_16  = (((t2.data)).plaintext.components)[0] | {
+        ((t2.data)).plaintext.components = 0->text_16
+        text_16 = arbitrary_resp_two_nonce.two_nonce_resp_n2
       }
+      ((t2.data)).encryptionKey = getPUBK[arbitrary_resp_two_nonce.two_nonce_resp_b]
 
     }}}
   }
@@ -500,6 +476,7 @@ inst alt_single_session {
 
   Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5
 
+  components in tuple -> (0+1) -> (Key + name + Ciphertext + text)
   KeyPairs = `KeyPairs0
   pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2)
   owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
@@ -512,7 +489,34 @@ inst alt_single_session {
   AttackerStrand = `AttackerStrand0
   strand = two_nonce_init + two_nonce_resp + AttackerStrand
 }
-option run_sterling "../../crypto_viz_seq.js"
+inst alt_double_session {
+  PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2
+  PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2
+  akey = PublicKey + PrivateKey
+  Key = akey
+  Attacker = `Attacker0
+  name = `name0 + `name1 + Attacker
+  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7 + `Ciphertext8 + `Ciphertext9 + `Ciphertext10 + `Ciphertext11 + `Ciphertext12 + `Ciphertext13 + `Ciphertext14
+  text = `text0 + `text1 + `text2 + `text3 + `text4 + `text5 + `text6 + `text7 + `text8 + `text9
+  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7 + `tuple8 + `tuple9 + `tuple10 + `tuple11 + `tuple12 + `tuple13 + `tuple14
+  mesg = Key + name + Ciphertext + text + tuple
+
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7 + `Timeslot8 + `Timeslot9 + `Timeslot10 + `Timeslot11
+
+  components in tuple -> (0+1) -> (Key + name + text)
+  KeyPairs = `KeyPairs0
+  pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2)
+  owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
+  no ltks
+
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7 + `Timeslot7->`Timeslot8 + `Timeslot8->`Timeslot9 + `Timeslot9->`Timeslot10 + `Timeslot10->`Timeslot11
+
+  two_nonce_init = `two_nonce_init0 + `two_nonce_init1
+  two_nonce_resp = `two_nonce_resp0 + `two_nonce_resp1
+  AttackerStrand = `AttackerStrand0
+  strand = two_nonce_init + two_nonce_resp + AttackerStrand
+}
+option run_sterling "../../crypto_viz_seq_tuple.js"
 
 pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
@@ -538,21 +542,15 @@ two_nonce_init_pov : run {
     --should not need restriction on a and b this time?
 
     --this may prevent attack have to check
-    -- two_nonce_init.agent != AttackerStrand.agent
-    -- two_nonce_resp.agent != AttackerStrand.agent
     -- not (Attacker in (two_nonce_init + two_nonce_resp).agent)
-    --prevents responder from sending same nonce again
-    -- two_nonce_resp.two_nonce_resp_n1 != two_nonce_resp.two_nonce_resp_n2
-    --prevents attacker from sending duplicate n1,n2 in a run of protocol
-    -- two_nonce_init.two_nonce_init_n1 != two_nonce_init.two_nonce_init_n2
-
-    --attacker_learns[AttackerStrand,two_nonce_resp.two_nonce_resp_n2]
 
     --finding attack where init beleives it is talking to resp
     --but attacker knows the nonce
-    -- two_nonce_init.two_nonce_init_b = two_nonce_resp.agent
     -- not (Attacker in two_nonce_init.two_nonce_init_b)
+    -- two_nonce_init.two_nonce_init_b = two_nonce_resp.agent --this one is faster than the one above strangely conincidence or?
     -- corrected_attacker_learns[two_nonce_init.two_nonce_init_n2]
+    -- Attacker -> (two_nonce_init.two_nonce_init_n2) in learned_times.Timeslot
+
     --same nonce problem seems to be resolved
     --have to deal with initiator trying tot talk to attacker, may want to change that
     --when planning to detect an attack
@@ -604,9 +602,15 @@ two_nonce_init_pov : run {
 --        two_sessions
 --    }
 
+--    exactly 3 Int
+--    for{
+--        next is linear
+--        alt_single_session
+--    }
+
     exactly 3 Int
     for{
-        next is linear
-        alt_single_session
+         next is linear
+         alt_double_session
     }
 --run {} for 3
