@@ -396,7 +396,7 @@ pred exec_type_flaw_prot_A {
 sig type_flaw_prot_B extends strand {
   type_flaw_prot_B_a : one name,
   type_flaw_prot_B_b : one name,
-  type_flaw_prot_B_n : one text
+  type_flaw_prot_B_n : one mesg
 }
 pred exec_type_flaw_prot_B {
   all arbitrary_B_type_flaw_prot : type_flaw_prot_B | {
@@ -415,9 +415,9 @@ pred exec_type_flaw_prot_B {
         pubk_11 = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_a]
         learnt_term_by[getPRIVK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b],arbitrary_B_type_flaw_prot.agent,t0]
         inds[(enc_12).plaintext.components] = 0
-        let text_14  = ((enc_12).plaintext.components)[0] | {
-          (enc_12).plaintext.components = 0->text_14
-          text_14 = arbitrary_B_type_flaw_prot.type_flaw_prot_B_n
+        let mesg_14  = ((enc_12).plaintext.components)[0] | {
+          (enc_12).plaintext.components = 0->mesg_14
+          mesg_14 = arbitrary_B_type_flaw_prot.type_flaw_prot_B_n
         }
         (enc_12).encryptionKey = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_b]
       }}
@@ -425,9 +425,9 @@ pred exec_type_flaw_prot_B {
 
       t1.sender = arbitrary_B_type_flaw_prot
       inds[((t1.data)).plaintext.components] = 0
-      let text_16  = (((t1.data)).plaintext.components)[0] | {
-        ((t1.data)).plaintext.components = 0->text_16
-        text_16 = arbitrary_B_type_flaw_prot.type_flaw_prot_B_n
+      let mesg_16  = (((t1.data)).plaintext.components)[0] | {
+        ((t1.data)).plaintext.components = 0->mesg_16
+        mesg_16 = arbitrary_B_type_flaw_prot.type_flaw_prot_B_n
       }
       ((t1.data)).encryptionKey = getPUBK[arbitrary_B_type_flaw_prot.type_flaw_prot_B_a]
 
@@ -458,6 +458,33 @@ inst honest_run_bounds {
 
   type_flaw_prot_A = `type_flaw_prot_A0
   type_flaw_prot_B = `type_flaw_prot_B0
+  AttackerStrand = `AttackerStrand0
+  strand = type_flaw_prot_A + type_flaw_prot_B + AttackerStrand
+}
+inst attack_run_bounds {
+  PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2
+  PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2
+  akey = PublicKey + PrivateKey
+  Key = akey
+  Attacker = `Attacker0
+  name = `name0 + `name1 + Attacker
+  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7 + `Ciphertext8 + `Ciphertext9 + `Ciphertext10 + `Ciphertext11
+  text = `text0 + `text1 + `text2
+  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7 + `tuple8 + `tuple9 + `tuple10 + `tuple11
+  mesg = Key + name + Ciphertext + text + tuple
+
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5
+
+  components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple)
+  KeyPairs = `KeyPairs0
+  pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2)
+  owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
+  no ltks
+
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5
+
+  type_flaw_prot_A = `type_flaw_prot_A0
+  type_flaw_prot_B = `type_flaw_prot_B0 + `type_flaw_prot_B1
   AttackerStrand = `AttackerStrand0
   strand = type_flaw_prot_A + type_flaw_prot_B + AttackerStrand
 }
@@ -496,7 +523,14 @@ type_flaw_prot_run : run {
 
     -- this ensures neither initiates agent with attacker so
     -- should would imply an honest run
-    not (Attacker in type_flaw_prot_A.type_flaw_prot_A_b + type_flaw_prot_B.type_flaw_prot_B_a)
+    -- not (Attacker in type_flaw_prot_A.type_flaw_prot_A_b + type_flaw_prot_B.type_flaw_prot_B_a)
+
+    -- A shouldn't be talking to Attacker
+    -- not (Attacker in type_flaw_prot_A.type_flaw_prot_A_b)
+    one type_flaw_prot_B.agent
+    type_flaw_prot_A.type_flaw_prot_A_b = type_flaw_prot_B.agent
+
+    corrected_attacker_learns[type_flaw_prot_A.type_flaw_prot_A_n]
 }for
 --    exactly 4 Timeslot,13 mesg,13 text,13 atomic,0 seq,
 --    exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,
@@ -505,8 +539,13 @@ type_flaw_prot_run : run {
 --    exactly 1 type_flaw_prot_A,exactly 1 type_flaw_prot_B,
 --    3 Int
 -- for {next is linear}
-    exactly 3 Int
-    for{
-        next is linear
-        honest_run_bounds
-    }
+--    exactly 3 Int
+--    for{
+--        next is linear
+--        honest_run_bounds
+--    }
+   exactly 3 Int
+   for{
+         next is linear
+         attack_run_bounds
+   }

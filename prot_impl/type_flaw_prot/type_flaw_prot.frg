@@ -24,7 +24,14 @@ type_flaw_prot_run : run {
 
     -- this ensures neither initiates agent with attacker so
     -- should would imply an honest run
-    not (Attacker in type_flaw_prot_A.type_flaw_prot_A_b + type_flaw_prot_B.type_flaw_prot_B_a)
+    -- not (Attacker in type_flaw_prot_A.type_flaw_prot_A_b + type_flaw_prot_B.type_flaw_prot_B_a)
+
+    -- A shouldn't be talking to Attacker
+    -- not (Attacker in type_flaw_prot_A.type_flaw_prot_A_b)
+    one type_flaw_prot_B.agent
+    type_flaw_prot_A.type_flaw_prot_A_b = type_flaw_prot_B.agent
+
+    corrected_attacker_learns[type_flaw_prot_A.type_flaw_prot_A_n]
 }for
 --    exactly 4 Timeslot,13 mesg,13 text,13 atomic,0 seq,
 --    exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,
@@ -33,8 +40,13 @@ type_flaw_prot_run : run {
 --    exactly 1 type_flaw_prot_A,exactly 1 type_flaw_prot_B,
 --    3 Int
 -- for {next is linear}
-    exactly 3 Int
-    for{
-        next is linear
-        honest_run_bounds
-    }
+--    exactly 3 Int
+--    for{
+--        next is linear
+--        honest_run_bounds
+--    }
+   exactly 3 Int
+   for{
+         next is linear
+         attack_run_bounds
+   }

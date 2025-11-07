@@ -12,7 +12,7 @@
         )
     )
     (defrole B
-        (vars (a b name) (n text))
+        (vars (a b name) (n mesg))
         (trace
             (recv (enc (pubk a) (enc n (pubk b)) (pubk b)))
             (send (enc n (pubk a)))
@@ -32,6 +32,17 @@
   (enc-depth 2)
   (A 1) (B 1)
 )
+
+(defaltinstance attack_run_bounds
+  (Timeslot 6)
+  (mesg 36)
+  (Key 6) (name 3) (Ciphertext 12) (text 3) (tuple 12) (Hashed 0)
+  (akey 6) (skey 0) (Attacker 1)
+  (PublicKey 3) (PrivateKey 3)
+  (enc-depth 2)
+  (A 1) (B 2)
+)
+
 
 (defskeleton type_flaw_prot
     (vars (a b name) (n text) (A role_A) (B role_B))
