@@ -566,19 +566,23 @@ def parse_alt_instance(s_expr,prot:Protocol) -> AltInstanceBounds:
     sig_counts : Dict[str,int] = {}
     role_counts : Dict[str,int] = {}
     encryption_depth : int = -1
+    tuple_length: int = -1
+
     for key,val in key_val_pairs.items():
         if key in valid_sig_names:
             sig_counts[key] = val
         elif key in valid_role_names:
             role_counts[key] = val
-        elif key in extra_constraints:
+        elif key == ENC_DEPTH_BOUND:
             encryption_depth = val
+        elif key == TUPLE_LENGTH_BOUND:
+            tuple_length = val
         else:
             raise ParseException(f"unrecognized key {key}")
 
-    if encryption_depth == -1:
-        raise ParseException(f"encryption depth bound (enc-depth) unspecified")
+    if encryption_depth == -1 or tuple_length == -1:
+        raise ParseException(f"encryption depth or tuple_length bound unspecified encryption_depth = {encryption_depth} tuple_length = {tuple_length}")
 
-    result = AltInstanceBounds(instance_name,sig_counts,role_counts,encryption_depth)
+    result = AltInstanceBounds(instance_name,sig_counts,role_counts,encryption_depth,tuple_length)
     result.validate(prot)
     return result

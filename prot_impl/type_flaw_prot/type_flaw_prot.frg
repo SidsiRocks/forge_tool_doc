@@ -1,13 +1,14 @@
 -- option run_sterling "../../crypto_viz_text_seq.js"
 option run_sterling "../../crypto_viz_seq_tuple.js"
--- option verbose 10
--- option solver "../../../../../../../../../usr/bin/minisat"
-option engine_verbosity 3
+option verbose 5
 
-option solver MiniSatProver
-option logtranslation 1
-option coregranularity 1
-option core_minimization rce
+-- option solver "../../../../../../../../../usr/bin/minisat"
+--option engine_verbosity 3
+
+--option solver MiniSatProver
+--option logtranslation 1
+--option coregranularity 1
+--option core_minimization rce
 
 pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot

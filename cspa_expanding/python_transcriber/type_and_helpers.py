@@ -257,6 +257,7 @@ class Skeleton:
                 f"{constraints_str})")
 
 TIMESLOT_SIG = "Timeslot"
+MICROTICK_SIG = "Microtick"
 MESG_SIG = "mesg"
 KEY_SIG,NAME_SIG,CIPHER_SIG,TEXT_SIG,HASH_SIG = "Key","name","Ciphertext","text","Hashed"
 AKEY_SIG,SKEY_SIG,ATTACKER_SIG = "akey","skey","Attacker"
@@ -281,6 +282,7 @@ alt_subtypes  = {
 }
 subtypes_are_exhaustive = [MESG_SIG,KEY_SIG,AKEY_SIG]
 ENC_DEPTH_BOUND = "enc-depth"
+TUPLE_LENGTH_BOUND = "tuple-length"
 @dataclass
 class InstanceBounds:
     instance_name:str
@@ -320,6 +322,7 @@ class AltInstanceBounds:
     sig_counts: Dict[str,int]
     role_counts: Dict[str,int]
     encryption_depth: int
+    tuple_length: int
 
     def validate(self,prot:Protocol):
         key_list = list(self.sig_counts.keys())

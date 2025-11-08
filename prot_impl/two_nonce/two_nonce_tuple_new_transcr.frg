@@ -349,7 +349,7 @@ fun getPUBK[name_a:name] : lone Key {
     (KeyPairs.owners.(name_a)).(KeyPairs.pairs)
 }
 pred learnt_term_by[m:mesg,a:name,t:Timeslot] {
-    m in (a.learned_times).(Timeslot - t.^next)
+    a->m in (learned_times).(Timeslot - t.^next)
 }
 
 sig two_nonce_init extends strand {
@@ -476,7 +476,7 @@ inst alt_single_session {
 
   Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5
 
-  components in tuple -> (0+1) -> (Key + name + Ciphertext + text)
+  components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple)
   KeyPairs = `KeyPairs0
   pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2)
   owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
@@ -503,7 +503,7 @@ inst alt_double_session {
 
   Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7 + `Timeslot8 + `Timeslot9 + `Timeslot10 + `Timeslot11
 
-  components in tuple -> (0+1) -> (Key + name + text)
+  components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple)
   KeyPairs = `KeyPairs0
   pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2)
   owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
@@ -517,6 +517,8 @@ inst alt_double_session {
   strand = two_nonce_init + two_nonce_resp + AttackerStrand
 }
 option run_sterling "../../crypto_viz_seq_tuple.js"
+option verbose 5
+option solver Glucose
 
 pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
@@ -602,15 +604,15 @@ two_nonce_init_pov : run {
 --        two_sessions
 --    }
 
---    exactly 3 Int
---    for{
---        next is linear
---        alt_single_session
---    }
-
     exactly 3 Int
     for{
-         next is linear
-         alt_double_session
+        next is linear
+        alt_single_session
     }
+
+--    exactly 3 Int
+--    for{
+--         next is linear
+--         alt_double_session
+--    }
 --run {} for 3

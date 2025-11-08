@@ -690,9 +690,9 @@ def transcribe_indv_trace_constraint(skeleton:Skeleton,indv_trace_constraint:Ind
     match message:
         case CatTerm(data):
             data_in_timeslot = data
-        case _:
-            data_in_timeslot = [message]
-    transcr.write_new_seq_constraint(f"{timeslot_name}.data",data_in_timeslot,
+            transcr.write_new_seq_constraint(f"({timeslot_name}.data.components)",data,send_recv,f"{timeslot_name}",skel_transcr_context)
+        case _ as non_cat_term:
+            transcribe_non_cat(f"({timeslot_name}.data)",non_cat_term,)
                                      send_recv,timeslot_name,skel_transcr_context)
 def transcribe_trace_constraint(trace_constraint:TraceConstraint,
                                 skeleton:Skeleton,skel_num:int,
@@ -802,12 +802,15 @@ def transcribe_instance(instance_bound:AltInstanceBounds,prot:Protocol,transcr:T
         sig_counts = instance_bound.sig_counts
         #write depth bound for plaintext
         #set values for pairs and owners relation
-        possible_seq_len = "+".join([str(i) for i in range(instance_bound.encryption_depth)])
+        possible_seq_len = "+".join([str(i) for i in range(instance_bound.tuple_length)])
         #transcr.print_to_file(f"plaintext in {CIPHER_SIG} -> ({possible_seq_len}) -> {MESG_SIG}\n")
         #transcr.print_to_file("\n")
 
         #no nested tuples
         transcr.print_to_file(f"components in tuple -> ({possible_seq_len}) -> (Key + name + text + Ciphertext + tuple)\n")
+        microtick_bound = instance_bound.encryption_depth + 1
+        microtick_instances = " + ".join([f"`{MICROTICK_SIG}{i}" for i in range(microtick_bound)])
+        transcr.print_to_file(f"{MICROTICK_SIG} = {microtick_instances}\n")
 
         transcr.print_to_file(f"KeyPairs = `KeyPairs0\n")
         pubk_count,privk_count,name_count = sig_counts[PUBK_SIG],sig_counts[PRIVK_SIG],sig_counts[NAME_SIG]
@@ -826,6 +829,9 @@ def transcribe_instance(instance_bound:AltInstanceBounds,prot:Protocol,transcr:T
         num_timeslots = sig_counts[TIMESLOT_SIG]
         time_next_tpls = " + ".join([f"`{TIMESLOT_SIG}{indx}->`{TIMESLOT_SIG}{indx+1}" for indx in range(num_timeslots-1)])
         transcr.print_to_file(f"next = {time_next_tpls}\n")
+        #mt_next relation on microticks
+        microtick_next_tpls = " + ".join([f"`{MICROTICK_SIG}{indx} -> `{MICROTICK_SIG}{indx+1}" for indx in range(microtick_bound - 1)])
+        transcr.print_to_file(f"mt_next = {microtick_next_tpls}\n")
 
         transcr.print_to_file("\n")
         role_sig_names = {role.role_name: get_role_sig_name(role,prot) for role in prot.role_arr}

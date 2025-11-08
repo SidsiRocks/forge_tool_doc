@@ -1,4 +1,6 @@
 option run_sterling "../../crypto_viz_seq_tuple.js"
+option verbose 5
+option solver Glucose
 
 pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot
@@ -84,15 +86,15 @@ two_nonce_init_pov : run {
 --        two_sessions
 --    }
 
---    exactly 3 Int
---    for{
---        next is linear
---        alt_single_session
---    }
-
     exactly 3 Int
     for{
-         next is linear
-         alt_double_session
+        next is linear
+        alt_single_session
     }
+
+--    exactly 3 Int
+--    for{
+--         next is linear
+--         alt_double_session
+--    }
 --run {} for 3

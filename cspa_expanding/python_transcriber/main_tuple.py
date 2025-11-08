@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
     args = argument_parser.parse_args()
     base_file_path = None
-    base_file_path = path_rel_to_script("./base_with_seq_and_tuple.frg")
+    base_file_path = path_rel_to_script("./base_with_seq_and_tuple_micro.frg")
 
     extra_func_path = path_rel_to_script( "./extra_funcs.frg" )
     cpsa_file_path = args.cpsa_file_path
