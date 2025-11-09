@@ -92,6 +92,8 @@ class Transcribe_obj:
         match non_cat_term:
             case EncTerm(_):
                 return "enc_" + fresh_num
+            case EncTermNoTpl(_):
+                return "enc_" + fresh_num
             case SeqTerm(_):
                 return "seq_" + fresh_num
             case HashTerm(_):
@@ -464,6 +466,23 @@ def transcribe_enc(elm_expr: str, enc_term: EncTerm,send_recv:SendRecv ,timeslot
     transcr.write_new_seq_constraint(data_expr,enc_term.data,send_recv,timeslot_expr,sig_context)
     transcribe_base_term(key_expr,enc_term.key,send_recv,sig_context)
 
+def transcribe_enc_no_tpl(elm_expr:str,enc_no_tpl:EncTermNoTpl,send_recv:SendRecv,timeslot_expr:str,sig_context:RoleOrSkelTranscrContext):
+    transcr = sig_context.get_transcr()
+    match send_recv:
+        case SendRecv.SEND:
+            pass
+        case SendRecv.RECV:
+            term_str = sig_context.get_inv_key(enc_no_tpl.key)
+            match sig_context:
+                case RoleTranscribeContext(_):
+                    transcr.print_to_file(f"learnt_term_by[{term_str},{sig_context.role_var_name}.agent,{timeslot_expr}]\n")
+                case SkeletonTranscribeContext(_):
+                    pass
+    data_expr = f"({elm_expr}).plaintext"
+    key_expr = f"({elm_expr}).encryptionKey"
+    transcribe_base_term(data_expr,enc_no_tpl.data,send_recv,sig_context)
+    transcribe_base_term(key_expr,enc_no_tpl.key,send_recv,sig_context)
+
 def transcribe_hash(elm_expr: str,hash_term:HashTerm,send_recv:SendRecv,timeslot_expr:str,sig_context:RoleOrSkelTranscrContext):
     transcr = sig_context.get_transcr()
     transcr.print_to_file(f"{elm_expr} in Hashed\n")
@@ -479,6 +498,8 @@ def transcribe_non_cat(elm_expr: str, msg: NonCatTerm,send_recv:SendRecv,timeslo
     match msg:
         case EncTerm(_, _) as enc_term:
             transcribe_enc(elm_expr, enc_term,send_recv,timeslot_expr, role_context)
+        case EncTermNoTpl(_,_) as enc_no_tpl_term:
+            transcribe_enc_no_tpl(elm_expr,enc_no_tpl_term,send_recv,timeslot_expr,role_context)
         case HashTerm(_) as hash_term:
             transcribe_hash(elm_expr,hash_term,send_recv,timeslot_expr,role_context)
         case SeqTerm(_):
@@ -689,10 +710,9 @@ def transcribe_indv_trace_constraint(skeleton:Skeleton,indv_trace_constraint:Ind
     data_in_timeslot = None
     match message:
         case CatTerm(data):
-            data_in_timeslot = data
             transcr.write_new_seq_constraint(f"({timeslot_name}.data.components)",data,send_recv,f"{timeslot_name}",skel_transcr_context)
         case _ as non_cat_term:
-            transcribe_non_cat(f"({timeslot_name}.data)",non_cat_term,)
+            transcribe_non_cat(f"({timeslot_name}.data)",non_cat_term,
                                      send_recv,timeslot_name,skel_transcr_context)
 def transcribe_trace_constraint(trace_constraint:TraceConstraint,
                                 skeleton:Skeleton,skel_num:int,

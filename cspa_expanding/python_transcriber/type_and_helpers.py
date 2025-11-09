@@ -65,6 +65,14 @@ class EncTerm:
     def __repr__(self):
         data_str = ' '.join([f"{msg}" for msg in self.data])
         return f"(enc {data_str} {self.key})"
+
+@dataclass
+class EncTermNoTpl:
+    data: Variable
+    key: KeyTerm
+    def __repr__(self) -> str:
+        return f"(enc {self.data.var_name} {self.key})"
+
 @dataclass
 class CatTerm:
     data: List["NonCatTerm"]
@@ -95,8 +103,8 @@ class HashTerm:
 class SendRecv(Enum):
     SEND = 0
     RECV = 1
-Message = Variable | EncTerm | CatTerm | KeyTerm | SeqTerm | HashTerm
-NonCatTerm = KeyTerm | EncTerm | SeqTerm | HashTerm
+Message = Variable | EncTerm | CatTerm | KeyTerm | SeqTerm | HashTerm | EncTermNoTpl
+NonCatTerm = KeyTerm | EncTerm | SeqTerm | HashTerm | EncTermNoTpl
 IndvTrace = Tuple[SendRecv,Message]
 MessageTrace = List[IndvTrace]
 
@@ -377,6 +385,7 @@ RECV_STR = "recv"
 SEND_FROM_STR = "send-from"
 RECV_BY_STR = "recv-by"
 ENC_STR = "enc"
+ENC_NO_TPL_STR = "enc_no_tpl"
 CAT_STR = "cat"
 SEQ_STR = "seq"
 HASH_STR = "hash"
@@ -395,7 +404,7 @@ DEF_INST_BOUNDS = "definstance"
 DEF_ALT_INST_BOUNDS = "defaltinstance"
 
 KEY_CATEGORIES = [PRIVK_STR,PUBK_STR,LTK_STR]
-MESSAGE_CATEGORIES = [ENC_STR,CAT_STR,LTK_STR,PUBK_STR,PRIVK_STR,SEQ_STR,HASH_STR]
+MESSAGE_CATEGORIES = [ENC_STR,CAT_STR,LTK_STR,PUBK_STR,PRIVK_STR,SEQ_STR,HASH_STR,ENC_NO_TPL_STR]
 
 Sexp = sexpdata.Symbol | int | List[sexpdata.Symbol]
 

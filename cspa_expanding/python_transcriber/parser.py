@@ -193,6 +193,17 @@ def parse_message_term(s_expr, var_dict: VarMap) -> Message:
                 case other_subterm:
                     condensed_data.append(other_subterm)
         return EncTerm(data=condensed_data, key=key)
+    elif message_category == ENC_NO_TPL_STR:
+        if len(s_expr) != 3:
+            raise ParseException(f"Expected exaclty 3 terms for the s-expression enc_no_tpl,variable name,key but ength is {len(s_expr)}")
+
+        var = parse_message_term(s_expr[1],var_dict)
+        match var:
+            case Variable(_) as var:
+                key = parse_key_term(s_expr[2],var_dict)
+                return EncTermNoTpl(var,key)
+            case _:
+                raise ParseException(f"enc_no_tpl only supports simple variable terms currently")
     elif message_category == CAT_STR:
         if len(s_expr) < 2:
             raise ParseException(f"Cannot have empty message")
@@ -400,6 +411,8 @@ def var_in_msg_term(variable:Variable,msg_term:Message) -> bool:
             return variable == var
         case EncTerm(_) as enc:
             return reduce(func_or,map(var_in_msg_lam,enc.data + [enc.key]))
+        case EncTermNoTpl(_) as enc_no_tpl:
+            return enc_no_tpl.data == variable
         case CatTerm(_) as cat:
             return reduce(func_or,map(var_in_msg_lam,cat.data))
         case LtkTerm(_) as ltk:
