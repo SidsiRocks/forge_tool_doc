@@ -852,8 +852,10 @@ def transcribe_instance(instance_bound:AltInstanceBounds,prot:Protocol,transcr:T
         #mt_next relation on microticks
         microtick_next_tpls = " + ".join([f"`{MICROTICK_SIG}{indx} -> `{MICROTICK_SIG}{indx+1}" for indx in range(microtick_bound - 1)])
         transcr.print_to_file(f"mt_next = {microtick_next_tpls}\n")
-
         transcr.print_to_file("\n")
+
+        transcr.print_to_file(f"generated_times in name -> (Key + text) -> Timeslot\n")
+
         role_sig_names = {role.role_name: get_role_sig_name(role,prot) for role in prot.role_arr}
         for role_name,role_sig_name in role_sig_names.items():
             cur_count = instance_bound.role_counts[role_name]

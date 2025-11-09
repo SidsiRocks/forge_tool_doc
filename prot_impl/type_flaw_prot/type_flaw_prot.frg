@@ -35,7 +35,7 @@ type_flaw_prot_run : run {
     corrected_attacker_learns[type_flaw_prot_A.type_flaw_prot_A_n]
 
     -- trace constraint should have different B1 and B2
-    skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B1 != skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B2
+    -- skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B1 != skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B2
 }for
 --    exactly 4 Timeslot,13 mesg,13 text,13 atomic,0 seq,
 --    exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,
@@ -52,5 +52,6 @@ type_flaw_prot_run : run {
    exactly 3 Int
    for{
          next is linear
-         attack_run_bounds
+--         attack_run_bounds
+         smaller_attack_bound
    }

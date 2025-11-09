@@ -476,6 +476,7 @@ inst honest_run_bounds {
   next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3
   mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
 
+  generated_times in name -> (Key + text) -> Timeslot
   type_flaw_prot_A = `type_flaw_prot_A0
   type_flaw_prot_B = `type_flaw_prot_B0
   AttackerStrand = `AttackerStrand0
@@ -505,6 +506,37 @@ inst attack_run_bounds {
   next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5
   mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2 + `Microtick2 -> `Microtick3
 
+  generated_times in name -> (Key + text) -> Timeslot
+  type_flaw_prot_A = `type_flaw_prot_A0
+  type_flaw_prot_B = `type_flaw_prot_B0 + `type_flaw_prot_B1
+  AttackerStrand = `AttackerStrand0
+  strand = type_flaw_prot_A + type_flaw_prot_B + AttackerStrand
+}
+inst smaller_attack_bound {
+  PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2
+  PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2
+  akey = PublicKey + PrivateKey
+  Key = akey
+  Attacker = `Attacker0
+  name = `name0 + `name1 + Attacker
+  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6
+  text = `text0 + `text1 + `text2
+  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3
+  mesg = Key + name + Ciphertext + text + tuple
+
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5
+
+  components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple)
+  Microtick = `Microtick0 + `Microtick1 + `Microtick2 + `Microtick3
+  KeyPairs = `KeyPairs0
+  pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2)
+  owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
+  no ltks
+
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5
+  mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2 + `Microtick2 -> `Microtick3
+
+  generated_times in name -> (Key + text) -> Timeslot
   type_flaw_prot_A = `type_flaw_prot_A0
   type_flaw_prot_B = `type_flaw_prot_B0 + `type_flaw_prot_B1
   AttackerStrand = `AttackerStrand0
@@ -518,91 +550,7 @@ one sig skeleton_type_flaw_prot_0 {
   skeleton_type_flaw_prot_0_B1 : one type_flaw_prot_B,
   skeleton_type_flaw_prot_0_B2 : one type_flaw_prot_B
 }
-pred constrain_skeleton_type_flaw_prot_0_attack_run {
-  some t_0 : Timeslot {
-  some t_1 : t_0.(^next) {
-  some t_2 : t_1.(^next) {
-  some t_3 : t_2.(^next) {
-  some t_4 : t_3.(^next) {
-    t_0.sender = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_A
-    inds[((t_0.data)).plaintext.components] = 0+1
-    let pubk_15  = (((t_0.data)).plaintext.components)[0] | {
-    let enc_16  = (((t_0.data)).plaintext.components)[1] | {
-      ((t_0.data)).plaintext.components = 0->pubk_15 + 1->enc_16
-      pubk_15 = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]
-      inds[(enc_16).plaintext.components] = 0
-      let text_18  = ((enc_16).plaintext.components)[0] | {
-        (enc_16).plaintext.components = 0->text_18
-        text_18 = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
-      }
-      (enc_16).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
-    }}
-    ((t_0.data)).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
-
-    t_1.receiver = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B1
-    inds[((t_1.data)).plaintext.components] = 0+1
-    let pubk_21  = (((t_1.data)).plaintext.components)[0] | {
-    let enc_22  = (((t_1.data)).plaintext.components)[1] | {
-      ((t_1.data)).plaintext.components = 0->pubk_21 + 1->enc_22
-      pubk_21 = getPUBK[Attacker]
-      inds[(enc_22).plaintext.components] = 0+1
-      let pubk_25  = ((enc_22).plaintext.components)[0] | {
-      let enc_26  = ((enc_22).plaintext.components)[1] | {
-        (enc_22).plaintext.components = 0->pubk_25 + 1->enc_26
-        pubk_25 = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]
-        inds[(enc_26).plaintext.components] = 0
-        let text_28  = ((enc_26).plaintext.components)[0] | {
-          (enc_26).plaintext.components = 0->text_28
-          text_28 = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
-        }
-        (enc_26).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
-      }}
-      (enc_22).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
-    }}
-    ((t_1.data)).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
-
-    t_2.sender = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B1
-    inds[((t_2.data)).plaintext.components] = 0+1
-    let pubk_31  = (((t_2.data)).plaintext.components)[0] | {
-    let enc_32  = (((t_2.data)).plaintext.components)[1] | {
-      ((t_2.data)).plaintext.components = 0->pubk_31 + 1->enc_32
-      pubk_31 = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_a]
-      inds[(enc_32).plaintext.components] = 0
-      let text_34  = ((enc_32).plaintext.components)[0] | {
-        (enc_32).plaintext.components = 0->text_34
-        text_34 = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
-      }
-      (enc_32).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
-    }}
-    ((t_2.data)).encryptionKey = getPUBK[Attacker]
-
-    t_3.receiver = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B2
-    inds[((t_3.data)).plaintext.components] = 0+1
-    let pubk_37  = (((t_3.data)).plaintext.components)[0] | {
-    let enc_38  = (((t_3.data)).plaintext.components)[1] | {
-      ((t_3.data)).plaintext.components = 0->pubk_37 + 1->enc_38
-      pubk_37 = getPUBK[Attacker]
-      inds[(enc_38).plaintext.components] = 0
-      let text_40  = ((enc_38).plaintext.components)[0] | {
-        (enc_38).plaintext.components = 0->text_40
-        text_40 = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
-      }
-      (enc_38).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
-    }}
-    ((t_3.data)).encryptionKey = getPUBK[skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_b]
-
-    t_4.sender = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B2
-    inds[((t_4.data)).plaintext.components] = 0
-    let text_42  = (((t_4.data)).plaintext.components)[0] | {
-      ((t_4.data)).plaintext.components = 0->text_42
-      text_42 = skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_n
-    }
-    ((t_4.data)).encryptionKey = getPUBK[Attacker]
-
-  }}}}}
-}
 pred constrain_skeleton_type_flaw_prot_0 {
-  constrain_skeleton_type_flaw_prot_0_attack_run
 }
 -- option run_sterling "../../crypto_viz_text_seq.js"
 option run_sterling "../../crypto_viz_seq_tuple.js"
@@ -641,7 +589,7 @@ type_flaw_prot_run : run {
     corrected_attacker_learns[type_flaw_prot_A.type_flaw_prot_A_n]
 
     -- trace constraint should have different B1 and B2
-    skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B1 != skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B2
+    -- skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B1 != skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B2
 }for
 --    exactly 4 Timeslot,13 mesg,13 text,13 atomic,0 seq,
 --    exactly 1 KeyPairs,exactly 6 Key,exactly 6 akey,
@@ -658,5 +606,6 @@ type_flaw_prot_run : run {
    exactly 3 Int
    for{
          next is linear
-         attack_run_bounds
+--         attack_run_bounds
+         smaller_attack_bound
    }
