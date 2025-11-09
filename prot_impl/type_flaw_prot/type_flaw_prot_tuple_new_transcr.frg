@@ -638,7 +638,7 @@ type_flaw_prot_run : run {
     one type_flaw_prot_B.agent
     type_flaw_prot_A.type_flaw_prot_A_b = type_flaw_prot_B.agent
 
-    -- corrected_attacker_learns[type_flaw_prot_A.type_flaw_prot_A_n]
+    corrected_attacker_learns[type_flaw_prot_A.type_flaw_prot_A_n]
 
     -- trace constraint should have different B1 and B2
     skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B1 != skeleton_type_flaw_prot_0.skeleton_type_flaw_prot_0_B2
