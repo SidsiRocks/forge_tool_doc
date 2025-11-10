@@ -554,6 +554,7 @@ pred constrain_skeleton_type_flaw_prot_0 {
 }
 -- option run_sterling "../../crypto_viz_text_seq.js"
 option run_sterling "../../crypto_viz_seq_tuple.js"
+option solver Glucose
 --option verbose 5
 
 -- option solver "../../../../../../../../../usr/bin/minisat"
