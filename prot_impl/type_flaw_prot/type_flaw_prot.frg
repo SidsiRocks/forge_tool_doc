@@ -55,4 +55,5 @@ type_flaw_prot_run : run {
          next is linear
 --         attack_run_bounds
          smaller_attack_bound
+--         larger_attack_bound
    }

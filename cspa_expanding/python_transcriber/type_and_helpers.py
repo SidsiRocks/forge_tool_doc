@@ -291,6 +291,7 @@ alt_subtypes  = {
 subtypes_are_exhaustive = [MESG_SIG,KEY_SIG,AKEY_SIG]
 ENC_DEPTH_BOUND = "enc-depth"
 TUPLE_LENGTH_BOUND = "tuple-length"
+HAVE_LTKS = "have-ltks"
 @dataclass
 class InstanceBounds:
     instance_name:str
@@ -331,6 +332,7 @@ class AltInstanceBounds:
     role_counts: Dict[str,int]
     encryption_depth: int
     tuple_length: int
+    have_ltks: bool
 
     def validate(self,prot:Protocol):
         key_list = list(self.sig_counts.keys())

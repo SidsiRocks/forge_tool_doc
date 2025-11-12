@@ -791,6 +791,12 @@ def transcribe_skeleton(skeleton: Skeleton, protocol: Protocol,
                                      transcr, protocol,skel_transcr_context)
 def write_bound_expressions(cur_node:str,instance_bound:AltInstanceBounds,transcr:Transcribe_obj):
     instance_counts = instance_bound.sig_counts
+    cur_count = instance_counts[cur_node]
+    if cur_count == 0:
+        #temp fix to work with model without sig Hashed
+        if cur_node != HASH_SIG:
+            transcr.print_to_file(f"no {cur_node}\n")
+        return
     if cur_node in alt_subtypes:
         cur_node_subs = alt_subtypes[cur_node]
         for subtype in cur_node_subs:
@@ -807,45 +813,53 @@ def write_bound_expressions(cur_node:str,instance_bound:AltInstanceBounds,transc
             total_elms = " + ".join(extra_elms + child_sigs)
             transcr.print_to_file(f"{cur_node} = {total_elms}\n")
     else:
-        cur_count = instance_counts[cur_node]
-        if cur_count != 0:
-            sig_elements = " + ".join([f"`{cur_node}{indx}" for indx in range(instance_counts[cur_node])])
-            transcr.print_to_file(f"{cur_node} = {sig_elements}\n")
+        sig_elements = " + ".join([f"`{cur_node}{indx}" for indx in range(instance_counts[cur_node])])
+        transcr.print_to_file(f"{cur_node} = {sig_elements}\n")
 
 def transcribe_instance(instance_bound:AltInstanceBounds,prot:Protocol,transcr:Transcribe_obj):
-    with InstanceContext(instance_bound.instance_name,transcr):
-        write_bound_expressions(MESG_SIG,instance_bound,transcr)
-        transcr.print_to_file("\n")
-        write_bound_expressions(TIMESLOT_SIG,instance_bound,transcr)
-        transcr.print_to_file("\n")
-
-        sig_counts = instance_bound.sig_counts
-        #write depth bound for plaintext
-        #set values for pairs and owners relation
+    def comps_rel_bound(sig_counts:Dict[str,int]):
         possible_seq_len = "+".join([str(i) for i in range(instance_bound.tuple_length)])
-        #transcr.print_to_file(f"plaintext in {CIPHER_SIG} -> ({possible_seq_len}) -> {MESG_SIG}\n")
-        #transcr.print_to_file("\n")
-
-        #no nested tuples
         transcr.print_to_file(f"components in tuple -> ({possible_seq_len}) -> (Key + name + text + Ciphertext + tuple)\n")
+        transcr.print_to_file(f"KeyPairs = `KeyPairs0\n")
+    def microtick_bound(sig_counts:Dict[str,int]):
         microtick_bound = instance_bound.encryption_depth + 1
         microtick_instances = " + ".join([f"`{MICROTICK_SIG}{i}" for i in range(microtick_bound)])
         transcr.print_to_file(f"{MICROTICK_SIG} = {microtick_instances}\n")
-
-        transcr.print_to_file(f"KeyPairs = `KeyPairs0\n")
+    def akey_bound(sig_counts:Dict[str,int]):
         pubk_count,privk_count,name_count = sig_counts[PUBK_SIG],sig_counts[PRIVK_SIG],sig_counts[NAME_SIG]
-        if pubk_count != privk_count or pubk_count != name_count or privk_count != name_count:
-            raise ParseException(f"pubk,privk and name bounds are {pubk_count},{privk_count},{name_count} are not all equal currently only supporting instances where they are all equal")
+        if pubk_count == privk_count and privk_count == 0:
+            transcr.print_to_file(f"no {PUBK_SIG}\n")
+            transcr.print_to_file(f"no {PRIVK_SIG}\n")
+        elif pubk_count != name_count or privk_count != name_count or pubk_count != privk_count:
+            raise ParseException(f"Only dealing with cases where pubk,privk zero or pubk,privk and name bounds all the same")
+        else:
+            pubk_privk_tpls = " + ".join([f"`{PRIVK_SIG}{i}->`{PUBK_SIG}{i}" for i in range(pubk_count)])
+            transcr.print_to_file(f"pairs = KeyPairs -> ({pubk_privk_tpls})\n")
 
-        #keypairs pairs tuples
-        pubk_privk_tpls = " + ".join([f"`{PRIVK_SIG}{i}->`{PUBK_SIG}{i}" for i in range(pubk_count)])
-        transcr.print_to_file(f"pairs = KeyPairs -> ({pubk_privk_tpls})\n")
-
-        key_owner_tpls = " + ".join([f"`{PRIVK_SIG}{i}->`name{i}" for i in range(name_count-1)] + [f"`{PRIVK_SIG}{name_count-1}->`Attacker0"])
-        transcr.print_to_file(f"owners = KeyPairs -> ({key_owner_tpls})\n")
-        transcr.print_to_file(f"no ltks\n")
+            key_owner_tpls = " + ".join([f"`{PRIVK_SIG}{i}->`name{i}" for i in range(name_count-1)] + [f"`{PRIVK_SIG}{name_count-1}->`Attacker0"])
+            transcr.print_to_file(f"owners = KeyPairs -> ({key_owner_tpls})\n")
+        if not instance_bound.have_ltks:
+            transcr.print_to_file(f"no ltks\n")
         transcr.print_to_file("\n")
-        #next relation on Timeslot
+    def ltk_bound(sig_counts:Dict[str,int]):
+        if instance_bound.have_ltks:
+            name_count,skey_count = sig_counts[NAME_SIG],sig_counts[SKEY_SIG]
+            min_skey_count = ((name_count) * (name_count - 1))//2
+            if skey_count < min_skey_count:
+                raise ParseException(f"To assign ltk to each pair of {name_count} names require atleast {min_skey_count} skeys but bound is {skey_count}")
+
+            names_lst = [f"`name{i}" for i in range(name_count-1)] # + ["`Attacker0"]
+            ltk_tpls = []
+            skey_indx = 0
+            for i in range(len(names_lst)):
+                for j in range(i+1,len(names_lst)):
+                    name1,name2 = names_lst[i],names_lst[j]
+                    ltk_tpls.append(f"{name1}->{name2}->`skey{skey_indx}")
+                    skey_indx += 1
+            ltk_rel_elms = " + ".join(ltk_tpls)
+            transcr.print_to_file(f"`KeyPairs0.ltks = {ltk_rel_elms}\n")
+    def next_rels_bound(sig_counts:Dict[str,int]):
+        microtick_bound = instance_bound.encryption_depth + 1
         num_timeslots = sig_counts[TIMESLOT_SIG]
         time_next_tpls = " + ".join([f"`{TIMESLOT_SIG}{indx}->`{TIMESLOT_SIG}{indx+1}" for indx in range(num_timeslots-1)])
         transcr.print_to_file(f"next = {time_next_tpls}\n")
@@ -855,7 +869,7 @@ def transcribe_instance(instance_bound:AltInstanceBounds,prot:Protocol,transcr:T
         transcr.print_to_file("\n")
 
         transcr.print_to_file(f"generated_times in name -> (Key + text) -> Timeslot\n")
-
+    def strand_bounds():
         role_sig_names = {role.role_name: get_role_sig_name(role,prot) for role in prot.role_arr}
         for role_name,role_sig_name in role_sig_names.items():
             cur_count = instance_bound.role_counts[role_name]
@@ -864,4 +878,21 @@ def transcribe_instance(instance_bound:AltInstanceBounds,prot:Protocol,transcr:T
         transcr.print_to_file(f"AttackerStrand = `AttackerStrand0\n")
         all_strands = " + ".join(list(role_sig_names.values()) + [ "AttackerStrand" ])
         transcr.print_to_file(f"strand = {all_strands}\n")
+
+    with InstanceContext(instance_bound.instance_name,transcr):
+        write_bound_expressions(MESG_SIG,instance_bound,transcr)
+        transcr.print_to_file("\n")
+        write_bound_expressions(TIMESLOT_SIG,instance_bound,transcr)
+        transcr.print_to_file("\n")
+
+        #write depth bound for plaintext
+        #set values for pairs and owners relation
+        sig_count = instance_bound.sig_counts
+        comps_rel_bound(sig_count)
+        microtick_bound(sig_count)
+        akey_bound(sig_count)
+        ltk_bound(sig_count)
+        next_rels_bound(sig_count)
+        #next relation on Timeslot
+        strand_bounds()
 

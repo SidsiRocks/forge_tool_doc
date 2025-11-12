@@ -524,7 +524,15 @@ def parse_instance(s_expr,prot:Protocol) -> InstanceBounds:
     match_type_and_str(s_expr[0],DEF_INST_BOUNDS)
     instance_name = get_str_from_symbol(s_expr[1],"instance name")
     key_val_pairs:Dict[str,int] = {}
+    have_ltks = False
+
     for sub_expr in s_expr[2:]:
+        if len(sub_expr) == 1:
+            flag_name = get_str_from_symbol(sub_expr,"flag name")
+            if flag_name != HAVE_LTKS:
+                raise ParseException(f"Exepected flag name {HAVE_LTKS} not {flag_name}")
+            else:
+                have_ltks = True
         if len(sub_expr) != 2:
             raise ParseException(f"Expected only key val pair not {sub_expr}")
         key = get_str_from_symbol(sub_expr[0],"key of key-val pair")
@@ -563,14 +571,22 @@ def parse_alt_instance(s_expr,prot:Protocol) -> AltInstanceBounds:
     match_type_and_str(s_expr[0],DEF_ALT_INST_BOUNDS)
     instance_name = get_str_from_symbol(s_expr[1],"instance name")
     key_val_pairs:Dict[str,int] = {}
+    have_ltks = False
     for sub_expr in s_expr[2:]:
-        if len(sub_expr) != 2:
-            raise ParseException(f"Expected only key val pair not {sub_expr}")
-        key = get_str_from_symbol(sub_expr[0],"key of key-val pair")
-        val = get_int_from_symbol(sub_expr[1],"val of key-val pair")
-        if key in key_val_pairs:
-            raise ParseException(f"Repeated key {key}")
-        key_val_pairs[key] = val
+        if len(sub_expr) == 1:
+            flag_name = get_str_from_symbol(sub_expr[0],"flag name")
+            if flag_name != HAVE_LTKS:
+                raise ParseException(f"Expected flag name {HAVE_LTKS} not {flag_name}")
+            else:
+                have_ltks = True
+        elif len(sub_expr) == 2:
+            key = get_str_from_symbol(sub_expr[0],"key of key-val pair")
+            val = get_int_from_symbol(sub_expr[1],"val of key-val pair")
+            if key in key_val_pairs:
+                raise ParseException(f"Repeated key {key}")
+            key_val_pairs[key] = val
+        else:
+            raise ParseException(f"Expected only key val pair or flag not {sub_expr}")
 
     valid_sig_names = ALT_SIG_NAMES
     valid_role_names = [role.role_name for role in prot.role_arr]
@@ -596,6 +612,6 @@ def parse_alt_instance(s_expr,prot:Protocol) -> AltInstanceBounds:
     if encryption_depth == -1 or tuple_length == -1:
         raise ParseException(f"encryption depth or tuple_length bound unspecified encryption_depth = {encryption_depth} tuple_length = {tuple_length}")
 
-    result = AltInstanceBounds(instance_name,sig_counts,role_counts,encryption_depth,tuple_length)
+    result = AltInstanceBounds(instance_name,sig_counts,role_counts,encryption_depth,tuple_length,have_ltks)
     result.validate(prot)
     return result

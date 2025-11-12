@@ -44,7 +44,7 @@ one sig KeyPairs {
 
 /** Get a long-term key associated with a pair of agents */
 fun getLTK[name_a: name, name_b: name]: lone skey {
-  (KeyPairs.ltks)[name_a][name_b]
+    (KeyPairs.ltks)[name_a][name_b] + (KeyPairs.ltks)[name_b][name_a]
 }
 
 /** Get the inverse key for a given key (if any). The structure of this predicate 
@@ -140,6 +140,8 @@ pred timeSafety {
   }
 }
 
+
+
 /** This (large) predicate contains the vast majority of domain axioms */
 pred wellformed {
   -- Design choice: only one message event per timeslot;
@@ -160,7 +162,7 @@ pred wellformed {
     -- Base case:
     -- received the data in the clear just now 
     let components_rel = {msg1:tuple,msg2:mesg | {msg2 in elems[msg1.components]}} | {
-    {d in (t.data + t.data.(^components_rel)) and no microt.~mt_next}
+    {d in (t.data + (t.data).(^components_rel)) and no microt.~mt_next}
     or
     -- Inductive case:
     -- breaking down a ciphertext we learned *previously*, or that we've produced from 

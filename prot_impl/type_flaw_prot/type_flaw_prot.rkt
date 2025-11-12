@@ -53,6 +53,16 @@
   (A 1) (B 2)
 )
 
+(defaltinstance larger_attack_bound
+  (Timeslot 6)
+  (mesg 34)
+  (Key 6) (name 3) (Ciphertext 14) (text 3) (tuple 8) (Hashed 0)
+  (akey 6) (skey 0) (Attacker 1)
+  (PublicKey 3) (PrivateKey 3)
+  (enc-depth 3) (tuple-length 2)
+  (A 1) (B 2)
+)
+
 (defskeleton type_flaw_prot
     (vars (a b name) (n text) (A role_A) (B1 B2 role_B))
     ;; (defstrand A 2 (a a) (b b) (n n))

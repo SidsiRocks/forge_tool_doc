@@ -44,7 +44,7 @@ one sig KeyPairs {
 
 /** Get a long-term key associated with a pair of agents */
 fun getLTK[name_a: name, name_b: name]: lone skey {
-  (KeyPairs.ltks)[name_a][name_b]
+    (KeyPairs.ltks)[name_a][name_b] + (KeyPairs.ltks)[name_b][name_a]
 }
 
 /** Get the inverse key for a given key (if any). The structure of this predicate 
@@ -140,6 +140,8 @@ pred timeSafety {
   }
 }
 
+
+
 /** This (large) predicate contains the vast majority of domain axioms */
 pred wellformed {
   -- Design choice: only one message event per timeslot;
@@ -160,7 +162,7 @@ pred wellformed {
     -- Base case:
     -- received the data in the clear just now 
     let components_rel = {msg1:tuple,msg2:mesg | {msg2 in elems[msg1.components]}} | {
-    {d in (t.data + t.data.(^components_rel)) and no microt.~mt_next}
+    {d in (t.data + (t.data).(^components_rel)) and no microt.~mt_next}
     or
     -- Inductive case:
     -- breaking down a ciphertext we learned *previously*, or that we've produced from 
@@ -456,6 +458,7 @@ inst honest_run_bounds {
   PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2
   PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2
   akey = PublicKey + PrivateKey
+  no skey
   Key = akey
   Attacker = `Attacker0
   name = `name0 + `name1 + Attacker
@@ -467,8 +470,8 @@ inst honest_run_bounds {
   Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3
 
   components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple)
-  Microtick = `Microtick0 + `Microtick1 + `Microtick2
   KeyPairs = `KeyPairs0
+  Microtick = `Microtick0 + `Microtick1 + `Microtick2
   pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2)
   owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
   no ltks
@@ -486,6 +489,7 @@ inst attack_run_bounds {
   PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2
   PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2
   akey = PublicKey + PrivateKey
+  no skey
   Key = akey
   Attacker = `Attacker0
   name = `name0 + `name1 + Attacker
@@ -497,8 +501,8 @@ inst attack_run_bounds {
   Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5
 
   components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple)
-  Microtick = `Microtick0 + `Microtick1 + `Microtick2 + `Microtick3
   KeyPairs = `KeyPairs0
+  Microtick = `Microtick0 + `Microtick1 + `Microtick2 + `Microtick3
   pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2)
   owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
   no ltks
@@ -516,6 +520,7 @@ inst smaller_attack_bound {
   PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2
   PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2
   akey = PublicKey + PrivateKey
+  no skey
   Key = akey
   Attacker = `Attacker0
   name = `name0 + `name1 + Attacker
@@ -527,8 +532,39 @@ inst smaller_attack_bound {
   Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5
 
   components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple)
-  Microtick = `Microtick0 + `Microtick1 + `Microtick2 + `Microtick3
   KeyPairs = `KeyPairs0
+  Microtick = `Microtick0 + `Microtick1 + `Microtick2 + `Microtick3
+  pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2)
+  owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
+  no ltks
+
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5
+  mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2 + `Microtick2 -> `Microtick3
+
+  generated_times in name -> (Key + text) -> Timeslot
+  type_flaw_prot_A = `type_flaw_prot_A0
+  type_flaw_prot_B = `type_flaw_prot_B0 + `type_flaw_prot_B1
+  AttackerStrand = `AttackerStrand0
+  strand = type_flaw_prot_A + type_flaw_prot_B + AttackerStrand
+}
+inst larger_attack_bound {
+  PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2
+  PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2
+  akey = PublicKey + PrivateKey
+  no skey
+  Key = akey
+  Attacker = `Attacker0
+  name = `name0 + `name1 + Attacker
+  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7 + `Ciphertext8 + `Ciphertext9 + `Ciphertext10 + `Ciphertext11 + `Ciphertext12 + `Ciphertext13
+  text = `text0 + `text1 + `text2
+  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7
+  mesg = Key + name + Ciphertext + text + tuple
+
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5
+
+  components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple)
+  KeyPairs = `KeyPairs0
+  Microtick = `Microtick0 + `Microtick1 + `Microtick2 + `Microtick3
   pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2)
   owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
   no ltks
@@ -609,4 +645,5 @@ type_flaw_prot_run : run {
          next is linear
 --         attack_run_bounds
          smaller_attack_bound
+--         larger_attack_bound
    }
