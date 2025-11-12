@@ -858,6 +858,15 @@ def transcribe_instance(instance_bound:AltInstanceBounds,prot:Protocol,transcr:T
                     skey_indx += 1
             ltk_rel_elms = " + ".join(ltk_tpls)
             transcr.print_to_file(f"`KeyPairs0.ltks = {ltk_rel_elms}\n")
+    def inv_key_bound(sig_counts:Dict[str,int]):
+        pubk_count,privk_count,skey_count = sig_counts[PUBK_SIG],sig_counts[PRIVK_SIG],sig_counts[SKEY_SIG]
+        if pubk_count != privk_count:
+            raise ParseException(f"Not dealing with case where pubk != privk right now")
+
+        pubk_privk_tpls = [f"`{PUBK_SIG}{i}->`{PRIVK_SIG}{i} + `{PRIVK_SIG}{i}->`{PUBK_SIG}{i}" for i in range(pubk_count)]
+        skey_tpls = [f"`{SKEY_SIG}{i}->`{SKEY_SIG}{i}" for i in range(skey_count)]
+        key_tpls = " + ".join(pubk_privk_tpls + skey_tpls)
+        transcr.print_to_file(f"`KeyPairs0.inv_key_helper = {key_tpls}\n")
     def next_rels_bound(sig_counts:Dict[str,int]):
         microtick_bound = instance_bound.encryption_depth + 1
         num_timeslots = sig_counts[TIMESLOT_SIG]
@@ -892,6 +901,7 @@ def transcribe_instance(instance_bound:AltInstanceBounds,prot:Protocol,transcr:T
         microtick_bound(sig_count)
         akey_bound(sig_count)
         ltk_bound(sig_count)
+        inv_key_bound(sig_count)
         next_rels_bound(sig_count)
         #next relation on Timeslot
         strand_bounds()

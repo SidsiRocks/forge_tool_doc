@@ -39,7 +39,9 @@ sig PublicKey extends akey {}
 one sig KeyPairs {
   pairs: set PrivateKey -> PublicKey,
   owners: func PrivateKey -> name,
-  ltks: set name -> name -> skey
+  ltks: set name -> name -> skey,
+
+  inv_key_helper: set Key -> Key
 }
 
 /** Get a long-term key associated with a pair of agents */
@@ -50,10 +52,15 @@ fun getLTK[name_a: name, name_b: name]: lone skey {
 /** Get the inverse key for a given key (if any). The structure of this predicate 
     is due to Forge's typechecking as of January 2025. The (none & Key) is a workaround
     to give Key type to none, which has univ type by default.  */
+/*
 fun getInv[k: Key]: one Key {
   (k in PublicKey => ((KeyPairs.pairs).k) else (k.(KeyPairs.pairs)))
   +
   (k in skey => k else (none & Key))
+}
+*/
+fun getInv[k: Key]: one Key {
+    (KeyPairs.inv_key_helper).k
 }
 
 
@@ -140,10 +147,13 @@ pred timeSafety {
   }
 }
 
-
+pred inv_key_helper_constr{
+    KeyPairs.inv_key_helper = KeyPairs.pairs + ~(KeyPairs.pairs) + {s1:skey,s2:skey | s1 = s2}
+}
 
 /** This (large) predicate contains the vast majority of domain axioms */
 pred wellformed {
+  inv_key_helper_constr
   -- Design choice: only one message event per timeslot;
   --   assume we have a shared notion of time
   -- all m: Timeslot | isSeqOf[m.data,mesg]
@@ -394,6 +404,8 @@ pred exec_ootway_rees_A {
     no aStrand : strand | {
       originates[aStrand,getLTK[arbitrary_A_ootway_rees.ootway_rees_A_a,arbitrary_A_ootway_rees.ootway_rees_A_s]] or generates [aStrand,getLTK[arbitrary_A_ootway_rees.ootway_rees_A_a,arbitrary_A_ootway_rees.ootway_rees_A_s]]
     }
+    (generated_times.Timeslot).(arbitrary_A_ootway_rees.ootway_rees_A_na) = arbitrary_A_ootway_rees.agent
+    (generated_times.Timeslot).(arbitrary_A_ootway_rees.ootway_rees_A_m) = arbitrary_A_ootway_rees.agent
     some t0 : Timeslot {
     some t1 : t0.(^next) {
       t0+t1 = sender.arbitrary_A_ootway_rees + receiver.arbitrary_A_ootway_rees
@@ -456,6 +468,7 @@ pred exec_ootway_rees_B {
     no aStrand : strand | {
       originates[aStrand,getLTK[arbitrary_B_ootway_rees.ootway_rees_B_b,arbitrary_B_ootway_rees.ootway_rees_B_s]] or generates [aStrand,getLTK[arbitrary_B_ootway_rees.ootway_rees_B_b,arbitrary_B_ootway_rees.ootway_rees_B_s]]
     }
+    (generated_times.Timeslot).(arbitrary_B_ootway_rees.ootway_rees_B_nb) = arbitrary_B_ootway_rees.agent
     some t0 : Timeslot {
     some t1 : t0.(^next) {
     some t2 : t1.(^next) {
@@ -548,6 +561,7 @@ pred exec_ootway_rees_S {
     no aStrand : strand | {
       originates[aStrand,getLTK[arbitrary_S_ootway_rees.ootway_rees_S_b,arbitrary_S_ootway_rees.ootway_rees_S_s]] or generates [aStrand,getLTK[arbitrary_S_ootway_rees.ootway_rees_S_b,arbitrary_S_ootway_rees.ootway_rees_S_s]]
     }
+    (generated_times.Timeslot).(arbitrary_S_ootway_rees.ootway_rees_S_kab) = arbitrary_S_ootway_rees.agent
     some t0 : Timeslot {
     some t1 : t0.(^next) {
       t0+t1 = sender.arbitrary_S_ootway_rees + receiver.arbitrary_S_ootway_rees
@@ -632,11 +646,13 @@ inst honest_run_bounds {
   Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7
 
   components in tuple -> (0+1+2+3+4) -> (Key + name + text + Ciphertext + tuple)
+  KeyPairs = `KeyPairs0
   Microtick = `Microtick0 + `Microtick1
   no PublicKey
   no PrivateKey
 
   `KeyPairs0.ltks = `name0->`name1->`skey0 + `name0->`name2->`skey1 + `name1->`name2->`skey2
+  `KeyPairs0.inv_key_helper = `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2 + `skey3->`skey3 + `skey4->`skey4 + `skey5->`skey5 + `skey6->`skey6
   next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7
   mt_next = `Microtick0 -> `Microtick1
 
@@ -659,221 +675,6 @@ one sig skeleton_honest_run_with_1_ABS_0 {
   skeleton_honest_run_with_1_ABS_0_B : one ootway_rees_B,
   skeleton_honest_run_with_1_ABS_0_S : one ootway_rees_S
 }
-pred constrain_skeleton_honest_run_with_1_ABS_0_honest_run {
-  some t_0 : Timeslot {
-  some t_1 : t_0.(^next) {
-  some t_2 : t_1.(^next) {
-  some t_3 : t_2.(^next) {
-  some t_4 : t_3.(^next) {
-  some t_5 : t_4.(^next) {
-  some t_6 : t_5.(^next) {
-  some t_7 : t_6.(^next) {
-    t_0.sender = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_A
-    inds[(t_0.data.components)] = 0+1+2+3
-    let text_77  = ((t_0.data.components))[0] | {
-    let name_78  = ((t_0.data.components))[1] | {
-    let name_79  = ((t_0.data.components))[2] | {
-    let enc_80  = ((t_0.data.components))[3] | {
-      (t_0.data.components) = 0->text_77 + 1->name_78 + 2->name_79 + 3->enc_80
-      text_77 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_m
-      name_78 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a
-      name_79 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_b
-      inds[(enc_80).plaintext.components] = 0+1+2+3
-      let text_85  = ((enc_80).plaintext.components)[0] | {
-      let text_86  = ((enc_80).plaintext.components)[1] | {
-      let name_87  = ((enc_80).plaintext.components)[2] | {
-      let name_88  = ((enc_80).plaintext.components)[3] | {
-        (enc_80).plaintext.components = 0->text_85 + 1->text_86 + 2->name_87 + 3->name_88
-        text_85 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_na
-        text_86 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_m
-        name_87 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a
-        name_88 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_b
-      }}}}
-      (enc_80).encryptionKey = getLTK[skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a,skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_s]
-    }}}}
-
-    t_1.receiver = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_B
-    inds[(t_1.data.components)] = 0+1+2+3
-    let text_89  = ((t_1.data.components))[0] | {
-    let name_90  = ((t_1.data.components))[1] | {
-    let name_91  = ((t_1.data.components))[2] | {
-    let enc_92  = ((t_1.data.components))[3] | {
-      (t_1.data.components) = 0->text_89 + 1->name_90 + 2->name_91 + 3->enc_92
-      text_89 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_m
-      name_90 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a
-      name_91 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_b
-      inds[(enc_92).plaintext.components] = 0+1+2+3
-      let text_97  = ((enc_92).plaintext.components)[0] | {
-      let text_98  = ((enc_92).plaintext.components)[1] | {
-      let name_99  = ((enc_92).plaintext.components)[2] | {
-      let name_100  = ((enc_92).plaintext.components)[3] | {
-        (enc_92).plaintext.components = 0->text_97 + 1->text_98 + 2->name_99 + 3->name_100
-        text_97 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_na
-        text_98 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_m
-        name_99 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a
-        name_100 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_b
-      }}}}
-      (enc_92).encryptionKey = getLTK[skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a,skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_s]
-    }}}}
-
-    t_2.sender = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_B
-    inds[(t_2.data.components)] = 0+1+2+3+4
-    let text_101  = ((t_2.data.components))[0] | {
-    let name_102  = ((t_2.data.components))[1] | {
-    let name_103  = ((t_2.data.components))[2] | {
-    let enc_104  = ((t_2.data.components))[3] | {
-    let enc_105  = ((t_2.data.components))[4] | {
-      (t_2.data.components) = 0->text_101 + 1->name_102 + 2->name_103 + 3->enc_104 + 4->enc_105
-      text_101 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_m
-      name_102 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a
-      name_103 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_b
-      inds[(enc_104).plaintext.components] = 0+1+2+3
-      let text_110  = ((enc_104).plaintext.components)[0] | {
-      let text_111  = ((enc_104).plaintext.components)[1] | {
-      let name_112  = ((enc_104).plaintext.components)[2] | {
-      let name_113  = ((enc_104).plaintext.components)[3] | {
-        (enc_104).plaintext.components = 0->text_110 + 1->text_111 + 2->name_112 + 3->name_113
-        text_110 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_na
-        text_111 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_m
-        name_112 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a
-        name_113 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_b
-      }}}}
-      (enc_104).encryptionKey = getLTK[skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a,skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_s]
-      inds[(enc_105).plaintext.components] = 0+1+2+3
-      let text_118  = ((enc_105).plaintext.components)[0] | {
-      let text_119  = ((enc_105).plaintext.components)[1] | {
-      let name_120  = ((enc_105).plaintext.components)[2] | {
-      let name_121  = ((enc_105).plaintext.components)[3] | {
-        (enc_105).plaintext.components = 0->text_118 + 1->text_119 + 2->name_120 + 3->name_121
-        text_118 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_nb
-        text_119 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_m
-        name_120 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a
-        name_121 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_b
-      }}}}
-      (enc_105).encryptionKey = getLTK[skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_b,skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_s]
-    }}}}}
-
-    t_3.receiver = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_S
-    inds[(t_3.data.components)] = 0+1+2+3+4
-    let text_122  = ((t_3.data.components))[0] | {
-    let name_123  = ((t_3.data.components))[1] | {
-    let name_124  = ((t_3.data.components))[2] | {
-    let enc_125  = ((t_3.data.components))[3] | {
-    let enc_126  = ((t_3.data.components))[4] | {
-      (t_3.data.components) = 0->text_122 + 1->name_123 + 2->name_124 + 3->enc_125 + 4->enc_126
-      text_122 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_m
-      name_123 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a
-      name_124 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_b
-      inds[(enc_125).plaintext.components] = 0+1+2+3
-      let text_131  = ((enc_125).plaintext.components)[0] | {
-      let text_132  = ((enc_125).plaintext.components)[1] | {
-      let name_133  = ((enc_125).plaintext.components)[2] | {
-      let name_134  = ((enc_125).plaintext.components)[3] | {
-        (enc_125).plaintext.components = 0->text_131 + 1->text_132 + 2->name_133 + 3->name_134
-        text_131 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_na
-        text_132 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_m
-        name_133 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a
-        name_134 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_b
-      }}}}
-      (enc_125).encryptionKey = getLTK[skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a,skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_s]
-      inds[(enc_126).plaintext.components] = 0+1+2+3
-      let text_139  = ((enc_126).plaintext.components)[0] | {
-      let text_140  = ((enc_126).plaintext.components)[1] | {
-      let name_141  = ((enc_126).plaintext.components)[2] | {
-      let name_142  = ((enc_126).plaintext.components)[3] | {
-        (enc_126).plaintext.components = 0->text_139 + 1->text_140 + 2->name_141 + 3->name_142
-        text_139 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_nb
-        text_140 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_m
-        name_141 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a
-        name_142 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_b
-      }}}}
-      (enc_126).encryptionKey = getLTK[skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_b,skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_s]
-    }}}}}
-
-    t_4.sender = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_S
-    inds[(t_4.data.components)] = 0+1+2
-    let text_143  = ((t_4.data.components))[0] | {
-    let enc_144  = ((t_4.data.components))[1] | {
-    let enc_145  = ((t_4.data.components))[2] | {
-      (t_4.data.components) = 0->text_143 + 1->enc_144 + 2->enc_145
-      text_143 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_m
-      inds[(enc_144).plaintext.components] = 0+1
-      let text_148  = ((enc_144).plaintext.components)[0] | {
-      let skey_149  = ((enc_144).plaintext.components)[1] | {
-        (enc_144).plaintext.components = 0->text_148 + 1->skey_149
-        text_148 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_na
-        skey_149 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_kab
-      }}
-      (enc_144).encryptionKey = getLTK[skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a,skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_s]
-      inds[(enc_145).plaintext.components] = 0+1
-      let text_152  = ((enc_145).plaintext.components)[0] | {
-      let skey_153  = ((enc_145).plaintext.components)[1] | {
-        (enc_145).plaintext.components = 0->text_152 + 1->skey_153
-        text_152 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_nb
-        skey_153 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_kab
-      }}
-      (enc_145).encryptionKey = getLTK[skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_b,skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_s]
-    }}}
-
-    t_5.receiver = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_B
-    inds[(t_5.data.components)] = 0+1+2
-    let text_154  = ((t_5.data.components))[0] | {
-    let enc_155  = ((t_5.data.components))[1] | {
-    let enc_156  = ((t_5.data.components))[2] | {
-      (t_5.data.components) = 0->text_154 + 1->enc_155 + 2->enc_156
-      text_154 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_m
-      inds[(enc_155).plaintext.components] = 0+1
-      let text_159  = ((enc_155).plaintext.components)[0] | {
-      let skey_160  = ((enc_155).plaintext.components)[1] | {
-        (enc_155).plaintext.components = 0->text_159 + 1->skey_160
-        text_159 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_na
-        skey_160 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_kab
-      }}
-      (enc_155).encryptionKey = getLTK[skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a,skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_s]
-      inds[(enc_156).plaintext.components] = 0+1
-      let text_163  = ((enc_156).plaintext.components)[0] | {
-      let skey_164  = ((enc_156).plaintext.components)[1] | {
-        (enc_156).plaintext.components = 0->text_163 + 1->skey_164
-        text_163 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_nb
-        skey_164 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_kab
-      }}
-      (enc_156).encryptionKey = getLTK[skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_b,skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_s]
-    }}}
-
-    t_6.sender = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_B
-    inds[(t_6.data.components)] = 0+1
-    let text_165  = ((t_6.data.components))[0] | {
-    let enc_166  = ((t_6.data.components))[1] | {
-      (t_6.data.components) = 0->text_165 + 1->enc_166
-      text_165 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_m
-      inds[(enc_166).plaintext.components] = 0+1
-      let text_169  = ((enc_166).plaintext.components)[0] | {
-      let skey_170  = ((enc_166).plaintext.components)[1] | {
-        (enc_166).plaintext.components = 0->text_169 + 1->skey_170
-        text_169 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_na
-        skey_170 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_kab
-      }}
-      (enc_166).encryptionKey = getLTK[skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a,skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_s]
-    }}
-
-    t_7.receiver = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_A
-    inds[(t_7.data.components)] = 0+1
-    let text_171  = ((t_7.data.components))[0] | {
-    let enc_172  = ((t_7.data.components))[1] | {
-      (t_7.data.components) = 0->text_171 + 1->enc_172
-      text_171 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_m
-      inds[(enc_172).plaintext.components] = 0+1
-      let text_175  = ((enc_172).plaintext.components)[0] | {
-      let skey_176  = ((enc_172).plaintext.components)[1] | {
-        (enc_172).plaintext.components = 0->text_175 + 1->skey_176
-        text_175 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_na
-        skey_176 = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_kab
-      }}
-      (enc_172).encryptionKey = getLTK[skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a,skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_s]
-    }}
-
-  }}}}}}}}
-}
 pred constrain_skeleton_honest_run_with_1_ABS_0 {
   some skeleton_A_0_strand_0 : ootway_rees_A | {
     skeleton_A_0_strand_0.ootway_rees_A_a = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_a
@@ -890,7 +691,6 @@ pred constrain_skeleton_honest_run_with_1_ABS_0 {
     skeleton_S_0_strand_2.ootway_rees_S_b = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_b
     skeleton_S_0_strand_2.ootway_rees_S_s = skeleton_honest_run_with_1_ABS_0.skeleton_honest_run_with_1_ABS_0_s
   }
-  constrain_skeleton_honest_run_with_1_ABS_0_honest_run
 }
 option run_sterling "../../crypto_viz_seq_tuple.js"
 option solver Glucose

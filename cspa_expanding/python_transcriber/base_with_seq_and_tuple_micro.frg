@@ -39,7 +39,9 @@ sig PublicKey extends akey {}
 one sig KeyPairs {
   pairs: set PrivateKey -> PublicKey,
   owners: func PrivateKey -> name,
-  ltks: set name -> name -> skey
+  ltks: set name -> name -> skey,
+
+  inv_key_helper: set Key -> Key
 }
 
 /** Get a long-term key associated with a pair of agents */
@@ -50,10 +52,15 @@ fun getLTK[name_a: name, name_b: name]: lone skey {
 /** Get the inverse key for a given key (if any). The structure of this predicate 
     is due to Forge's typechecking as of January 2025. The (none & Key) is a workaround
     to give Key type to none, which has univ type by default.  */
+/*
 fun getInv[k: Key]: one Key {
   (k in PublicKey => ((KeyPairs.pairs).k) else (k.(KeyPairs.pairs)))
   +
   (k in skey => k else (none & Key))
+}
+*/
+fun getInv[k: Key]: one Key {
+    (KeyPairs.inv_key_helper).k
 }
 
 
@@ -140,10 +147,13 @@ pred timeSafety {
   }
 }
 
-
+pred inv_key_helper_constr{
+    KeyPairs.inv_key_helper = KeyPairs.pairs + ~(KeyPairs.pairs) + {s1:skey,s2:skey | s1 = s2}
+}
 
 /** This (large) predicate contains the vast majority of domain axioms */
 pred wellformed {
+  inv_key_helper_constr
   -- Design choice: only one message event per timeslot;
   --   assume we have a shared notion of time
   -- all m: Timeslot | isSeqOf[m.data,mesg]

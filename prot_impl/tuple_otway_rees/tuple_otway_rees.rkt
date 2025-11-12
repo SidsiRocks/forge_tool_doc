@@ -8,8 +8,8 @@
     )
     (constraint
       (non-orig (ltk a s))
-      ;; (uniq-orig na)
-      ;; (uniq-orig m)
+      (uniq-orig na)
+      (uniq-orig m)
     )
   )
 
@@ -23,7 +23,7 @@
     )
     (constraint
       (non-orig (ltk b s))
-      ;; (uniq-orig nb)
+      (uniq-orig nb)
     )
   )
 
@@ -36,7 +36,7 @@
     (constraint
       (non-orig (ltk a s))
       (non-orig (ltk b s))
-      ;; (uniq-orig kab)
+      (uniq-orig kab)
     )
   )
 )
@@ -58,17 +58,17 @@
   (defstrand B 4 (a a) (b b) (s s))
   (defstrand S 4 (a a) (b b) (s s))
 
-  (deftrace honest_run
-    (send-from A (cat m a b (enc na m a b (ltk a s))))
-    (recv-by B (cat m a b (enc na m a b (ltk a s))))
+  ;; (deftrace honest_run
+  ;;   (send-from A (cat m a b (enc na m a b (ltk a s))))
+  ;;   (recv-by B (cat m a b (enc na m a b (ltk a s))))
 
-    (send-from B (cat m a b (enc na m a b (ltk a s)) (enc nb m a b (ltk b s))))
-    (recv-by S (cat m a b (enc na m a b (ltk a s)) (enc nb m a b (ltk b s))))
+  ;;   (send-from B (cat m a b (enc na m a b (ltk a s)) (enc nb m a b (ltk b s))))
+  ;;   (recv-by S (cat m a b (enc na m a b (ltk a s)) (enc nb m a b (ltk b s))))
 
-    (send-from S (cat m (enc na kab (ltk a s)) (enc nb kab (ltk b s))))
-    (recv-by B (cat m (enc na kab (ltk a s)) (enc nb kab (ltk b s))))
+  ;;   (send-from S (cat m (enc na kab (ltk a s)) (enc nb kab (ltk b s))))
+  ;;   (recv-by B (cat m (enc na kab (ltk a s)) (enc nb kab (ltk b s))))
 
-    (send-from B (cat m (enc na kab (ltk a s))))
-    (recv-by A (cat m (enc na kab (ltk a s))))
-  )
+  ;;   (send-from B (cat m (enc na kab (ltk a s))))
+  ;;   (recv-by A (cat m (enc na kab (ltk a s))))
+  ;; )
 )
