@@ -119,7 +119,7 @@ class Transcribe_obj:
                     case MsgTypes.MESG:
                         return "mesg_"+fresh_num
 
-    def write_new_seq_constraint(self,seq_expr:str,seq_terms:List[NonCatTerm],send_recv:SendRecv,timeslot_expr:str,sig_context:"RoleOrSkelTranscrContext"):
+    def write_new_seq_constraint(self,seq_expr:str,seq_terms:List[Message],send_recv:SendRecv,timeslot_expr:str,sig_context:"RoleOrSkelTranscrContext"):
         seq_component_names = [self.get_name_for_msg_term(seq_component) for seq_component in seq_terms]
         seq_component_exprs = [f"({seq_expr})[{indx}]" for indx in range(len(seq_terms))]
 
@@ -486,8 +486,6 @@ def transcribe_enc_no_tpl(elm_expr:str,enc_no_tpl:EncTermNoTpl,send_recv:SendRec
     transcribe_base_term(key_expr,enc_no_tpl.key,send_recv,sig_context)
 
 def transcribe_hash(elm_expr: str,hash_term:HashTerm,send_recv:SendRecv,timeslot_expr:str,sig_context:RoleOrSkelTranscrContext):
-    transcr = sig_context.get_transcr()
-    transcr.print_to_file(f"{elm_expr} in Hashed\n")
     hash_of_expr = f"({elm_expr}).hash_of"
     transcribe_msg(hash_of_expr,hash_term.hash_of,send_recv,timeslot_expr,sig_context)
 
@@ -550,9 +548,12 @@ def transcribe_freshly_gen_constr(role:Role,role_context:RoleTranscribeContext):
                         raise ParseException(f"cannot impose freshly generated constraint if get variable as recieving")
                     var_first_occur[indx].append(variable)
 
+    freshly_gen_tuples_arr = []
     for indx,variables in var_first_occur.items():
-        freshly_gen_tuples = " + ".join([f"({role_context.acess_variable(var.var_name)})->t{indx}" for var in variables])
-        role_context.transcr.print_to_file(f"({freshly_gen_tuples}) in ({role_context.get_agent()}).generated_times\n")
+        freshly_gen_tuples_arr = freshly_gen_tuples_arr + [f"({role_context.acess_variable(var.var_name)})->t{indx}" for var in variables]
+
+    freshly_gen_tuples = " + ".join(freshly_gen_tuples_arr)
+    role_context.transcr.print_to_file(f"({freshly_gen_tuples}) in ({role_context.get_agent()}).generated_times\n")
 
 def transcribe_trace(role: Role, role_context: RoleTranscribeContext):
     trace_len = len(role.trace)
@@ -798,8 +799,7 @@ def write_bound_expressions(cur_node:str,instance_bound:AltInstanceBounds,transc
     cur_count = instance_counts[cur_node]
     if cur_count == 0:
         #temp fix to work with model without sig Hashed
-        if cur_node != HASH_SIG:
-            transcr.print_to_file(f"no {cur_node}\n")
+        transcr.print_to_file(f"no {cur_node}\n")
         return
     if cur_node in alt_subtypes:
         cur_node_subs = alt_subtypes[cur_node]
@@ -823,7 +823,7 @@ def write_bound_expressions(cur_node:str,instance_bound:AltInstanceBounds,transc
 def transcribe_instance(instance_bound:AltInstanceBounds,prot:Protocol,transcr:Transcribe_obj):
     def comps_rel_bound(sig_counts:Dict[str,int]):
         possible_seq_len = "+".join([str(i) for i in range(instance_bound.tuple_length)])
-        transcr.print_to_file(f"components in tuple -> ({possible_seq_len}) -> (Key + name + text + Ciphertext + tuple)\n")
+        transcr.print_to_file(f"components in tuple -> ({possible_seq_len}) -> (Key + name + text + Ciphertext + tuple + Hashed)\n")
         transcr.print_to_file(f"KeyPairs = `KeyPairs0\n")
     def microtick_bound(sig_counts:Dict[str,int]):
         microtick_bound = instance_bound.encryption_depth + 1
@@ -852,7 +852,7 @@ def transcribe_instance(instance_bound:AltInstanceBounds,prot:Protocol,transcr:T
             if skey_count < min_skey_count:
                 raise ParseException(f"To assign ltk to each pair of {name_count} names require atleast {min_skey_count} skeys but bound is {skey_count}")
 
-            names_lst = [f"`name{i}" for i in range(name_count-1)] # + ["`Attacker0"]
+            names_lst = [f"`name{i}" for i in range(name_count-1)]  + ["`Attacker0"]
             ltk_tpls = []
             skey_indx = 0
             for i in range(len(names_lst)):
@@ -892,6 +892,11 @@ def transcribe_instance(instance_bound:AltInstanceBounds,prot:Protocol,transcr:T
         all_strands = " + ".join(list(role_sig_names.values()) + [ "AttackerStrand" ])
         transcr.print_to_file(f"strand = {all_strands}\n")
 
+    def hashed_bounds(sig_counts:Dict[str,int]):
+        hash_count = sig_counts[HASH_SIG]
+        #protocols being modeled at the moment are only really hashing texts
+        transcr.print_to_file(f"hash_of in Hashed -> text\n")
+
     with InstanceContext(instance_bound.instance_name,transcr):
         write_bound_expressions(MESG_SIG,instance_bound,transcr)
         transcr.print_to_file("\n")
@@ -907,6 +912,7 @@ def transcribe_instance(instance_bound:AltInstanceBounds,prot:Protocol,transcr:T
         ltk_bound(sig_count)
         inv_key_bound(sig_count)
         next_rels_bound(sig_count)
+        hashed_bounds(sig_count)
         #next relation on Timeslot
         strand_bounds()
 

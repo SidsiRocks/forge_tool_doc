@@ -1,4 +1,4 @@
-option run_sterling "../../crypto_viz_seq_hash.js"
+option run_sterling "../../crypto_viz_seq_tuple.js"
 
 pred uniq_orig[d:mesg]{
     one aStrand:strand | {
@@ -14,67 +14,67 @@ pred non_orig[d:mesg]{
     }
 }
 
-andrew_rpc_term_test : run {
-    wellformed
-    exec_andrew_secure_rpc_A
-    exec_andrew_secure_rpc_B
-    constrain_skeleton_andrew_secure_rpc_0
+--andrew_rpc_term_test : run {
+--    wellformed
+--    exec_andrew_secure_rpc_A
+--    exec_andrew_secure_rpc_B
+--    constrain_skeleton_andrew_secure_rpc_0
 
-    andrew_secure_rpc_A.agent != Attacker
-    andrew_secure_rpc_B.agent != Attacker
+--    andrew_secure_rpc_A.agent != Attacker
+--    andrew_secure_rpc_B.agent != Attacker
 
 
-    let a_name = andrew_secure_rpc_A.agent | {
-    let b_name = andrew_secure_rpc_B.agent | {
-        (one a_name) and (one b_name) and (a_name != b_name)
-        all arbitrary_A_andrew_secure_rpc : andrew_secure_rpc_A | {
-        let A0 = arbitrary_A_andrew_secure_rpc | {
-        let na = andrew_secure_rpc_A_na | {
-        let kab_ = andrew_secure_rpc_A_kab_ | {
-            A0.andrew_secure_rpc_A_a = A0.agent
-            -- next line constraint only for generating honest run
-            A0.andrew_secure_rpc_A_b != Attacker and A0.andrew_secure_rpc_A_b != A0.agent
+--    let a_name = andrew_secure_rpc_A.agent | {
+--    let b_name = andrew_secure_rpc_B.agent | {
+--        (one a_name) and (one b_name) and (a_name != b_name)
+--        all arbitrary_A_andrew_secure_rpc : andrew_secure_rpc_A | {
+--        let A0 = arbitrary_A_andrew_secure_rpc | {
+--        let na = andrew_secure_rpc_A_na | {
+--        let kab_ = andrew_secure_rpc_A_kab_ | {
+--            A0.andrew_secure_rpc_A_a = A0.agent
+--            -- next line constraint only for generating honest run
+--            A0.andrew_secure_rpc_A_b != Attacker and A0.andrew_secure_rpc_A_b != A0.agent
 
-            uniq_orig_strand[A0,A0.na] and uniq_orig_strand[A0,A0.kab_]
-            A0.kab_ != getLTK[a_name,b_name]
-            not ( A0.na in andrew_secure_rpc_B.(andrew_secure_rpc_B_nb + andrew_secure_rpc_B_nb_) )
-         }}}}
+--            uniq_orig_strand[A0,A0.na] and uniq_orig_strand[A0,A0.kab_]
+--            A0.kab_ != getLTK[a_name,b_name]
+--            not ( A0.na in andrew_secure_rpc_B.(andrew_secure_rpc_B_nb + andrew_secure_rpc_B_nb_) )
+--         }}}}
 
-        all arbitrary_B_andrew_secure_rpc : andrew_secure_rpc_B | {
-        let B0 = arbitrary_B_andrew_secure_rpc | {
-        let nb = andrew_secure_rpc_B_nb | {
-        let nb_ = andrew_secure_rpc_B_nb_ | {
-            B0.andrew_secure_rpc_B_b = B0.agent
-            -- next line constraint only for generating honest run
-            B0.andrew_secure_rpc_B_a != Attacker and B0.andrew_secure_rpc_B_a != B0.agent
+--        all arbitrary_B_andrew_secure_rpc : andrew_secure_rpc_B | {
+--        let B0 = arbitrary_B_andrew_secure_rpc | {
+--        let nb = andrew_secure_rpc_B_nb | {
+--        let nb_ = andrew_secure_rpc_B_nb_ | {
+--            B0.andrew_secure_rpc_B_b = B0.agent
+--            -- next line constraint only for generating honest run
+--            B0.andrew_secure_rpc_B_a != Attacker and B0.andrew_secure_rpc_B_a != B0.agent
 
-            uniq_orig_strand[B0,B0.nb] and uniq_orig_strand[B0,B0.nb_]
-            B0.nb != B0.nb_
-            not ( B0.nb in andrew_secure_rpc_A.andrew_secure_rpc_A_na )
-            not ( B0.nb_ in andrew_secure_rpc_A.andrew_secure_rpc_A_na )
-        }}}}
+--            uniq_orig_strand[B0,B0.nb] and uniq_orig_strand[B0,B0.nb_]
+--            B0.nb != B0.nb_
+--            not ( B0.nb in andrew_secure_rpc_A.andrew_secure_rpc_A_na )
+--            not ( B0.nb_ in andrew_secure_rpc_A.andrew_secure_rpc_A_na )
+--        }}}}
 
-        non_orig[getLTK[a_name,b_name]]
-    }}
+--        non_orig[getLTK[a_name,b_name]]
+--    }}
 
-    // all disj arbitrary_B_andrew_secure_rpc_0,arbitrary_B_andrew_secure_rpc_1 : andrew_secure_rpc_B | {
-    //     let B0 = arbitrary_B_andrew_secure_rpc_0 | {
-    //     let B1 = arbitrary_B_andrew_secure_rpc_1 | {
-    //     let nb = andrew_secure_rpc_B_nb | {
-    //     let nb_ = andrew_secure_rpc_B_nb_ | {
-    //         no (B0.(nb + nb_ + kab_) & B1.(nb + nb_ + kab_))
-    //     }}}}
-    // }
+--    // all disj arbitrary_B_andrew_secure_rpc_0,arbitrary_B_andrew_secure_rpc_1 : andrew_secure_rpc_B | {
+--    //     let B0 = arbitrary_B_andrew_secure_rpc_0 | {
+--    //     let B1 = arbitrary_B_andrew_secure_rpc_1 | {
+--    //     let nb = andrew_secure_rpc_B_nb | {
+--    //     let nb_ = andrew_secure_rpc_B_nb_ | {
+--    //         no (B0.(nb + nb_ + kab_) & B1.(nb + nb_ + kab_))
+--    //     }}}}
+--    // }
 
-    // all disj arbitrary_A_andrew_secure_rpc_0,arbitrary_A_andrew_secure_rpc_1 : andrew_secure_rpc_A | {
-    //     let A0 = arbitrary_A_andrew_secure_rpc_0 | {
-    //     let A1 = arbitrary_A_andrew_secure_rpc_1 | {
-    //     let na = andrew_secure_rpc_A_na | {
-    //     let kab_ = andrew_secure_rpc_A_kab_ | {
-    //         (A0.na != A1.na)
-    //     }}}}
-    // }
-}for
+--    // all disj arbitrary_A_andrew_secure_rpc_0,arbitrary_A_andrew_secure_rpc_1 : andrew_secure_rpc_A | {
+--    //     let A0 = arbitrary_A_andrew_secure_rpc_0 | {
+--    //     let A1 = arbitrary_A_andrew_secure_rpc_1 | {
+--    //     let na = andrew_secure_rpc_A_na | {
+--    //     let kab_ = andrew_secure_rpc_A_kab_ | {
+--    //         (A0.na != A1.na)
+--    //     }}}}
+--    // }
+--}for
 --    exactly 8 Timeslot,22 mesg,
 --    exactly 1 KeyPairs,exactly 3 Key,exactly 0 akey,3 skey,
 --    exactly 0 PrivateKey,exactly 0 PublicKey,
@@ -100,13 +100,47 @@ andrew_rpc_term_test : run {
 --    exactly 3 Microtick,
 --    3 Int
 
-    exactly 16 Timeslot,25 mesg,
-    exactly 1 KeyPairs,exactly 4 Key,exactly 0 akey,4 skey,
-    exactly 0 PrivateKey,exactly 0 PublicKey,
-    exactly 3 name,exactly 6 text,exactly 8 Ciphertext,
-    exactly 4 Hashed,
-    exactly 2 andrew_secure_rpc_A,exactly 2 andrew_secure_rpc_B,
-    exactly 3 Microtick,
-   4 Int
+--    exactly 16 Timeslot,25 mesg,
+--    exactly 1 KeyPairs,exactly 4 Key,exactly 0 akey,4 skey,
+--    exactly 0 PrivateKey,exactly 0 PublicKey,
+--    exactly 3 name,exactly 6 text,exactly 8 Ciphertext,
+--    exactly 4 Hashed,
+--    exactly 2 andrew_secure_rpc_A,exactly 2 andrew_secure_rpc_B,
+--    exactly 3 Microtick,
+--   4 Int
 
-for {next is linear}
+--for {next is linear}
+
+--option solver MiniSatProver
+--option logtranslation 1
+--option core_minimization rce
+
+option solver Glucose
+option logtranslation 1
+
+andrew_rpc_term_test: run {
+    wellformed
+    exec_andrew_secure_rpc_A
+    exec_andrew_secure_rpc_B
+    constrain_skeleton_andrew_secure_rpc_0
+
+    not (Attacker in andrew_secure_rpc_A.agent)
+    not (Attacker in andrew_secure_rpc_B.agent)
+
+    no (andrew_secure_rpc_A.agent & andrew_secure_rpc_B.agent)
+    one andrew_secure_rpc_A.agent
+    one andrew_secure_rpc_B.agent
+
+    andrew_secure_rpc_A.andrew_secure_rpc_A_b != Attacker
+    andrew_secure_rpc_B.andrew_secure_rpc_B_a != Attacker
+
+    skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_A != skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_A1
+    skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_B != skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_B1
+}for
+  exactly 3 Int
+  for{
+      next is linear
+      mt_next is linear
+--      honest_run_bounds
+      attack_run_bounds
+  }

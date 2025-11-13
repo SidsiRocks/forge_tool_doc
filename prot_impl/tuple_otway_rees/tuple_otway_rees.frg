@@ -1,9 +1,9 @@
 option run_sterling "../../crypto_viz_seq_tuple.js"
 option solver Glucose
 
-option logtranslation 1
-option coregranularity 1
-option core_minimization rce
+-- option logtranslation 1
+-- option coregranularity 1
+-- option core_minimization rce
 
 pred corrected_attacker_learns[d:mesg]{
     d in Attacker.learned_times.Timeslot

@@ -73,6 +73,8 @@ const dataMessageMap = {};
 const pubKeyMap = {};
 // map from private key (Datum) -> owner (Agent[])
 const privKeyMap = {};
+// mao from hashed term to what it is a hash of
+const hashedTermMap = {};
 // map from Datum -> owners
 const ltksMap = {};
 const ciphertextMap = {};
@@ -228,7 +230,13 @@ encryptionKey.tuples().forEach((tuple) => {
     cipherKeyMap[key] = val;
 });
 
+hash_of.tuples().forEach((tuple) => {
+    let atoms = tuple.atoms();
+    let key = atoms[0].toString();
+    let val = atoms[1].toString();
 
+    hashedTermMap[key] = val;
+});
 /**
  * gets the names of the timeslots before the given one
  * @param {*} timeslot - a Timeslot prop from the forge spec
@@ -377,6 +385,7 @@ function parseTerms(items) {
     const ciphertextStrings = instance.signature('Ciphertext').atoms().map(e => e.toString())
     const seqStrings = instance.signature('tuple').atoms().map(e => e.toString())
     const textStrings = instance.signature('text').atoms().map(e => e.toString())
+    const hashedStrings = instance.signature('Hashed').atoms().map(e => e.toString())
 
     const newItems = items.map((item) => {
 
@@ -397,6 +406,12 @@ function parseTerms(items) {
                 content: parseTerms([pt]),
                 subscript: parsedKey
             }
+        } else if (hashedStrings.includes(itemString)){
+            const hash_of = hashedTermMap[itemString];
+            const parsed_hash_of = parseTerms([hash_of])[0];
+
+            parsed_hash_of["content"] = "hash(" + parsed_hash_of["content"] + ")"
+            return parsed_hash_of
         } else if (seqStrings.includes(itemString)){
             const contents_of_seq = seqMap[itemString];
             return {
