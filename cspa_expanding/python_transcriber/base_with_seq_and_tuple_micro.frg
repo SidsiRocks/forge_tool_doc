@@ -110,6 +110,9 @@ sig Ciphertext extends mesg {
    encryptionKey: one Key,
    -- result in concating plaintexts
    --plaintext: set mesg
+   -- NOTE: this means when using enc_no_tpl the message inside would always have
+   -- to be a tuple may want to change this to one mesg, does increase scope of solver
+   -- though and unclear if using one mesg changes what attacks could be modelled
    plaintext: one tuple
 }
 

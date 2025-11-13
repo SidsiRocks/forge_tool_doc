@@ -185,25 +185,14 @@ def parse_message_term(s_expr, var_dict: VarMap) -> Message:
             for subterm_sexpr in s_expr[1:-1]
         ]
         key = parse_key_term(s_expr[-1], var_dict)
-        condensed_data: List[NonCatTerm] = []
-        for msg_subterm in data:
-            match msg_subterm:
-                case CatTerm(cat_data):
-                    condensed_data.extend(cat_data)
-                case other_subterm:
-                    condensed_data.append(other_subterm)
-        return EncTerm(data=condensed_data, key=key)
+        return EncTerm(data, key=key)
     elif message_category == ENC_NO_TPL_STR:
         if len(s_expr) != 3:
             raise ParseException(f"Expected exaclty 3 terms for the s-expression enc_no_tpl,variable name,key but ength is {len(s_expr)}")
 
-        var = parse_message_term(s_expr[1],var_dict)
-        match var:
-            case Variable(_) as var:
-                key = parse_key_term(s_expr[2],var_dict)
-                return EncTermNoTpl(var,key)
-            case _:
-                raise ParseException(f"enc_no_tpl only supports simple variable terms currently")
+        contents = parse_message_term(s_expr[1],var_dict)
+        key = parse_key_term(s_expr[2],var_dict)
+        return EncTermNoTpl(contents,key)
     elif message_category == CAT_STR:
         if len(s_expr) < 2:
             raise ParseException(f"Cannot have empty message")
@@ -211,14 +200,7 @@ def parse_message_term(s_expr, var_dict: VarMap) -> Message:
             parse_message_term(subterm_sexp, var_dict)
             for subterm_sexp in s_expr[1:]
         ]
-        condensed_data: List[NonCatTerm] = []
-        for msg_subterm in data:
-            match msg_subterm:
-                case CatTerm(cat_data):
-                    condensed_data.extend(cat_data)
-                case other_subterm:
-                    condensed_data.append(other_subterm)
-        return CatTerm(data=condensed_data)
+        return CatTerm(data)
     elif message_category == SEQ_STR:
         return parse_seq_term(s_expr,var_dict)
     elif message_category == HASH_STR:
@@ -437,12 +419,14 @@ def parse_fresh_gen(s_expr,vars_dict:VarMap,role_trace:MessageTrace) -> FreshlyG
     if len(s_expr) < 2:
         raise ParseException("expecred 'fresh-gen' and variable in the s-expr")
     base_terms = [parse_base_term(sub_expr,vars_dict) for sub_expr in s_expr[1:]]
+    #only present for removing type error will figure out something better
+    base_terms_as_var = []
     for base_term in base_terms:
         match base_term:
             case Variable(_) as var:
                 match var.var_type:
                     case MsgTypes.TEXT | MsgTypes.SKEY | MsgTypes.AKEY:
-                        pass
+                        base_terms_as_var.append(var)
                     case _:
                         raise ParseException(f"can only talk about generating text skey and akey")
                 first_occur_trace = var_first_occur_in_trace(role_trace,var)
@@ -454,7 +438,8 @@ def parse_fresh_gen(s_expr,vars_dict:VarMap,role_trace:MessageTrace) -> FreshlyG
                             raise ParseException(f"Variable is sent before it is recieved cannot talk about it being freshly generated")
             case _:
                 raise ParseException(f"Cannot talk about pubk,ltk,privk being freshly generated it is already known")
-    return FreshlyGenConstraint(terms=base_terms)
+
+    return FreshlyGenConstraint(terms=base_terms_as_var)
 
 def parse_indv_send_recv_constraint(s_expr,non_strand_vars_map:VarMap,strand_vars_map:Dict[str,str]) -> IndvSendRecvInConstraint:
     send_or_recv = get_str_from_symbol(s_expr[0],"send or recv type of constraint")

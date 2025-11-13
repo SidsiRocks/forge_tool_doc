@@ -60,7 +60,7 @@ class PrivkTerm:
 KeyTerm = LtkTerm | PubkTerm | PrivkTerm | Variable
 @dataclass
 class EncTerm:
-    data: List["NonCatTerm"]
+    data: List["Message"]
     key: KeyTerm
     def __repr__(self):
         data_str = ' '.join([f"{msg}" for msg in self.data])
@@ -68,14 +68,14 @@ class EncTerm:
 
 @dataclass
 class EncTermNoTpl:
-    data: Variable
+    data: "Message"
     key: KeyTerm
     def __repr__(self) -> str:
-        return f"(enc {self.data.var_name} {self.key})"
+        return f"(enc {self.data} {self.key})"
 
 @dataclass
 class CatTerm:
-    data: List["NonCatTerm"]
+    data: List["Message"]
     def __repr__(self):
         data_str = ' '.join([f"{msg}" for msg in self.data])
         return f"(cat {data_str})"
@@ -485,6 +485,8 @@ def var_in_msg_term(variable:Variable,msg_term:Message) -> bool:
             return variable == var
         case EncTerm(_) as enc:
             return reduce(func_or,map(var_in_msg_lam,enc.data + [enc.key]))
+        case EncTermNoTpl(_) as enc_no_tpl:
+            return var_in_msg_term(variable,enc_no_tpl.data)
         case CatTerm(_) as cat:
             return reduce(func_or,map(var_in_msg_lam,cat.data))
         case LtkTerm(_) as ltk:

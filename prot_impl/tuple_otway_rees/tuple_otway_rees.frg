@@ -16,9 +16,13 @@ ootway_rees_prot_run: run {
     exec_ootway_rees_S
     constrain_skeleton_honest_run_with_1_ABS_0
 
+    ootway_rees_A.ootway_rees_A_na != ootway_rees_A.ootway_rees_A_m
+
     ootway_rees_A.agent != ootway_rees_B.agent
     ootway_rees_A.agent != ootway_rees_S.agent
     ootway_rees_B.agent != ootway_rees_S.agent
+
+    ootway_rees_A.ootway_rees_A_kab != ootway_rees_S.ootway_rees_S_kab
 }for
   exactly 4 Int
   for{

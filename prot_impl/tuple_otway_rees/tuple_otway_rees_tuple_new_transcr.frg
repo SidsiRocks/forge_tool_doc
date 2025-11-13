@@ -110,6 +110,9 @@ sig Ciphertext extends mesg {
    encryptionKey: one Key,
    -- result in concating plaintexts
    --plaintext: set mesg
+   -- NOTE: this means when using enc_no_tpl the message inside would always have
+   -- to be a tuple may want to change this to one mesg, does increase scope of solver
+   -- though and unclear if using one mesg changes what attacks could be modelled
    plaintext: one tuple
 }
 
@@ -397,7 +400,7 @@ sig ootway_rees_A extends strand {
   ootway_rees_A_m : one text,
   ootway_rees_A_na : one text,
   ootway_rees_A_nb : one text,
-  ootway_rees_A_kab : one skey
+  ootway_rees_A_kab : one mesg
 }
 pred exec_ootway_rees_A {
   all arbitrary_A_ootway_rees : ootway_rees_A | {
@@ -410,44 +413,48 @@ pred exec_ootway_rees_A {
     some t1 : t0.(^next) {
       t0+t1 = sender.arbitrary_A_ootway_rees + receiver.arbitrary_A_ootway_rees
       t0.sender = arbitrary_A_ootway_rees
-      inds[(t0.data.components)] = 0+1+2+3
-      let text_1  = ((t0.data.components))[0] | {
-      let name_2  = ((t0.data.components))[1] | {
-      let name_3  = ((t0.data.components))[2] | {
-      let enc_4  = ((t0.data.components))[3] | {
-        (t0.data.components) = 0->text_1 + 1->name_2 + 2->name_3 + 3->enc_4
+      inds[((t0.data).components)] = 0+1+2+3
+      let text_1  = (((t0.data).components))[0] | {
+      let name_2  = (((t0.data).components))[1] | {
+      let name_3  = (((t0.data).components))[2] | {
+      let enc_4  = (((t0.data).components))[3] | {
+        ((t0.data).components) = 0->text_1 + 1->name_2 + 2->name_3 + 3->enc_4
         text_1 = arbitrary_A_ootway_rees.ootway_rees_A_m
         name_2 = arbitrary_A_ootway_rees.ootway_rees_A_a
         name_3 = arbitrary_A_ootway_rees.ootway_rees_A_b
-        inds[(enc_4).plaintext.components] = 0+1+2+3
-        let text_9  = ((enc_4).plaintext.components)[0] | {
-        let text_10  = ((enc_4).plaintext.components)[1] | {
-        let name_11  = ((enc_4).plaintext.components)[2] | {
-        let name_12  = ((enc_4).plaintext.components)[3] | {
-          (enc_4).plaintext.components = 0->text_9 + 1->text_10 + 2->name_11 + 3->name_12
-          text_9 = arbitrary_A_ootway_rees.ootway_rees_A_na
-          text_10 = arbitrary_A_ootway_rees.ootway_rees_A_m
-          name_11 = arbitrary_A_ootway_rees.ootway_rees_A_a
-          name_12 = arbitrary_A_ootway_rees.ootway_rees_A_b
-        }}}}
+        inds[((enc_4).plaintext.components)] = 0+1
+        let text_5  = (((enc_4).plaintext.components))[0] | {
+        let cat_6  = (((enc_4).plaintext.components))[1] | {
+          ((enc_4).plaintext.components) = 0->text_5 + 1->cat_6
+          text_5 = arbitrary_A_ootway_rees.ootway_rees_A_na
+          inds[(cat_6.components)] = 0+1+2
+          let text_7  = ((cat_6.components))[0] | {
+          let name_8  = ((cat_6.components))[1] | {
+          let name_9  = ((cat_6.components))[2] | {
+            (cat_6.components) = 0->text_7 + 1->name_8 + 2->name_9
+            text_7 = arbitrary_A_ootway_rees.ootway_rees_A_m
+            name_8 = arbitrary_A_ootway_rees.ootway_rees_A_a
+            name_9 = arbitrary_A_ootway_rees.ootway_rees_A_b
+          }}}
+        }}
         (enc_4).encryptionKey = getLTK[arbitrary_A_ootway_rees.ootway_rees_A_a,arbitrary_A_ootway_rees.ootway_rees_A_s]
       }}}}
 
       t1.receiver = arbitrary_A_ootway_rees
-      inds[(t1.data.components)] = 0+1
-      let text_13  = ((t1.data.components))[0] | {
-      let enc_14  = ((t1.data.components))[1] | {
-        (t1.data.components) = 0->text_13 + 1->enc_14
-        text_13 = arbitrary_A_ootway_rees.ootway_rees_A_m
+      inds[((t1.data).components)] = 0+1
+      let text_10  = (((t1.data).components))[0] | {
+      let enc_11  = (((t1.data).components))[1] | {
+        ((t1.data).components) = 0->text_10 + 1->enc_11
+        text_10 = arbitrary_A_ootway_rees.ootway_rees_A_m
         learnt_term_by[getLTK[arbitrary_A_ootway_rees.ootway_rees_A_a,arbitrary_A_ootway_rees.ootway_rees_A_s],arbitrary_A_ootway_rees.agent,t1]
-        inds[(enc_14).plaintext.components] = 0+1
-        let text_17  = ((enc_14).plaintext.components)[0] | {
-        let skey_18  = ((enc_14).plaintext.components)[1] | {
-          (enc_14).plaintext.components = 0->text_17 + 1->skey_18
-          text_17 = arbitrary_A_ootway_rees.ootway_rees_A_na
-          skey_18 = arbitrary_A_ootway_rees.ootway_rees_A_kab
+        inds[(enc_11).plaintext.components] = 0+1
+        let text_14  = ((enc_11).plaintext.components)[0] | {
+        let mesg_15  = ((enc_11).plaintext.components)[1] | {
+          (enc_11).plaintext.components = 0->text_14 + 1->mesg_15
+          text_14 = arbitrary_A_ootway_rees.ootway_rees_A_na
+          mesg_15 = arbitrary_A_ootway_rees.ootway_rees_A_kab
         }}
-        (enc_14).encryptionKey = getLTK[arbitrary_A_ootway_rees.ootway_rees_A_a,arbitrary_A_ootway_rees.ootway_rees_A_s]
+        (enc_11).encryptionKey = getLTK[arbitrary_A_ootway_rees.ootway_rees_A_a,arbitrary_A_ootway_rees.ootway_rees_A_s]
       }}
 
     }}
@@ -459,7 +466,7 @@ sig ootway_rees_B extends strand {
   ootway_rees_B_s : one name,
   ootway_rees_B_m : one text,
   ootway_rees_B_nb : one text,
-  ootway_rees_B_kab : one skey,
+  ootway_rees_B_kab : one mesg,
   ootway_rees_B_first_a_s_mesg : one mesg,
   ootway_rees_B_second_a_s_mesg : one mesg
 }
@@ -475,70 +482,70 @@ pred exec_ootway_rees_B {
     some t3 : t2.(^next) {
       t0+t1+t2+t3 = sender.arbitrary_B_ootway_rees + receiver.arbitrary_B_ootway_rees
       t0.receiver = arbitrary_B_ootway_rees
-      inds[(t0.data.components)] = 0+1+2+3
-      let text_19  = ((t0.data.components))[0] | {
-      let name_20  = ((t0.data.components))[1] | {
-      let name_21  = ((t0.data.components))[2] | {
-      let mesg_22  = ((t0.data.components))[3] | {
-        (t0.data.components) = 0->text_19 + 1->name_20 + 2->name_21 + 3->mesg_22
-        text_19 = arbitrary_B_ootway_rees.ootway_rees_B_m
-        name_20 = arbitrary_B_ootway_rees.ootway_rees_B_a
-        name_21 = arbitrary_B_ootway_rees.ootway_rees_B_b
-        mesg_22 = arbitrary_B_ootway_rees.ootway_rees_B_first_a_s_mesg
+      inds[((t0.data).components)] = 0+1+2+3
+      let text_16  = (((t0.data).components))[0] | {
+      let name_17  = (((t0.data).components))[1] | {
+      let name_18  = (((t0.data).components))[2] | {
+      let mesg_19  = (((t0.data).components))[3] | {
+        ((t0.data).components) = 0->text_16 + 1->name_17 + 2->name_18 + 3->mesg_19
+        text_16 = arbitrary_B_ootway_rees.ootway_rees_B_m
+        name_17 = arbitrary_B_ootway_rees.ootway_rees_B_a
+        name_18 = arbitrary_B_ootway_rees.ootway_rees_B_b
+        mesg_19 = arbitrary_B_ootway_rees.ootway_rees_B_first_a_s_mesg
       }}}}
 
       t1.sender = arbitrary_B_ootway_rees
-      inds[(t1.data.components)] = 0+1+2+3+4
-      let text_23  = ((t1.data.components))[0] | {
-      let name_24  = ((t1.data.components))[1] | {
-      let name_25  = ((t1.data.components))[2] | {
-      let mesg_26  = ((t1.data.components))[3] | {
-      let enc_27  = ((t1.data.components))[4] | {
-        (t1.data.components) = 0->text_23 + 1->name_24 + 2->name_25 + 3->mesg_26 + 4->enc_27
-        text_23 = arbitrary_B_ootway_rees.ootway_rees_B_m
-        name_24 = arbitrary_B_ootway_rees.ootway_rees_B_a
-        name_25 = arbitrary_B_ootway_rees.ootway_rees_B_b
-        mesg_26 = arbitrary_B_ootway_rees.ootway_rees_B_first_a_s_mesg
-        inds[(enc_27).plaintext.components] = 0+1+2+3
-        let text_32  = ((enc_27).plaintext.components)[0] | {
-        let text_33  = ((enc_27).plaintext.components)[1] | {
-        let name_34  = ((enc_27).plaintext.components)[2] | {
-        let name_35  = ((enc_27).plaintext.components)[3] | {
-          (enc_27).plaintext.components = 0->text_32 + 1->text_33 + 2->name_34 + 3->name_35
-          text_32 = arbitrary_B_ootway_rees.ootway_rees_B_nb
-          text_33 = arbitrary_B_ootway_rees.ootway_rees_B_m
-          name_34 = arbitrary_B_ootway_rees.ootway_rees_B_a
-          name_35 = arbitrary_B_ootway_rees.ootway_rees_B_b
+      inds[((t1.data).components)] = 0+1+2+3+4
+      let text_20  = (((t1.data).components))[0] | {
+      let name_21  = (((t1.data).components))[1] | {
+      let name_22  = (((t1.data).components))[2] | {
+      let mesg_23  = (((t1.data).components))[3] | {
+      let enc_24  = (((t1.data).components))[4] | {
+        ((t1.data).components) = 0->text_20 + 1->name_21 + 2->name_22 + 3->mesg_23 + 4->enc_24
+        text_20 = arbitrary_B_ootway_rees.ootway_rees_B_m
+        name_21 = arbitrary_B_ootway_rees.ootway_rees_B_a
+        name_22 = arbitrary_B_ootway_rees.ootway_rees_B_b
+        mesg_23 = arbitrary_B_ootway_rees.ootway_rees_B_first_a_s_mesg
+        inds[(enc_24).plaintext.components] = 0+1+2+3
+        let text_29  = ((enc_24).plaintext.components)[0] | {
+        let text_30  = ((enc_24).plaintext.components)[1] | {
+        let name_31  = ((enc_24).plaintext.components)[2] | {
+        let name_32  = ((enc_24).plaintext.components)[3] | {
+          (enc_24).plaintext.components = 0->text_29 + 1->text_30 + 2->name_31 + 3->name_32
+          text_29 = arbitrary_B_ootway_rees.ootway_rees_B_nb
+          text_30 = arbitrary_B_ootway_rees.ootway_rees_B_m
+          name_31 = arbitrary_B_ootway_rees.ootway_rees_B_a
+          name_32 = arbitrary_B_ootway_rees.ootway_rees_B_b
         }}}}
-        (enc_27).encryptionKey = getLTK[arbitrary_B_ootway_rees.ootway_rees_B_b,arbitrary_B_ootway_rees.ootway_rees_B_s]
+        (enc_24).encryptionKey = getLTK[arbitrary_B_ootway_rees.ootway_rees_B_b,arbitrary_B_ootway_rees.ootway_rees_B_s]
       }}}}}
 
       t2.receiver = arbitrary_B_ootway_rees
-      inds[(t2.data.components)] = 0+1+2
-      let text_36  = ((t2.data.components))[0] | {
-      let mesg_37  = ((t2.data.components))[1] | {
-      let enc_38  = ((t2.data.components))[2] | {
-        (t2.data.components) = 0->text_36 + 1->mesg_37 + 2->enc_38
-        text_36 = arbitrary_B_ootway_rees.ootway_rees_B_m
-        mesg_37 = arbitrary_B_ootway_rees.ootway_rees_B_second_a_s_mesg
+      inds[((t2.data).components)] = 0+1+2
+      let text_33  = (((t2.data).components))[0] | {
+      let mesg_34  = (((t2.data).components))[1] | {
+      let enc_35  = (((t2.data).components))[2] | {
+        ((t2.data).components) = 0->text_33 + 1->mesg_34 + 2->enc_35
+        text_33 = arbitrary_B_ootway_rees.ootway_rees_B_m
+        mesg_34 = arbitrary_B_ootway_rees.ootway_rees_B_second_a_s_mesg
         learnt_term_by[getLTK[arbitrary_B_ootway_rees.ootway_rees_B_b,arbitrary_B_ootway_rees.ootway_rees_B_s],arbitrary_B_ootway_rees.agent,t2]
-        inds[(enc_38).plaintext.components] = 0+1
-        let text_41  = ((enc_38).plaintext.components)[0] | {
-        let skey_42  = ((enc_38).plaintext.components)[1] | {
-          (enc_38).plaintext.components = 0->text_41 + 1->skey_42
-          text_41 = arbitrary_B_ootway_rees.ootway_rees_B_nb
-          skey_42 = arbitrary_B_ootway_rees.ootway_rees_B_kab
+        inds[(enc_35).plaintext.components] = 0+1
+        let text_38  = ((enc_35).plaintext.components)[0] | {
+        let mesg_39  = ((enc_35).plaintext.components)[1] | {
+          (enc_35).plaintext.components = 0->text_38 + 1->mesg_39
+          text_38 = arbitrary_B_ootway_rees.ootway_rees_B_nb
+          mesg_39 = arbitrary_B_ootway_rees.ootway_rees_B_kab
         }}
-        (enc_38).encryptionKey = getLTK[arbitrary_B_ootway_rees.ootway_rees_B_b,arbitrary_B_ootway_rees.ootway_rees_B_s]
+        (enc_35).encryptionKey = getLTK[arbitrary_B_ootway_rees.ootway_rees_B_b,arbitrary_B_ootway_rees.ootway_rees_B_s]
       }}}
 
       t3.sender = arbitrary_B_ootway_rees
-      inds[(t3.data.components)] = 0+1
-      let text_43  = ((t3.data.components))[0] | {
-      let mesg_44  = ((t3.data.components))[1] | {
-        (t3.data.components) = 0->text_43 + 1->mesg_44
-        text_43 = arbitrary_B_ootway_rees.ootway_rees_B_m
-        mesg_44 = arbitrary_B_ootway_rees.ootway_rees_B_second_a_s_mesg
+      inds[((t3.data).components)] = 0+1
+      let text_40  = (((t3.data).components))[0] | {
+      let mesg_41  = (((t3.data).components))[1] | {
+        ((t3.data).components) = 0->text_40 + 1->mesg_41
+        text_40 = arbitrary_B_ootway_rees.ootway_rees_B_m
+        mesg_41 = arbitrary_B_ootway_rees.ootway_rees_B_second_a_s_mesg
       }}
 
     }}}}
@@ -566,67 +573,71 @@ pred exec_ootway_rees_S {
     some t1 : t0.(^next) {
       t0+t1 = sender.arbitrary_S_ootway_rees + receiver.arbitrary_S_ootway_rees
       t0.receiver = arbitrary_S_ootway_rees
-      inds[(t0.data.components)] = 0+1+2+3+4
-      let text_45  = ((t0.data.components))[0] | {
-      let name_46  = ((t0.data.components))[1] | {
-      let name_47  = ((t0.data.components))[2] | {
-      let enc_48  = ((t0.data.components))[3] | {
-      let enc_49  = ((t0.data.components))[4] | {
-        (t0.data.components) = 0->text_45 + 1->name_46 + 2->name_47 + 3->enc_48 + 4->enc_49
-        text_45 = arbitrary_S_ootway_rees.ootway_rees_S_m
-        name_46 = arbitrary_S_ootway_rees.ootway_rees_S_a
-        name_47 = arbitrary_S_ootway_rees.ootway_rees_S_b
+      inds[((t0.data).components)] = 0+1+2+3+4
+      let text_42  = (((t0.data).components))[0] | {
+      let name_43  = (((t0.data).components))[1] | {
+      let name_44  = (((t0.data).components))[2] | {
+      let enc_45  = (((t0.data).components))[3] | {
+      let enc_46  = (((t0.data).components))[4] | {
+        ((t0.data).components) = 0->text_42 + 1->name_43 + 2->name_44 + 3->enc_45 + 4->enc_46
+        text_42 = arbitrary_S_ootway_rees.ootway_rees_S_m
+        name_43 = arbitrary_S_ootway_rees.ootway_rees_S_a
+        name_44 = arbitrary_S_ootway_rees.ootway_rees_S_b
         learnt_term_by[getLTK[arbitrary_S_ootway_rees.ootway_rees_S_a,arbitrary_S_ootway_rees.ootway_rees_S_s],arbitrary_S_ootway_rees.agent,t0]
-        inds[(enc_48).plaintext.components] = 0+1+2+3
-        let text_54  = ((enc_48).plaintext.components)[0] | {
-        let text_55  = ((enc_48).plaintext.components)[1] | {
-        let name_56  = ((enc_48).plaintext.components)[2] | {
-        let name_57  = ((enc_48).plaintext.components)[3] | {
-          (enc_48).plaintext.components = 0->text_54 + 1->text_55 + 2->name_56 + 3->name_57
-          text_54 = arbitrary_S_ootway_rees.ootway_rees_S_na
-          text_55 = arbitrary_S_ootway_rees.ootway_rees_S_m
-          name_56 = arbitrary_S_ootway_rees.ootway_rees_S_a
-          name_57 = arbitrary_S_ootway_rees.ootway_rees_S_b
-        }}}}
-        (enc_48).encryptionKey = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_a,arbitrary_S_ootway_rees.ootway_rees_S_s]
+        inds[((enc_45).plaintext.components)] = 0+1
+        let text_47  = (((enc_45).plaintext.components))[0] | {
+        let cat_48  = (((enc_45).plaintext.components))[1] | {
+          ((enc_45).plaintext.components) = 0->text_47 + 1->cat_48
+          text_47 = arbitrary_S_ootway_rees.ootway_rees_S_na
+          inds[(cat_48.components)] = 0+1+2
+          let text_49  = ((cat_48.components))[0] | {
+          let name_50  = ((cat_48.components))[1] | {
+          let name_51  = ((cat_48.components))[2] | {
+            (cat_48.components) = 0->text_49 + 1->name_50 + 2->name_51
+            text_49 = arbitrary_S_ootway_rees.ootway_rees_S_m
+            name_50 = arbitrary_S_ootway_rees.ootway_rees_S_a
+            name_51 = arbitrary_S_ootway_rees.ootway_rees_S_b
+          }}}
+        }}
+        (enc_45).encryptionKey = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_a,arbitrary_S_ootway_rees.ootway_rees_S_s]
         learnt_term_by[getLTK[arbitrary_S_ootway_rees.ootway_rees_S_b,arbitrary_S_ootway_rees.ootway_rees_S_s],arbitrary_S_ootway_rees.agent,t0]
-        inds[(enc_49).plaintext.components] = 0+1+2+3
-        let text_62  = ((enc_49).plaintext.components)[0] | {
-        let text_63  = ((enc_49).plaintext.components)[1] | {
-        let name_64  = ((enc_49).plaintext.components)[2] | {
-        let name_65  = ((enc_49).plaintext.components)[3] | {
-          (enc_49).plaintext.components = 0->text_62 + 1->text_63 + 2->name_64 + 3->name_65
-          text_62 = arbitrary_S_ootway_rees.ootway_rees_S_nb
-          text_63 = arbitrary_S_ootway_rees.ootway_rees_S_m
-          name_64 = arbitrary_S_ootway_rees.ootway_rees_S_a
-          name_65 = arbitrary_S_ootway_rees.ootway_rees_S_b
+        inds[(enc_46).plaintext.components] = 0+1+2+3
+        let text_56  = ((enc_46).plaintext.components)[0] | {
+        let text_57  = ((enc_46).plaintext.components)[1] | {
+        let name_58  = ((enc_46).plaintext.components)[2] | {
+        let name_59  = ((enc_46).plaintext.components)[3] | {
+          (enc_46).plaintext.components = 0->text_56 + 1->text_57 + 2->name_58 + 3->name_59
+          text_56 = arbitrary_S_ootway_rees.ootway_rees_S_nb
+          text_57 = arbitrary_S_ootway_rees.ootway_rees_S_m
+          name_58 = arbitrary_S_ootway_rees.ootway_rees_S_a
+          name_59 = arbitrary_S_ootway_rees.ootway_rees_S_b
         }}}}
-        (enc_49).encryptionKey = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_b,arbitrary_S_ootway_rees.ootway_rees_S_s]
+        (enc_46).encryptionKey = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_b,arbitrary_S_ootway_rees.ootway_rees_S_s]
       }}}}}
 
       t1.sender = arbitrary_S_ootway_rees
-      inds[(t1.data.components)] = 0+1+2
-      let text_66  = ((t1.data.components))[0] | {
-      let enc_67  = ((t1.data.components))[1] | {
-      let enc_68  = ((t1.data.components))[2] | {
-        (t1.data.components) = 0->text_66 + 1->enc_67 + 2->enc_68
-        text_66 = arbitrary_S_ootway_rees.ootway_rees_S_m
-        inds[(enc_67).plaintext.components] = 0+1
-        let text_71  = ((enc_67).plaintext.components)[0] | {
-        let skey_72  = ((enc_67).plaintext.components)[1] | {
-          (enc_67).plaintext.components = 0->text_71 + 1->skey_72
-          text_71 = arbitrary_S_ootway_rees.ootway_rees_S_na
-          skey_72 = arbitrary_S_ootway_rees.ootway_rees_S_kab
+      inds[((t1.data).components)] = 0+1+2
+      let text_60  = (((t1.data).components))[0] | {
+      let enc_61  = (((t1.data).components))[1] | {
+      let enc_62  = (((t1.data).components))[2] | {
+        ((t1.data).components) = 0->text_60 + 1->enc_61 + 2->enc_62
+        text_60 = arbitrary_S_ootway_rees.ootway_rees_S_m
+        inds[(enc_61).plaintext.components] = 0+1
+        let text_65  = ((enc_61).plaintext.components)[0] | {
+        let skey_66  = ((enc_61).plaintext.components)[1] | {
+          (enc_61).plaintext.components = 0->text_65 + 1->skey_66
+          text_65 = arbitrary_S_ootway_rees.ootway_rees_S_na
+          skey_66 = arbitrary_S_ootway_rees.ootway_rees_S_kab
         }}
-        (enc_67).encryptionKey = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_a,arbitrary_S_ootway_rees.ootway_rees_S_s]
-        inds[(enc_68).plaintext.components] = 0+1
-        let text_75  = ((enc_68).plaintext.components)[0] | {
-        let skey_76  = ((enc_68).plaintext.components)[1] | {
-          (enc_68).plaintext.components = 0->text_75 + 1->skey_76
-          text_75 = arbitrary_S_ootway_rees.ootway_rees_S_nb
-          skey_76 = arbitrary_S_ootway_rees.ootway_rees_S_kab
+        (enc_61).encryptionKey = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_a,arbitrary_S_ootway_rees.ootway_rees_S_s]
+        inds[(enc_62).plaintext.components] = 0+1
+        let text_69  = ((enc_62).plaintext.components)[0] | {
+        let skey_70  = ((enc_62).plaintext.components)[1] | {
+          (enc_62).plaintext.components = 0->text_69 + 1->skey_70
+          text_69 = arbitrary_S_ootway_rees.ootway_rees_S_nb
+          skey_70 = arbitrary_S_ootway_rees.ootway_rees_S_kab
         }}
-        (enc_68).encryptionKey = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_b,arbitrary_S_ootway_rees.ootway_rees_S_s]
+        (enc_62).encryptionKey = getLTK[arbitrary_S_ootway_rees.ootway_rees_S_b,arbitrary_S_ootway_rees.ootway_rees_S_s]
       }}}
 
     }}
@@ -710,9 +721,13 @@ ootway_rees_prot_run: run {
     exec_ootway_rees_S
     constrain_skeleton_honest_run_with_1_ABS_0
 
+    ootway_rees_A.ootway_rees_A_na != ootway_rees_A.ootway_rees_A_m
+
     ootway_rees_A.agent != ootway_rees_B.agent
     ootway_rees_A.agent != ootway_rees_S.agent
     ootway_rees_B.agent != ootway_rees_S.agent
+
+    ootway_rees_A.ootway_rees_A_kab != ootway_rees_S.ootway_rees_S_kab
 }for
   exactly 4 Int
   for{

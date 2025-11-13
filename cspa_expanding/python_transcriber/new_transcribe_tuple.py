@@ -85,13 +85,15 @@ class Transcribe_obj:
     #     else:
     #         transcribe_subterms()
 
-    def get_name_for_msg_term(self,non_cat_term:NonCatTerm) -> str:
+    def get_name_for_msg_term(self,non_cat_term:Message) -> str:
         """returns a name for a message term, to be used for let clauses and
         existential quantification"""
         fresh_num = str(self.get_fresh_num())
         match non_cat_term:
             case EncTerm(_):
                 return "enc_" + fresh_num
+            case CatTerm(_):
+                return "cat_" + fresh_num
             case EncTermNoTpl(_):
                 return "enc_" + fresh_num
             case SeqTerm(_):
@@ -127,7 +129,7 @@ class Transcribe_obj:
             all_seq_components = " + ".join([f"{indx}->{comp_name}" for indx,comp_name in enumerate(seq_component_names)])
             self.print_to_file(f"{seq_expr} = {all_seq_components}\n")
             for comp_name,comp_term in zip(seq_component_names,seq_terms):
-                transcribe_non_cat(comp_name,comp_term,send_recv,timeslot_expr,sig_context)
+                transcribe_msg(comp_name,comp_term,send_recv,timeslot_expr,sig_context)
 
     def role_var_name_in_prot_pred(self, role_name, prot_name):
         return f"arbitrary_{role_name}_{prot_name}"
@@ -480,20 +482,25 @@ def transcribe_enc_no_tpl(elm_expr:str,enc_no_tpl:EncTermNoTpl,send_recv:SendRec
                     pass
     data_expr = f"({elm_expr}).plaintext"
     key_expr = f"({elm_expr}).encryptionKey"
-    transcribe_base_term(data_expr,enc_no_tpl.data,send_recv,sig_context)
+    transcribe_msg(data_expr,enc_no_tpl.data,send_recv,timeslot_expr,sig_context)
     transcribe_base_term(key_expr,enc_no_tpl.key,send_recv,sig_context)
 
 def transcribe_hash(elm_expr: str,hash_term:HashTerm,send_recv:SendRecv,timeslot_expr:str,sig_context:RoleOrSkelTranscrContext):
     transcr = sig_context.get_transcr()
     transcr.print_to_file(f"{elm_expr} in Hashed\n")
     hash_of_expr = f"({elm_expr}).hash_of"
-    transcribe_non_cat(hash_of_expr,hash_term.hash_of,send_recv,timeslot_expr,sig_context)
+    transcribe_msg(hash_of_expr,hash_term.hash_of,send_recv,timeslot_expr,sig_context)
 
 def transcribe_base_term(elm_expr:str,msg:BaseTerm,send_recv:SendRecv,role_context:SigContext):
     constraint_expr = f"{elm_expr} = {role_context.get_base_term_str(msg)}\n"
     role_context.get_transcr().print_to_file(constraint_expr)
 
-def transcribe_non_cat(elm_expr: str, msg: NonCatTerm,send_recv:SendRecv,timeslot_expr:str,
+def transcribe_cat(elm_expr:str,msg:CatTerm,send_recv:SendRecv,timeslot_expr:str,
+                   role_context: RoleOrSkelTranscrContext):
+    transcr = role_context.transcr
+    transcr.write_new_seq_constraint(f"({elm_expr}.components)",msg.data,send_recv,timeslot_expr,role_context)
+
+def transcribe_msg(elm_expr: str, msg: Message,send_recv:SendRecv,timeslot_expr:str,
                        role_context: RoleOrSkelTranscrContext):
     match msg:
         case EncTerm(_, _) as enc_term:
@@ -504,8 +511,11 @@ def transcribe_non_cat(elm_expr: str, msg: NonCatTerm,send_recv:SendRecv,timeslo
             transcribe_hash(elm_expr,hash_term,send_recv,timeslot_expr,role_context)
         case SeqTerm(_):
             raise ParseException(f"not handling SeqTerm in this transcriber")
+        case CatTerm(_) as cat_term:
+            transcribe_cat(elm_expr,cat_term,send_recv,timeslot_expr,role_context)
         case base_term:
             transcribe_base_term(elm_expr,base_term,send_recv,role_context)
+
 
 def transcribe_indv_trace(role: Role, indx: int,
                           role_context: RoleTranscribeContext):
@@ -517,14 +527,8 @@ def transcribe_indv_trace(role: Role, indx: int,
             transcr.print_to_file(f"t{indx}.sender = {role_var_name}\n")
         case SendRecv.RECV:
             transcr.print_to_file(f"t{indx}.receiver = {role_var_name}\n")
-    match mesg:
-        case CatTerm(_) as cat:
-            transcr.write_new_seq_constraint(f"(t{indx}.data.components)",cat.data,send_recv,f"t{indx}",role_context)
 
-        case non_cat_mesg:
-            #atom_name = f"atom_{transcr.get_fresh_num()}"
-            #transcr.write_new_seq_constraint(f"(t{indx}.data.components)",[non_cat_mesg],send_recv,f"t{indx}",role_context)
-            transcribe_non_cat(f"(t{indx}.data)",non_cat_mesg,send_recv,f"t{indx}",role_context)
+    transcribe_msg(f"(t{indx}.data)",mesg,send_recv,f"t{indx}",role_context)
 
 def transcribe_freshly_gen_constr(role:Role,role_context:RoleTranscribeContext):
     freshly_gen_constrs:List[FreshlyGenConstraint] = []
@@ -712,7 +716,7 @@ def transcribe_indv_trace_constraint(skeleton:Skeleton,indv_trace_constraint:Ind
         case CatTerm(data):
             transcr.write_new_seq_constraint(f"({timeslot_name}.data.components)",data,send_recv,f"{timeslot_name}",skel_transcr_context)
         case _ as non_cat_term:
-            transcribe_non_cat(f"({timeslot_name}.data)",non_cat_term,
+            transcribe_msg(f"({timeslot_name}.data)",non_cat_term,
                                      send_recv,timeslot_name,skel_transcr_context)
 def transcribe_trace_constraint(trace_constraint:TraceConstraint,
                                 skeleton:Skeleton,skel_num:int,
