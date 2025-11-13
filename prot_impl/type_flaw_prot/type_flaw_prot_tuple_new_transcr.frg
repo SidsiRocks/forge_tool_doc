@@ -39,7 +39,9 @@ sig PublicKey extends akey {}
 one sig KeyPairs {
   pairs: set PrivateKey -> PublicKey,
   owners: func PrivateKey -> name,
-  ltks: set name -> name -> skey
+  ltks: set name -> name -> skey,
+
+  inv_key_helper: set Key -> Key
 }
 
 /** Get a long-term key associated with a pair of agents */
@@ -50,10 +52,15 @@ fun getLTK[name_a: name, name_b: name]: lone skey {
 /** Get the inverse key for a given key (if any). The structure of this predicate 
     is due to Forge's typechecking as of January 2025. The (none & Key) is a workaround
     to give Key type to none, which has univ type by default.  */
+/*
 fun getInv[k: Key]: one Key {
   (k in PublicKey => ((KeyPairs.pairs).k) else (k.(KeyPairs.pairs)))
   +
   (k in skey => k else (none & Key))
+}
+*/
+fun getInv[k: Key]: one Key {
+    (KeyPairs.inv_key_helper).k
 }
 
 
@@ -103,6 +110,9 @@ sig Ciphertext extends mesg {
    encryptionKey: one Key,
    -- result in concating plaintexts
    --plaintext: set mesg
+   -- NOTE: this means when using enc_no_tpl the message inside would always have
+   -- to be a tuple may want to change this to one mesg, does increase scope of solver
+   -- though and unclear if using one mesg changes what attacks could be modelled
    plaintext: one tuple
 }
 
@@ -140,10 +150,13 @@ pred timeSafety {
   }
 }
 
-
+pred inv_key_helper_constr{
+    KeyPairs.inv_key_helper = KeyPairs.pairs + ~(KeyPairs.pairs) + {s1:skey,s2:skey | s1 = s2}
+}
 
 /** This (large) predicate contains the vast majority of domain axioms */
 pred wellformed {
+  inv_key_helper_constr
   -- Design choice: only one message event per timeslot;
   --   assume we have a shared notion of time
   -- all m: Timeslot | isSeqOf[m.data,mesg]
@@ -476,6 +489,7 @@ inst honest_run_bounds {
   owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
   no ltks
 
+  `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2
   next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3
   mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
 
@@ -507,6 +521,7 @@ inst attack_run_bounds {
   owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
   no ltks
 
+  `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2
   next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5
   mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2 + `Microtick2 -> `Microtick3
 
@@ -538,6 +553,7 @@ inst smaller_attack_bound {
   owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
   no ltks
 
+  `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2
   next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5
   mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2 + `Microtick2 -> `Microtick3
 
@@ -569,6 +585,7 @@ inst larger_attack_bound {
   owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
   no ltks
 
+  `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2
   next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5
   mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2 + `Microtick2 -> `Microtick3
 
