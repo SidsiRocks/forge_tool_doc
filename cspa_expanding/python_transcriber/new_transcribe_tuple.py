@@ -552,8 +552,9 @@ def transcribe_freshly_gen_constr(role:Role,role_context:RoleTranscribeContext):
     for indx,variables in var_first_occur.items():
         freshly_gen_tuples_arr = freshly_gen_tuples_arr + [f"({role_context.acess_variable(var.var_name)})->t{indx}" for var in variables]
 
-    freshly_gen_tuples = " + ".join(freshly_gen_tuples_arr)
-    role_context.transcr.print_to_file(f"({freshly_gen_tuples}) in ({role_context.get_agent()}).generated_times\n")
+    if len(freshly_gen_tuples_arr) != 0:
+        freshly_gen_tuples = " + ".join(freshly_gen_tuples_arr)
+        role_context.transcr.print_to_file(f"({freshly_gen_tuples}) in ({role_context.get_agent()}).generated_times\n")
 
 def transcribe_trace(role: Role, role_context: RoleTranscribeContext):
     trace_len = len(role.trace)

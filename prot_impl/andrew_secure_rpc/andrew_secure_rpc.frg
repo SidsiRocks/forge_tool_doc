@@ -136,6 +136,10 @@ andrew_rpc_term_test: run {
 
     skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_A != skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_A1
     skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_B != skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_B1
+
+    no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)) )
+
+    andrew_secure_rpc_A.andrew_secure_rpc_A_kab_ != andrew_secure_rpc_B.andrew_secure_rpc_B_kab_
 }for
   exactly 3 Int
   for{

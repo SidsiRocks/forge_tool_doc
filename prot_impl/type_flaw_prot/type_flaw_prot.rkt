@@ -76,17 +76,17 @@
     ;;     (recv-by   A (enc n (pubk a)))
     ;; )
 
-    ;; (deftrace attack_run
-    ;;   (send-from A (enc (pubk a) (enc n (pubk b)) (pubk b)))
+    (deftrace attack_run
+      (send-from A (enc (pubk a) (enc n (pubk b)) (pubk b)))
 
-    ;;   (recv-by B1 (enc (pubk Attacker)
-    ;;                    (enc (pubk a) (enc n (pubk b)) (pubk b))
-    ;;                    (pubk b)))
-    ;;   (send-from B1 (enc (pubk a) (enc n (pubk b)) (pubk Attacker)))
+      (recv-by B1 (enc (pubk Attacker)
+                       (enc (pubk a) (enc n (pubk b)) (pubk b))
+                       (pubk b)))
+      (send-from B1 (enc (pubk a) (enc n (pubk b)) (pubk Attacker)))
 
-    ;;   (recv-by B2 (enc (pubk Attacker) (enc n (pubk b)) (pubk b)))
-    ;;   (send-from B2 (enc n (pubk Attacker)))
-    ;; )
+      (recv-by B2 (enc (pubk Attacker) (enc n (pubk b)) (pubk b)))
+      (send-from B2 (enc n (pubk Attacker)))
+    )
 )
 
 ;; adding comment here so can make new commit with commit message which shows that
