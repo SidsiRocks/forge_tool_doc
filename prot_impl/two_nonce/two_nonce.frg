@@ -1,3 +1,4 @@
+
 option run_sterling "../../crypto_viz_seq_tuple.js"
 option verbose 5
 option solver Glucose
@@ -22,17 +23,17 @@ two_nonce_init_pov : run {
 
     constrain_skeleton_two_nonce_0
 
-    -- no (two_nonce_resp.agent & two_nonce_init.agent)
+    no (two_nonce_resp.agent & two_nonce_init.agent)
     --should not need restriction on a and b this time?
 
     --this may prevent attack have to check
-    -- not (Attacker in (two_nonce_init + two_nonce_resp).agent)
+    not (Attacker in (two_nonce_init + two_nonce_resp).agent)
 
     --finding attack where init beleives it is talking to resp
     --but attacker knows the nonce
-    -- not (Attacker in two_nonce_init.two_nonce_init_b)
+    not (Attacker in two_nonce_init.two_nonce_init_b)
     -- two_nonce_init.two_nonce_init_b = two_nonce_resp.agent --this one is faster than the one above strangely conincidence or?
-    -- corrected_attacker_learns[two_nonce_init.two_nonce_init_n2]
+    corrected_attacker_learns[two_nonce_init.two_nonce_init_n2]
     -- Attacker -> (two_nonce_init.two_nonce_init_n2) in learned_times.Timeslot
 
     --same nonce problem seems to be resolved
@@ -86,11 +87,11 @@ two_nonce_init_pov : run {
 --        two_sessions
 --    }
 
-    exactly 3 Int
-    for{
-        next is linear
-        alt_single_session
-    }
+   exactly 3 Int
+   for{
+       next is linear
+       alt_single_session
+   }
 
 --    exactly 3 Int
 --    for{
@@ -98,3 +99,16 @@ two_nonce_init_pov : run {
 --         alt_double_session
 --    }
 --run {} for 3
+
+test expect{
+    two_nonce_init_pov_test : {
+        wellformed
+        exec_two_nonce_init
+        exec_two_nonce_resp
+        constrain_skeleton_two_nonce_0
+    } for exactly 3 Int
+    for{
+        next is linear
+        alt_single_session
+   } is sat
+}

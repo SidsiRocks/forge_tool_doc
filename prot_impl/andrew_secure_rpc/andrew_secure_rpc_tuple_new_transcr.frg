@@ -629,7 +629,195 @@ one sig skeleton_andrew_secure_rpc_0 {
   skeleton_andrew_secure_rpc_0_B : one andrew_secure_rpc_B,
   skeleton_andrew_secure_rpc_0_B1 : one andrew_secure_rpc_B
 }
+pred constrain_skeleton_andrew_secure_rpc_0_large_honest_run {
+  some t_0 : Timeslot {
+  some t_1 : t_0.(^next) {
+  some t_2 : t_1.(^next) {
+  some t_3 : t_2.(^next) {
+  some t_4 : t_3.(^next) {
+  some t_5 : t_4.(^next) {
+  some t_6 : t_5.(^next) {
+  some t_7 : t_6.(^next) {
+  some t_8 : t_7.(^next) {
+  some t_9 : t_8.(^next) {
+  some t_10 : t_9.(^next) {
+  some t_11 : t_10.(^next) {
+  some t_12 : t_11.(^next) {
+  some t_13 : t_12.(^next) {
+  some t_14 : t_13.(^next) {
+  some t_15 : t_14.(^next) {
+    t_0.sender = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_A
+    inds[(t_0.data.components)] = 0+1
+    let name_29  = ((t_0.data.components))[0] | {
+    let enc_30  = ((t_0.data.components))[1] | {
+      (t_0.data.components) = 0->name_29 + 1->enc_30
+      name_29 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a
+      inds[(enc_30).plaintext.components] = 0
+      let text_32  = ((enc_30).plaintext.components)[0] | {
+        (enc_30).plaintext.components = 0->text_32
+        text_32 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_na
+      }
+      (enc_30).encryptionKey = getLTK[skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a,skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_b]
+    }}
+
+    t_1.receiver = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_B
+    inds[(t_1.data.components)] = 0+1
+    let name_33  = ((t_1.data.components))[0] | {
+    let enc_34  = ((t_1.data.components))[1] | {
+      (t_1.data.components) = 0->name_33 + 1->enc_34
+      name_33 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a
+      inds[(enc_34).plaintext.components] = 0
+      let text_36  = ((enc_34).plaintext.components)[0] | {
+        (enc_34).plaintext.components = 0->text_36
+        text_36 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_na
+      }
+      (enc_34).encryptionKey = getLTK[skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a,skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_b]
+    }}
+
+    t_2.sender = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_B
+    inds[((t_2.data)).plaintext.components] = 0+1
+    let hash_39  = (((t_2.data)).plaintext.components)[0] | {
+    let text_40  = (((t_2.data)).plaintext.components)[1] | {
+      ((t_2.data)).plaintext.components = 0->hash_39 + 1->text_40
+      (hash_39).hash_of = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_na
+      text_40 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_nb
+    }}
+    ((t_2.data)).encryptionKey = getLTK[skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a,skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_b]
+
+    t_3.receiver = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_A
+    inds[((t_3.data)).plaintext.components] = 0+1
+    let hash_43  = (((t_3.data)).plaintext.components)[0] | {
+    let text_44  = (((t_3.data)).plaintext.components)[1] | {
+      ((t_3.data)).plaintext.components = 0->hash_43 + 1->text_44
+      (hash_43).hash_of = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_na
+      text_44 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_nb
+    }}
+    ((t_3.data)).encryptionKey = getLTK[skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a,skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_b]
+
+    t_4.sender = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_A
+    inds[((t_4.data)).plaintext.components] = 0
+    let hash_46  = (((t_4.data)).plaintext.components)[0] | {
+      ((t_4.data)).plaintext.components = 0->hash_46
+      (hash_46).hash_of = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_nb
+    }
+    ((t_4.data)).encryptionKey = getLTK[skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a,skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_b]
+
+    t_5.receiver = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_B
+    inds[((t_5.data)).plaintext.components] = 0
+    let hash_48  = (((t_5.data)).plaintext.components)[0] | {
+      ((t_5.data)).plaintext.components = 0->hash_48
+      (hash_48).hash_of = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_nb
+    }
+    ((t_5.data)).encryptionKey = getLTK[skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a,skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_b]
+
+    t_6.sender = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_B
+    inds[((t_6.data)).plaintext.components] = 0+1
+    let skey_51  = (((t_6.data)).plaintext.components)[0] | {
+    let text_52  = (((t_6.data)).plaintext.components)[1] | {
+      ((t_6.data)).plaintext.components = 0->skey_51 + 1->text_52
+      skey_51 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_kab_
+      text_52 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_nb_
+    }}
+    ((t_6.data)).encryptionKey = getLTK[skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a,skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_b]
+
+    t_7.receiver = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_A
+    inds[((t_7.data)).plaintext.components] = 0+1
+    let skey_55  = (((t_7.data)).plaintext.components)[0] | {
+    let text_56  = (((t_7.data)).plaintext.components)[1] | {
+      ((t_7.data)).plaintext.components = 0->skey_55 + 1->text_56
+      skey_55 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_kab_
+      text_56 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_nb_
+    }}
+    ((t_7.data)).encryptionKey = getLTK[skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a,skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_b]
+
+    t_8.sender = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_A1
+    inds[(t_8.data.components)] = 0+1
+    let name_57  = ((t_8.data.components))[0] | {
+    let enc_58  = ((t_8.data.components))[1] | {
+      (t_8.data.components) = 0->name_57 + 1->enc_58
+      name_57 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a
+      inds[(enc_58).plaintext.components] = 0
+      let text_60  = ((enc_58).plaintext.components)[0] | {
+        (enc_58).plaintext.components = 0->text_60
+        text_60 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_na1
+      }
+      (enc_58).encryptionKey = getLTK[skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a,skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_b]
+    }}
+
+    t_9.receiver = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_B1
+    inds[(t_9.data.components)] = 0+1
+    let name_61  = ((t_9.data.components))[0] | {
+    let enc_62  = ((t_9.data.components))[1] | {
+      (t_9.data.components) = 0->name_61 + 1->enc_62
+      name_61 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a
+      inds[(enc_62).plaintext.components] = 0
+      let text_64  = ((enc_62).plaintext.components)[0] | {
+        (enc_62).plaintext.components = 0->text_64
+        text_64 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_na1
+      }
+      (enc_62).encryptionKey = getLTK[skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a,skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_b]
+    }}
+
+    t_10.sender = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_B1
+    inds[((t_10.data)).plaintext.components] = 0+1
+    let hash_67  = (((t_10.data)).plaintext.components)[0] | {
+    let text_68  = (((t_10.data)).plaintext.components)[1] | {
+      ((t_10.data)).plaintext.components = 0->hash_67 + 1->text_68
+      (hash_67).hash_of = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_na1
+      text_68 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_nb1
+    }}
+    ((t_10.data)).encryptionKey = getLTK[skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a,skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_b]
+
+    t_11.receiver = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_A1
+    inds[((t_11.data)).plaintext.components] = 0+1
+    let hash_71  = (((t_11.data)).plaintext.components)[0] | {
+    let text_72  = (((t_11.data)).plaintext.components)[1] | {
+      ((t_11.data)).plaintext.components = 0->hash_71 + 1->text_72
+      (hash_71).hash_of = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_na1
+      text_72 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_nb1
+    }}
+    ((t_11.data)).encryptionKey = getLTK[skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a,skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_b]
+
+    t_12.sender = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_A1
+    inds[((t_12.data)).plaintext.components] = 0
+    let hash_74  = (((t_12.data)).plaintext.components)[0] | {
+      ((t_12.data)).plaintext.components = 0->hash_74
+      (hash_74).hash_of = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_nb1
+    }
+    ((t_12.data)).encryptionKey = getLTK[skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a,skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_b]
+
+    t_13.receiver = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_B1
+    inds[((t_13.data)).plaintext.components] = 0
+    let hash_76  = (((t_13.data)).plaintext.components)[0] | {
+      ((t_13.data)).plaintext.components = 0->hash_76
+      (hash_76).hash_of = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_nb1
+    }
+    ((t_13.data)).encryptionKey = getLTK[skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a,skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_b]
+
+    t_14.sender = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_B1
+    inds[((t_14.data)).plaintext.components] = 0+1
+    let skey_79  = (((t_14.data)).plaintext.components)[0] | {
+    let text_80  = (((t_14.data)).plaintext.components)[1] | {
+      ((t_14.data)).plaintext.components = 0->skey_79 + 1->text_80
+      skey_79 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_kab_1
+      text_80 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_nb_1
+    }}
+    ((t_14.data)).encryptionKey = getLTK[skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a,skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_b]
+
+    t_15.receiver = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_A1
+    inds[((t_15.data)).plaintext.components] = 0+1
+    let skey_83  = (((t_15.data)).plaintext.components)[0] | {
+    let text_84  = (((t_15.data)).plaintext.components)[1] | {
+      ((t_15.data)).plaintext.components = 0->skey_83 + 1->text_84
+      skey_83 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_kab_
+      text_84 = skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_nb_
+    }}
+    ((t_15.data)).encryptionKey = getLTK[skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_a,skeleton_andrew_secure_rpc_0.skeleton_andrew_secure_rpc_0_b]
+
+  }}}}}}}}}}}}}}}}
+}
 pred constrain_skeleton_andrew_secure_rpc_0 {
+  constrain_skeleton_andrew_secure_rpc_0_large_honest_run
 }
 option run_sterling "../../crypto_viz_seq_tuple.js"
 

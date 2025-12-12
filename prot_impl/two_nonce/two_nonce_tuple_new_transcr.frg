@@ -1,5 +1,5 @@
 #lang forge
-
+open util/sequences
 /*
   Base domain model of strand space style crypto (2021)
     Abby Siegel
@@ -39,21 +39,28 @@ sig PublicKey extends akey {}
 one sig KeyPairs {
   pairs: set PrivateKey -> PublicKey,
   owners: func PrivateKey -> name,
-  ltks: set name -> name -> skey
+  ltks: set name -> name -> skey,
+
+  inv_key_helper: set Key -> Key
 }
 
 /** Get a long-term key associated with a pair of agents */
 fun getLTK[name_a: name, name_b: name]: lone skey {
-  (KeyPairs.ltks)[name_a][name_b]
+    (KeyPairs.ltks)[name_a][name_b] + (KeyPairs.ltks)[name_b][name_a]
 }
 
 /** Get the inverse key for a given key (if any). The structure of this predicate 
     is due to Forge's typechecking as of January 2025. The (none & Key) is a workaround
     to give Key type to none, which has univ type by default.  */
+/*
 fun getInv[k: Key]: one Key {
   (k in PublicKey => ((KeyPairs.pairs).k) else (k.(KeyPairs.pairs)))
   +
   (k in skey => k else (none & Key))
+}
+*/
+fun getInv[k: Key]: one Key {
+    (KeyPairs.inv_key_helper).k
 }
 
 
@@ -70,7 +77,16 @@ sig Timeslot {
   data: one mesg, -- may put one mesg instead?
   -- relation is: Tick x Microtick x learned-mesg
   -- Only one agent per tick is receiving, so always know which agent's workspace it is
-  workspace: set Timeslot -> mesg
+  workspace: set Microtick -> mesg
+}
+
+/** A Microtick represents a step of _learning_ that is part of processing a single 
+    message reception. */
+sig Microtick {
+  -- structure of microticks. (must be rendered linear in every run via `next is linear`)
+  -- The `wellformed` predicate below contains constraints that enforce this, in case 
+  -- a user forgets the add the linear annotation, but doing so would harm performance. 
+  mt_next: lone Microtick
 }
 
 -- As names process received messages, they learn pieces of data
@@ -94,7 +110,14 @@ sig Ciphertext extends mesg {
    encryptionKey: one Key,
    -- result in concating plaintexts
    --plaintext: set mesg
+   -- NOTE: this means when using enc_no_tpl the message inside would always have
+   -- to be a tuple may want to change this to one mesg, does increase scope of solver
+   -- though and unclear if using one mesg changes what attacks could be modelled
    plaintext: one tuple
+}
+
+sig Hashed extends mesg {
+  hash_of: one mesg
 }
 
 -- Non-name base value (e.g., nonces)
@@ -115,12 +138,44 @@ fun baseKnown[a: name]: set mesg {
     name
 }
 
+pred hash_wellformed {
+  -- ensures hash_of is acyclic
+  all d: mesg | d not in d.^(hash_of)
+  -- ensures no two hashed terms are hash of the same term
+  all h1: Hashed | all h2:Hashed - h1 | {
+    h1.hash_of != h2.hash_of
+  }
+}
+
+/** Time and micro-time are ordered. 
+    (This constraint should be tautologous if the user has given an `is linear` 
+    for `next` and `mt_next`.) */
+pred timeSafety {
+  some firstTimeslot: Timeslot | {
+    all ts: Timeslot | ts in firstTimeslot.*next
+    no firstTimeslot.~next
+    -- field declaration ensures at most one successor
+  }
+  some firstMicro: Microtick | {
+    all ts: Microtick  | ts in firstMicro.*mt_next
+    no firstMicro.~mt_next
+    -- field declaration ensures at most one successor
+  }
+}
+
+pred inv_key_helper_constr{
+    KeyPairs.inv_key_helper = KeyPairs.pairs + ~(KeyPairs.pairs) + {s1:skey,s2:skey | s1 = s2}
+}
+
 /** This (large) predicate contains the vast majority of domain axioms */
 pred wellformed {
+  hash_wellformed
+  inv_key_helper_constr
   -- Design choice: only one message event per timeslot;
   --   assume we have a shared notion of time
   -- all m: Timeslot | isSeqOf[m.data,mesg]
   -- all t: Ciphertext | isSeqOf[t.plaintext,mesg]
+  timeSafety
   all t: tuple | isSeqOf[t.components,mesg]
   -- You cannot send a message with no data
   -- all m: Timeslot | some elems[m.data]
@@ -130,11 +185,11 @@ pred wellformed {
 
   -- workspace: workaround to avoid cyclic justification within just deconstructions
   -- AGENT -> TICK -> MICRO-TICK LEARNED_SUBTERM
-  all d: mesg | all t, microt: Timeslot | let a = t.receiver.agent | d in (workspace[t])[microt] iff {
+  all d: mesg | all t: Timeslot, microt: Microtick | let a = t.receiver.agent | d in (workspace[t])[microt] iff {
     -- Base case:
     -- received the data in the clear just now 
     let components_rel = {msg1:tuple,msg2:mesg | {msg2 in elems[msg1.components]}} | {
-    {d in (t.data + t.data.(^components_rel)) and no microt.~next}
+    {d in (t.data + (t.data).(^components_rel)) and no microt.~mt_next}
     or
     -- Inductive case:
     -- breaking down a ciphertext we learned *previously*, or that we've produced from 
@@ -147,8 +202,8 @@ pred wellformed {
       --d not in ((a.workspace)[t])[Timeslot - microt.^next] and -- first time appearing
       {some superterm : Ciphertext | {      
       d in superterm.plaintext.(^components_rel) and     
-      superterm in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a] and
-      getInv[superterm.encryptionKey] in (a.learned_times).(Timeslot - t.*next) + workspace[t][Timeslot - microt.*next] + baseKnown[a]
+      superterm in (a.learned_times).(Timeslot - t.*next) + workspace[t][Microtick - microt.*mt_next] + baseKnown[a] and
+      getInv[superterm.encryptionKey] in (a.learned_times).(Timeslot - t.*next) + workspace[t][Microtick - microt.*mt_next] + baseKnown[a]
     }}}
     }
   }
@@ -174,7 +229,7 @@ pred wellformed {
     -- consider: (k1, enc(k2, enc(n1, invk(k2)), invk(k1)))
     -- or, worse: (k1, enc(x, invk(k3)), enc(k2, enc(k3, invk(k2)), invk(k1)))
     { t.receiver.agent = a
-      d in workspace[t][Timeslot] -- derived in any micro-tick in this (reception) timeslot
+      d in workspace[t][Microtick] -- derived in any micro-tick in this (reception) timeslot
       -- tuple decomposition is also taken care of in the workspace here
     }   
     or 
@@ -196,7 +251,13 @@ pred wellformed {
 
     or
     -- This was a value generated by the name in this timeslot
-    {d in (a.generated_times).t}    
+    {d in (a.generated_times).t}
+
+    or
+    {d in Hashed and
+    d.hash_of in (a.learned_times).(Timeslot - t.^next) and
+    {a not in t.receiver.agent}
+    }    
     }} -- (end big disjunction for learned_times)
   
   -- If you generate something, you do it once only
@@ -213,7 +274,7 @@ pred wellformed {
 --  let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
 --    all d: mesg | d not in d.^(old_plain)
 --  }
-  let subterm_rel = {msg1:mesg,msg2:mesg | {msg2 in elems[msg1.components]}} + plaintext | {
+  let subterm_rel = {msg1:mesg,msg2:mesg | {msg2 in elems[msg1.components]}} + plaintext + hash_of | {
       all d: mesg | d not in d.^(subterm_rel)
   }
   
@@ -274,7 +335,7 @@ fun subterm[supers: set mesg]: set mesg {
   -- let old_plain = {cipher: Ciphertext,msg:mesg | {msg in elems[cipher.plaintext]}} | {
   --   supers + supers.^(old_plain) -- union on new subterm relations inside parens
   -- }
-  let subterm_rel = {msg1:mesg,msg2:mesg | {msg2 in elems[msg1.components]}} + plaintext | {
+  let subterm_rel = {msg1:mesg,msg2:mesg | {msg2 in elems[msg1.components]}} + plaintext + hash_of | {
       supers + supers.(^subterm_rel)
   }
 }
@@ -466,24 +527,31 @@ inst alt_single_session {
   PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2
   PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2
   akey = PublicKey + PrivateKey
+  no skey
   Key = akey
   Attacker = `Attacker0
   name = `name0 + `name1 + Attacker
   Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7 + `Ciphertext8 + `Ciphertext9
   text = `text0 + `text1 + `text2 + `text3 + `text4 + `text5
+  no Hashed
   tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7
   mesg = Key + name + Ciphertext + text + tuple
 
   Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5
 
-  components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple)
+  components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple + Hashed)
   KeyPairs = `KeyPairs0
+  Microtick = `Microtick0 + `Microtick1 + `Microtick2
   pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2)
   owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
   no ltks
 
+  `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2
   next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5
+  mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
 
+  generated_times in name -> (Key + text) -> Timeslot
+  hash_of in Hashed -> text
   two_nonce_init = `two_nonce_init0
   two_nonce_resp = `two_nonce_resp0
   AttackerStrand = `AttackerStrand0
@@ -493,29 +561,37 @@ inst alt_double_session {
   PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2
   PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2
   akey = PublicKey + PrivateKey
+  no skey
   Key = akey
   Attacker = `Attacker0
   name = `name0 + `name1 + Attacker
   Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7 + `Ciphertext8 + `Ciphertext9 + `Ciphertext10 + `Ciphertext11 + `Ciphertext12 + `Ciphertext13 + `Ciphertext14
   text = `text0 + `text1 + `text2 + `text3 + `text4 + `text5 + `text6 + `text7 + `text8 + `text9
+  no Hashed
   tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7 + `tuple8 + `tuple9 + `tuple10 + `tuple11 + `tuple12 + `tuple13 + `tuple14
   mesg = Key + name + Ciphertext + text + tuple
 
   Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7 + `Timeslot8 + `Timeslot9 + `Timeslot10 + `Timeslot11
 
-  components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple)
+  components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple + Hashed)
   KeyPairs = `KeyPairs0
+  Microtick = `Microtick0 + `Microtick1 + `Microtick2
   pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2)
   owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
   no ltks
 
+  `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2
   next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7 + `Timeslot7->`Timeslot8 + `Timeslot8->`Timeslot9 + `Timeslot9->`Timeslot10 + `Timeslot10->`Timeslot11
+  mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
 
+  generated_times in name -> (Key + text) -> Timeslot
+  hash_of in Hashed -> text
   two_nonce_init = `two_nonce_init0 + `two_nonce_init1
   two_nonce_resp = `two_nonce_resp0 + `two_nonce_resp1
   AttackerStrand = `AttackerStrand0
   strand = two_nonce_init + two_nonce_resp + AttackerStrand
 }
+
 option run_sterling "../../crypto_viz_seq_tuple.js"
 option verbose 5
 option solver Glucose
@@ -540,17 +616,17 @@ two_nonce_init_pov : run {
 
     constrain_skeleton_two_nonce_0
 
-    -- no (two_nonce_resp.agent & two_nonce_init.agent)
+    no (two_nonce_resp.agent & two_nonce_init.agent)
     --should not need restriction on a and b this time?
 
     --this may prevent attack have to check
-    -- not (Attacker in (two_nonce_init + two_nonce_resp).agent)
+    not (Attacker in (two_nonce_init + two_nonce_resp).agent)
 
     --finding attack where init beleives it is talking to resp
     --but attacker knows the nonce
-    -- not (Attacker in two_nonce_init.two_nonce_init_b)
+    not (Attacker in two_nonce_init.two_nonce_init_b)
     -- two_nonce_init.two_nonce_init_b = two_nonce_resp.agent --this one is faster than the one above strangely conincidence or?
-    -- corrected_attacker_learns[two_nonce_init.two_nonce_init_n2]
+    corrected_attacker_learns[two_nonce_init.two_nonce_init_n2]
     -- Attacker -> (two_nonce_init.two_nonce_init_n2) in learned_times.Timeslot
 
     --same nonce problem seems to be resolved
@@ -604,11 +680,11 @@ two_nonce_init_pov : run {
 --        two_sessions
 --    }
 
-    exactly 3 Int
-    for{
-        next is linear
-        alt_single_session
-    }
+   exactly 3 Int
+   for{
+       next is linear
+       alt_single_session
+   }
 
 --    exactly 3 Int
 --    for{
@@ -616,3 +692,16 @@ two_nonce_init_pov : run {
 --         alt_double_session
 --    }
 --run {} for 3
+
+test expect{
+    two_nonce_init_pov_test : {
+        wellformed
+        exec_two_nonce_init
+        exec_two_nonce_resp
+        constrain_skeleton_two_nonce_0
+    } for exactly 3 Int
+    for{
+        next is linear
+        alt_single_session
+   } is sat
+}

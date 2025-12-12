@@ -1,5 +1,5 @@
 #lang forge
-
+open util/sequences
 /*
   Base domain model of strand space style crypto (2021)
     Abby Siegel

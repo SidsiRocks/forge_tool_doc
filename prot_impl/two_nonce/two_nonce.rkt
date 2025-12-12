@@ -41,7 +41,7 @@
   (Key 6) (name 3) (Ciphertext 10) (text 6) (tuple 8) (Hashed 0) ;; in tuple model Hashed has to be 0 currently as only storing hashed model
   (akey 6) (skey 0) (Attacker 1)
   (PublicKey 3) (PrivateKey 3)
-  (enc-depth 2)
+  (enc-depth 2) (tuple-length 2)
   (init 1) (resp 1)
   )
 
@@ -51,7 +51,7 @@
   (Key 6) (name 3) (Ciphertext 15) (text 10) (tuple 15) (Hashed 0)
   (akey 6) (skey 0) (Attacker 1)
   (PublicKey 3) (PrivateKey 3)
-  (enc-depth 2)
+  (enc-depth 2) (tuple-length 2)
   (init 2) (resp 2)
 )
 ;; (definstance single_session
