@@ -26,6 +26,15 @@ class MsgTypes(Enum):
 # this is needed
 # TODO: can improve this VarType probably
 
+def escape_underscore(txt):
+    result = ""
+    for c in txt:
+        if c == "_":
+            result += "\\_"
+        else:
+            result += c
+    return result
+
 @dataclass
 class Variable:
     var_name: str
@@ -34,6 +43,8 @@ class Variable:
         return self.var_name
     def __repr__(self) -> str:
         return f"{self.var_name}:{self.var_type}"
+    def latex_repr(self):
+        return escape_underscore(self.var_name)
 
 VarMap = Dict[str,Variable]
 
@@ -45,6 +56,8 @@ class LtkTerm:
         return f"(ltk {self.agent1_name} {self.agent2_name})"
     def __str__(self):
         return self.__repr__()
+    def latex_repr(self):
+        return f"ltk({self.agent1_name},{self.agent2_name})"
 @dataclass
 class PubkTerm:
     agent_name:str
@@ -52,11 +65,15 @@ class PubkTerm:
         return f"(pubk {self.agent_name})"
     def __str__(self):
         return self.__repr__()
+    def latex_repr(self):
+        return f"pubk({self.agent_name})"
 @dataclass
 class PrivkTerm:
     agent_name:str
     def __repr__(self):
         return f"(privk {self.agent_name})"
+    def latex_repr(self):
+        return f"privk({self.agent_name})"
 KeyTerm = LtkTerm | PubkTerm | PrivkTerm | Variable
 @dataclass
 class EncTerm:
@@ -65,6 +82,10 @@ class EncTerm:
     def __repr__(self):
         data_str = ' '.join([f"{msg}" for msg in self.data])
         return f"(enc {data_str} {self.key})"
+    def latex_repr(self):
+        plaintext_latex = "[" + ",".join([elm.latex_repr() for elm in self.data]) + "]"
+        key_latex = self.key.latex_repr()
+        return f"{{{{{plaintext_latex}}}}}_{{{key_latex}}}"
 
 @dataclass
 class EncTermNoTpl:
@@ -72,6 +93,10 @@ class EncTermNoTpl:
     key: KeyTerm
     def __repr__(self) -> str:
         return f"(enc {self.data} {self.key})"
+    def latex_repr(self):
+        plaintext_latex = self.data.latex_repr()
+        key_latex = self.key.latex_repr()
+        return f"{{{{{plaintext_latex}}}}}_{{{key_latex}}}"
 
 @dataclass
 class CatTerm:
@@ -81,6 +106,9 @@ class CatTerm:
         return f"(cat {data_str})"
     def __str__(self) -> str:
         return self.__repr__()
+    def latex_repr(self):
+        components_latex = "[" + ",".join([elm.latex_repr() for elm in self.data]) + "]"
+        return components_latex
 
 @dataclass
 class SeqTerm:
@@ -91,14 +119,19 @@ class SeqTerm:
         return f"(seq {data_str})"
     def __str__(self) -> str:
         return self.__repr__()
+    def latex_repr(self):
+        components_latex = "[" + ",".join([elm.latex_repr() for elm in self.data]) + "]"
+        return components_latex
 
 @dataclass
 class HashTerm:
-    hash_of: "NonCatTerm"
+    hash_of: "Message"
     def __repr__(self) -> str:
         return f"(hash {self.hash_of})"
     def __str__(self) -> str:
         return self.__repr__()
+    def latex_repr(self):
+        return f"hash({self.hash_of.latex_repr()})"
 
 class SendRecv(Enum):
     SEND = 0
