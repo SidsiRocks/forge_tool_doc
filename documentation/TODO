@@ -62,3 +62,11 @@ getPUBK[two_nonce_resp0.agent] works eventhough  two_nonce_resp0.agent = name0
 ** TODO get perf metrics for ootway_rees two_nonce and others
 get these performance metrics for different versisons to send to sir
 ** TODO unable to make many other custom solvers work ask sir about being able to use those
+** TODO implementing timestamp related protocols
+*** CCITT X.509 timeslot not really used here
+*** CCITT X.509 (1c) timeslot not really used here either but good use of hash
+*** CCITT X.509 (3) timeslot maybe kind of used unclear (how is the timeslot checked here?)
+*** BAN modified CCITT X.509 (3) not timeslot related but can implement this also
+*** Denning-Sacco shared key, nonce replaced by Timestamp in Needham Schroeder (is it any different though?)
+*** Lowe modified Denning-Sacco shared key, nonce replaced by Timestamp in Needham Schroeder (is it any different though?)
+*** Kao chow authentication not Timeslot related but can implement
