@@ -70,3 +70,5 @@ get these performance metrics for different versisons to send to sir
 *** Denning-Sacco shared key, nonce replaced by Timestamp in Needham Schroeder (is it any different though?)
 *** Lowe modified Denning-Sacco shared key, nonce replaced by Timestamp in Needham Schroeder (is it any different though?)
 *** Kao chow authentication not Timeslot related but can implement
+*** Kerberos-V5 uses timestamp but has no known attacks
+*** KSL might be difficult to fully model and also has no known attacks
