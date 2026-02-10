@@ -1,5 +1,5 @@
 #lang forge
-
+-- open util/sequences
 /*
   Base domain model of strand space style crypto (2021)
     Abby Siegel
@@ -677,13 +677,13 @@ inst honest_run_bounds {
 
   Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7
 
-  components in tuple -> (0+1+2+3+4) -> (Key + name + text + Ciphertext + tuple)
+  components in tuple -> (0+1+2+3+4) -> (Key + name + text + Ciphertext + tuple + Hashed)
   KeyPairs = `KeyPairs0
   Microtick = `Microtick0 + `Microtick1
   no PublicKey
   no PrivateKey
 
-  `KeyPairs0.ltks = `name0->`name1->`skey0 + `name0->`name2->`skey1 + `name1->`name2->`skey2
+  `KeyPairs0.ltks = `name0->`name1->`skey0 + `name0->`name2->`skey1 + `name0->`Attacker0->`skey2 + `name1->`name2->`skey3 + `name1->`Attacker0->`skey4 + `name2->`Attacker0->`skey5
   `KeyPairs0.inv_key_helper = `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2 + `skey3->`skey3 + `skey4->`skey4 + `skey5->`skey5 + `skey6->`skey6
   next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7
   mt_next = `Microtick0 -> `Microtick1
