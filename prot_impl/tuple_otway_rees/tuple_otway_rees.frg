@@ -1,5 +1,6 @@
 option run_sterling "../../crypto_viz_seq_tuple.js"
 option solver Glucose
+option verbose 5
 
 -- option logtranslation 1
 -- option coregranularity 1
@@ -22,7 +23,8 @@ ootway_rees_prot_run: run {
     ootway_rees_A.agent != ootway_rees_S.agent
     ootway_rees_B.agent != ootway_rees_S.agent
 
-    ootway_rees_A.ootway_rees_A_kab != ootway_rees_S.ootway_rees_S_kab
+    -- shouldn;t be needed for honest run i think
+    -- ootway_rees_A.ootway_rees_A_kab != ootway_rees_S.ootway_rees_S_kab
 }for
   exactly 4 Int
   for{
