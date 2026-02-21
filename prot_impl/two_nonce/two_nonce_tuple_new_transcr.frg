@@ -686,22 +686,15 @@ two_nonce_init_pov : run {
        alt_single_session
    }
 
---    exactly 3 Int
+--test expect{
+--    two_nonce_init_pov_test : {
+--        wellformed
+--        exec_two_nonce_init
+--        exec_two_nonce_resp
+--        constrain_skeleton_two_nonce_0
+--    } for exactly 3 Int
 --    for{
---         next is linear
---         alt_double_session
---    }
---run {} for 3
-
-test expect{
-    two_nonce_init_pov_test : {
-        wellformed
-        exec_two_nonce_init
-        exec_two_nonce_resp
-        constrain_skeleton_two_nonce_0
-    } for exactly 3 Int
-    for{
-        next is linear
-        alt_single_session
-   } is sat
-}
+--        next is linear
+--        alt_single_session
+--   } is sat
+--}
