@@ -8,7 +8,6 @@
         )
         (constraint
             (uniq-orig Ka)
-            (fresh-gen Ka)
         )
     )
     (defrole resp
@@ -19,7 +18,6 @@
         )
         (constraint
             (uniq-orig Kb)
-            (fresh-gen Kb)
         )
     )
     (defrole server
@@ -30,6 +28,9 @@
             (recv (cat a (enc Kb (pubk s))))
             (send (cat b (enc Kb Ka)))
         )
+        (constraint
+            (non-orig (privk s))
+        )
     )
 )
 
@@ -38,15 +39,14 @@
     (defstrand init 2 (a a) (b b) (s s) (Ka Ka) (Kb Kb))
     (defstrand resp 2 (a a) (b b) (s s) (Ka Ka) (Kb Kb))
     (defstrand server 4 (a a) (b b) (s s) (Ka Ka) (Kb Kb))
-    ; (uniq-orig Ka)
-    ; (not-eq a b)
-    ; (not-eq a s)
-    ; (not-eq b s)
-    ; (uniq-orig Kb)
+
+    (not-eq a b)
+    (not-eq a s)
+    (not-eq b s)
 )
 
 (defaltinstance alt_tmn_small
-  (Timeslot 6)
+  (Timeslot 8)
   (mesg 33)
   (Key 11) (name 4) (Ciphertext 8) (text 4) (tuple 6) (Hashed 0)
   (akey 8) (skey 3) (Attacker 1)
