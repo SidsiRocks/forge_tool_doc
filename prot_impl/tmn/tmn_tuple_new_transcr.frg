@@ -425,7 +425,6 @@ pred exec_tmn_init {
     (generated_times.Timeslot).(arbitrary_init_tmn.tmn_init_Ka) = arbitrary_init_tmn.agent
     some t0 : Timeslot {
     some t1 : t0.(^next) {
-      ((arbitrary_init_tmn.tmn_init_Ka)->t0) in (arbitrary_init_tmn.agent).generated_times
       t0+t1 = sender.arbitrary_init_tmn + receiver.arbitrary_init_tmn
       t0.sender = arbitrary_init_tmn
       inds[((t0.data).components)] = 0+1
@@ -471,7 +470,6 @@ pred exec_tmn_resp {
     (generated_times.Timeslot).(arbitrary_resp_tmn.tmn_resp_Kb) = arbitrary_resp_tmn.agent
     some t0 : Timeslot {
     some t1 : t0.(^next) {
-      ((arbitrary_resp_tmn.tmn_resp_Kb)->t1) in (arbitrary_resp_tmn.agent).generated_times
       t0+t1 = sender.arbitrary_resp_tmn + receiver.arbitrary_resp_tmn
       t0.receiver = arbitrary_resp_tmn
       (t0.data) = arbitrary_resp_tmn.tmn_resp_a
@@ -502,6 +500,9 @@ sig tmn_server extends strand {
 }
 pred exec_tmn_server {
   all arbitrary_server_tmn : tmn_server | {
+    no aStrand : strand | {
+      originates[aStrand,getPRIVK[arbitrary_server_tmn.tmn_server_s]] or generates [aStrand,getPRIVK[arbitrary_server_tmn.tmn_server_s]]
+    }
     some t0 : Timeslot {
     some t1 : t0.(^next) {
     some t2 : t1.(^next) {
@@ -586,6 +587,9 @@ pred constrain_skeleton_tmn_0 {
     skeleton_server_0_strand_2.tmn_server_Ka = skeleton_tmn_0.skeleton_tmn_0_Ka
     skeleton_server_0_strand_2.tmn_server_Kb = skeleton_tmn_0.skeleton_tmn_0_Kb
   }
+  skeleton_tmn_0.skeleton_tmn_0_a != skeleton_tmn_0.skeleton_tmn_0_b
+  skeleton_tmn_0.skeleton_tmn_0_a != skeleton_tmn_0.skeleton_tmn_0_s
+  skeleton_tmn_0.skeleton_tmn_0_b != skeleton_tmn_0.skeleton_tmn_0_s
 }
 inst alt_tmn_small {
   PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2 + `PublicKey3
@@ -601,7 +605,7 @@ inst alt_tmn_small {
   tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5
   mesg = Key + name + Ciphertext + text + tuple
 
-  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7
 
   components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple + Hashed)
   KeyPairs = `KeyPairs0
@@ -611,7 +615,7 @@ inst alt_tmn_small {
   no ltks
 
   `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2 + `PublicKey3->`PrivateKey3 + `PrivateKey3->`PublicKey3 + `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2
-  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7
   mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
 
   generated_times in name -> (Key + text) -> Timeslot
