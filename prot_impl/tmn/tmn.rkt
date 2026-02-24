@@ -1,6 +1,6 @@
 #lang forge/domains/crypto
 (defprotocol tmn basic
-    (defrole init
+    (defrole A
         (vars (a b s name) (Ka Kb skey))
         (trace
             (send (cat b (enc Ka (pubk s))))
@@ -8,9 +8,10 @@
         )
         (constraint
             (uniq-orig Ka)
+            (fresh-gen Ka)
         )
     )
-    (defrole resp
+    (defrole B
         (vars (a b s name) (Kb Ka skey))
         (trace 
             (recv a)
@@ -18,9 +19,10 @@
         )
         (constraint
             (uniq-orig Kb)
+            (fresh-gen Kb)
         )
     )
-    (defrole server
+    (defrole S
         (vars (a b s name) (Ka Kb skey))
         (trace
             (recv (cat b (enc Ka (pubk s))))
@@ -36,9 +38,9 @@
 
 (defskeleton tmn
     (vars (a b s name) (Ka Kb skey))
-    (defstrand init 2 (a a) (b b) (s s) (Ka Ka) (Kb Kb))
-    (defstrand resp 2 (a a) (b b) (s s) (Ka Ka) (Kb Kb))
-    (defstrand server 4 (a a) (b b) (s s) (Ka Ka) (Kb Kb))
+    (defstrand A 2 (a a) (b b) (s s) (Ka Ka) (Kb Kb))
+    (defstrand B 2 (a a) (b b) (s s) (Ka Ka) (Kb Kb))
+    (defstrand S 4 (a a) (b b) (s s) (Ka Ka) (Kb Kb))
 
     (not-eq a b)
     (not-eq a s)
@@ -52,5 +54,5 @@
   (akey 8) (skey 3) (Attacker 1)
   (PublicKey 4) (PrivateKey 4)
   (enc-depth 2) (tuple-length 2)
-  (init 1) (resp 1) (server 1)
+  (A 1) (B 1) (S 1)
 )
