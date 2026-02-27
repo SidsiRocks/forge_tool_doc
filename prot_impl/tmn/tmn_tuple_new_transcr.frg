@@ -413,148 +413,163 @@ pred learnt_term_by[m:mesg,a:name,t:Timeslot] {
     a->m in (learned_times).(Timeslot - t.^next)
 }
 
-sig tmn_A extends strand {
-  tmn_A_a : one name,
-  tmn_A_b : one name,
-  tmn_A_s : one name,
-  tmn_A_Ka : one skey,
-  tmn_A_Kb : one skey
+sig tmn_init extends strand {
+  tmn_init_a : one name,
+  tmn_init_b : one name,
+  tmn_init_s : one name,
+  tmn_init_Ka : one skey,
+  tmn_init_Kb : one skey
 }
-pred exec_tmn_A {
-  all arbitrary_A_tmn : tmn_A | {
-    (generated_times.Timeslot).(arbitrary_A_tmn.tmn_A_Ka) = arbitrary_A_tmn.agent
+pred exec_tmn_init {
+  all arbitrary_init_tmn : tmn_init | {
+    (generated_times.Timeslot).(arbitrary_init_tmn.tmn_init_Ka) = arbitrary_init_tmn.agent
+    no aStrand : strand | {
+      originates[aStrand,getPRIVK[arbitrary_init_tmn.tmn_init_a]] or generates [aStrand,getPRIVK[arbitrary_init_tmn.tmn_init_a]]
+    }
+    arbitrary_init_tmn.tmn_init_a != arbitrary_init_tmn.tmn_init_b
+    arbitrary_init_tmn.tmn_init_a != arbitrary_init_tmn.tmn_init_s
+    arbitrary_init_tmn.tmn_init_b != arbitrary_init_tmn.tmn_init_s
     some t0 : Timeslot {
     some t1 : t0.(^next) {
-      ((arbitrary_A_tmn.tmn_A_Ka)->t0) in (arbitrary_A_tmn.agent).generated_times
-      t0+t1 = sender.arbitrary_A_tmn + receiver.arbitrary_A_tmn
-      t0.sender = arbitrary_A_tmn
+      ((arbitrary_init_tmn.tmn_init_Ka)->t0) in (arbitrary_init_tmn.agent).generated_times
+      t0+t1 = sender.arbitrary_init_tmn + receiver.arbitrary_init_tmn
+      t0.sender = arbitrary_init_tmn
       inds[((t0.data).components)] = 0+1
       let name_1  = (((t0.data).components))[0] | {
       let enc_2  = (((t0.data).components))[1] | {
         ((t0.data).components) = 0->name_1 + 1->enc_2
-        name_1 = arbitrary_A_tmn.tmn_A_b
+        name_1 = arbitrary_init_tmn.tmn_init_b
         inds[(enc_2).plaintext.components] = 0
         let skey_4  = ((enc_2).plaintext.components)[0] | {
           (enc_2).plaintext.components = 0->skey_4
-          skey_4 = arbitrary_A_tmn.tmn_A_Ka
+          skey_4 = arbitrary_init_tmn.tmn_init_Ka
         }
-        (enc_2).encryptionKey = getPUBK[arbitrary_A_tmn.tmn_A_s]
+        (enc_2).encryptionKey = getPUBK[arbitrary_init_tmn.tmn_init_s]
       }}
 
-      t1.receiver = arbitrary_A_tmn
+      t1.receiver = arbitrary_init_tmn
       inds[((t1.data).components)] = 0+1
       let name_5  = (((t1.data).components))[0] | {
       let enc_6  = (((t1.data).components))[1] | {
         ((t1.data).components) = 0->name_5 + 1->enc_6
-        name_5 = arbitrary_A_tmn.tmn_A_b
-        learnt_term_by[arbitrary_A_tmn.tmn_A_Ka,arbitrary_A_tmn.agent,t1]
+        name_5 = arbitrary_init_tmn.tmn_init_b
+        learnt_term_by[arbitrary_init_tmn.tmn_init_Ka,arbitrary_init_tmn.agent,t1]
         inds[(enc_6).plaintext.components] = 0
         let skey_8  = ((enc_6).plaintext.components)[0] | {
           (enc_6).plaintext.components = 0->skey_8
-          skey_8 = arbitrary_A_tmn.tmn_A_Kb
+          skey_8 = arbitrary_init_tmn.tmn_init_Kb
         }
-        (enc_6).encryptionKey = arbitrary_A_tmn.tmn_A_Ka
+        (enc_6).encryptionKey = arbitrary_init_tmn.tmn_init_Ka
       }}
 
     }}
   }
 }
-sig tmn_B extends strand {
-  tmn_B_a : one name,
-  tmn_B_b : one name,
-  tmn_B_s : one name,
-  tmn_B_Kb : one skey,
-  tmn_B_Ka : one skey
+sig tmn_resp extends strand {
+  tmn_resp_a : one name,
+  tmn_resp_b : one name,
+  tmn_resp_s : one name,
+  tmn_resp_Kb : one skey,
+  tmn_resp_Ka : one skey
 }
-pred exec_tmn_B {
-  all arbitrary_B_tmn : tmn_B | {
-    (generated_times.Timeslot).(arbitrary_B_tmn.tmn_B_Kb) = arbitrary_B_tmn.agent
+pred exec_tmn_resp {
+  all arbitrary_resp_tmn : tmn_resp | {
+    (generated_times.Timeslot).(arbitrary_resp_tmn.tmn_resp_Kb) = arbitrary_resp_tmn.agent
+    no aStrand : strand | {
+      originates[aStrand,getPRIVK[arbitrary_resp_tmn.tmn_resp_b]] or generates [aStrand,getPRIVK[arbitrary_resp_tmn.tmn_resp_b]]
+    }
+    arbitrary_resp_tmn.tmn_resp_a != arbitrary_resp_tmn.tmn_resp_b
+    arbitrary_resp_tmn.tmn_resp_a != arbitrary_resp_tmn.tmn_resp_s
+    arbitrary_resp_tmn.tmn_resp_b != arbitrary_resp_tmn.tmn_resp_s
     some t0 : Timeslot {
     some t1 : t0.(^next) {
-      ((arbitrary_B_tmn.tmn_B_Kb)->t1) in (arbitrary_B_tmn.agent).generated_times
-      t0+t1 = sender.arbitrary_B_tmn + receiver.arbitrary_B_tmn
-      t0.receiver = arbitrary_B_tmn
-      (t0.data) = arbitrary_B_tmn.tmn_B_a
+      ((arbitrary_resp_tmn.tmn_resp_Kb)->t1) in (arbitrary_resp_tmn.agent).generated_times
+      t0+t1 = sender.arbitrary_resp_tmn + receiver.arbitrary_resp_tmn
+      t0.receiver = arbitrary_resp_tmn
+      (t0.data) = arbitrary_resp_tmn.tmn_resp_a
 
-      t1.sender = arbitrary_B_tmn
+      t1.sender = arbitrary_resp_tmn
       inds[((t1.data).components)] = 0+1
       let name_9  = (((t1.data).components))[0] | {
       let enc_10  = (((t1.data).components))[1] | {
         ((t1.data).components) = 0->name_9 + 1->enc_10
-        name_9 = arbitrary_B_tmn.tmn_B_a
+        name_9 = arbitrary_resp_tmn.tmn_resp_a
         inds[(enc_10).plaintext.components] = 0
         let skey_12  = ((enc_10).plaintext.components)[0] | {
           (enc_10).plaintext.components = 0->skey_12
-          skey_12 = arbitrary_B_tmn.tmn_B_Kb
+          skey_12 = arbitrary_resp_tmn.tmn_resp_Kb
         }
-        (enc_10).encryptionKey = getPUBK[arbitrary_B_tmn.tmn_B_s]
+        (enc_10).encryptionKey = getPUBK[arbitrary_resp_tmn.tmn_resp_s]
       }}
 
     }}
   }
 }
-sig tmn_S extends strand {
-  tmn_S_a : one name,
-  tmn_S_b : one name,
-  tmn_S_s : one name,
-  tmn_S_Ka : one skey,
-  tmn_S_Kb : one skey
+sig tmn_server extends strand {
+  tmn_server_a : one name,
+  tmn_server_b : one name,
+  tmn_server_s : one name,
+  tmn_server_Ka : one skey,
+  tmn_server_Kb : one skey
 }
-pred exec_tmn_S {
-  all arbitrary_S_tmn : tmn_S | {
+pred exec_tmn_server {
+  all arbitrary_server_tmn : tmn_server | {
     no aStrand : strand | {
-      originates[aStrand,getPRIVK[arbitrary_S_tmn.tmn_S_s]] or generates [aStrand,getPRIVK[arbitrary_S_tmn.tmn_S_s]]
+      originates[aStrand,getPRIVK[arbitrary_server_tmn.tmn_server_s]] or generates [aStrand,getPRIVK[arbitrary_server_tmn.tmn_server_s]]
     }
+    arbitrary_server_tmn.tmn_server_a != arbitrary_server_tmn.tmn_server_b
+    arbitrary_server_tmn.tmn_server_a != arbitrary_server_tmn.tmn_server_s
+    arbitrary_server_tmn.tmn_server_b != arbitrary_server_tmn.tmn_server_s
     some t0 : Timeslot {
     some t1 : t0.(^next) {
     some t2 : t1.(^next) {
     some t3 : t2.(^next) {
-      t0+t1+t2+t3 = sender.arbitrary_S_tmn + receiver.arbitrary_S_tmn
-      t0.receiver = arbitrary_S_tmn
+      t0+t1+t2+t3 = sender.arbitrary_server_tmn + receiver.arbitrary_server_tmn
+      t0.receiver = arbitrary_server_tmn
       inds[((t0.data).components)] = 0+1
       let name_13  = (((t0.data).components))[0] | {
       let enc_14  = (((t0.data).components))[1] | {
         ((t0.data).components) = 0->name_13 + 1->enc_14
-        name_13 = arbitrary_S_tmn.tmn_S_b
-        learnt_term_by[getPRIVK[arbitrary_S_tmn.tmn_S_s],arbitrary_S_tmn.agent,t0]
+        name_13 = arbitrary_server_tmn.tmn_server_b
+        learnt_term_by[getPRIVK[arbitrary_server_tmn.tmn_server_s],arbitrary_server_tmn.agent,t0]
         inds[(enc_14).plaintext.components] = 0
         let skey_16  = ((enc_14).plaintext.components)[0] | {
           (enc_14).plaintext.components = 0->skey_16
-          skey_16 = arbitrary_S_tmn.tmn_S_Ka
+          skey_16 = arbitrary_server_tmn.tmn_server_Ka
         }
-        (enc_14).encryptionKey = getPUBK[arbitrary_S_tmn.tmn_S_s]
+        (enc_14).encryptionKey = getPUBK[arbitrary_server_tmn.tmn_server_s]
       }}
 
-      t1.sender = arbitrary_S_tmn
-      (t1.data) = arbitrary_S_tmn.tmn_S_a
+      t1.sender = arbitrary_server_tmn
+      (t1.data) = arbitrary_server_tmn.tmn_server_a
 
-      t2.receiver = arbitrary_S_tmn
+      t2.receiver = arbitrary_server_tmn
       inds[((t2.data).components)] = 0+1
       let name_17  = (((t2.data).components))[0] | {
       let enc_18  = (((t2.data).components))[1] | {
         ((t2.data).components) = 0->name_17 + 1->enc_18
-        name_17 = arbitrary_S_tmn.tmn_S_a
-        learnt_term_by[getPRIVK[arbitrary_S_tmn.tmn_S_s],arbitrary_S_tmn.agent,t2]
+        name_17 = arbitrary_server_tmn.tmn_server_a
+        learnt_term_by[getPRIVK[arbitrary_server_tmn.tmn_server_s],arbitrary_server_tmn.agent,t2]
         inds[(enc_18).plaintext.components] = 0
         let skey_20  = ((enc_18).plaintext.components)[0] | {
           (enc_18).plaintext.components = 0->skey_20
-          skey_20 = arbitrary_S_tmn.tmn_S_Kb
+          skey_20 = arbitrary_server_tmn.tmn_server_Kb
         }
-        (enc_18).encryptionKey = getPUBK[arbitrary_S_tmn.tmn_S_s]
+        (enc_18).encryptionKey = getPUBK[arbitrary_server_tmn.tmn_server_s]
       }}
 
-      t3.sender = arbitrary_S_tmn
+      t3.sender = arbitrary_server_tmn
       inds[((t3.data).components)] = 0+1
       let name_21  = (((t3.data).components))[0] | {
       let enc_22  = (((t3.data).components))[1] | {
         ((t3.data).components) = 0->name_21 + 1->enc_22
-        name_21 = arbitrary_S_tmn.tmn_S_b
+        name_21 = arbitrary_server_tmn.tmn_server_b
         inds[(enc_22).plaintext.components] = 0
         let skey_24  = ((enc_22).plaintext.components)[0] | {
           (enc_22).plaintext.components = 0->skey_24
-          skey_24 = arbitrary_S_tmn.tmn_S_Kb
+          skey_24 = arbitrary_server_tmn.tmn_server_Kb
         }
-        (enc_22).encryptionKey = arbitrary_S_tmn.tmn_S_Ka
+        (enc_22).encryptionKey = arbitrary_server_tmn.tmn_server_Ka
       }}
 
     }}}}
@@ -568,30 +583,27 @@ one sig skeleton_tmn_0 {
   skeleton_tmn_0_Kb : one skey
 }
 pred constrain_skeleton_tmn_0 {
-  some skeleton_A_0_strand_0 : tmn_A | {
-    skeleton_A_0_strand_0.tmn_A_a = skeleton_tmn_0.skeleton_tmn_0_a
-    skeleton_A_0_strand_0.tmn_A_b = skeleton_tmn_0.skeleton_tmn_0_b
-    skeleton_A_0_strand_0.tmn_A_s = skeleton_tmn_0.skeleton_tmn_0_s
-    skeleton_A_0_strand_0.tmn_A_Ka = skeleton_tmn_0.skeleton_tmn_0_Ka
-    skeleton_A_0_strand_0.tmn_A_Kb = skeleton_tmn_0.skeleton_tmn_0_Kb
+  some skeleton_init_0_strand_0 : tmn_init | {
+    skeleton_init_0_strand_0.tmn_init_a = skeleton_tmn_0.skeleton_tmn_0_a
+    skeleton_init_0_strand_0.tmn_init_b = skeleton_tmn_0.skeleton_tmn_0_b
+    skeleton_init_0_strand_0.tmn_init_s = skeleton_tmn_0.skeleton_tmn_0_s
+    skeleton_init_0_strand_0.tmn_init_Ka = skeleton_tmn_0.skeleton_tmn_0_Ka
+    skeleton_init_0_strand_0.tmn_init_Kb = skeleton_tmn_0.skeleton_tmn_0_Kb
   }
-  some skeleton_B_0_strand_1 : tmn_B | {
-    skeleton_B_0_strand_1.tmn_B_a = skeleton_tmn_0.skeleton_tmn_0_a
-    skeleton_B_0_strand_1.tmn_B_b = skeleton_tmn_0.skeleton_tmn_0_b
-    skeleton_B_0_strand_1.tmn_B_s = skeleton_tmn_0.skeleton_tmn_0_s
-    skeleton_B_0_strand_1.tmn_B_Ka = skeleton_tmn_0.skeleton_tmn_0_Ka
-    skeleton_B_0_strand_1.tmn_B_Kb = skeleton_tmn_0.skeleton_tmn_0_Kb
+  some skeleton_resp_0_strand_1 : tmn_resp | {
+    skeleton_resp_0_strand_1.tmn_resp_a = skeleton_tmn_0.skeleton_tmn_0_a
+    skeleton_resp_0_strand_1.tmn_resp_b = skeleton_tmn_0.skeleton_tmn_0_b
+    skeleton_resp_0_strand_1.tmn_resp_s = skeleton_tmn_0.skeleton_tmn_0_s
+    skeleton_resp_0_strand_1.tmn_resp_Ka = skeleton_tmn_0.skeleton_tmn_0_Ka
+    skeleton_resp_0_strand_1.tmn_resp_Kb = skeleton_tmn_0.skeleton_tmn_0_Kb
   }
-  some skeleton_S_0_strand_2 : tmn_S | {
-    skeleton_S_0_strand_2.tmn_S_a = skeleton_tmn_0.skeleton_tmn_0_a
-    skeleton_S_0_strand_2.tmn_S_b = skeleton_tmn_0.skeleton_tmn_0_b
-    skeleton_S_0_strand_2.tmn_S_s = skeleton_tmn_0.skeleton_tmn_0_s
-    skeleton_S_0_strand_2.tmn_S_Ka = skeleton_tmn_0.skeleton_tmn_0_Ka
-    skeleton_S_0_strand_2.tmn_S_Kb = skeleton_tmn_0.skeleton_tmn_0_Kb
+  some skeleton_server_0_strand_2 : tmn_server | {
+    skeleton_server_0_strand_2.tmn_server_a = skeleton_tmn_0.skeleton_tmn_0_a
+    skeleton_server_0_strand_2.tmn_server_b = skeleton_tmn_0.skeleton_tmn_0_b
+    skeleton_server_0_strand_2.tmn_server_s = skeleton_tmn_0.skeleton_tmn_0_s
+    skeleton_server_0_strand_2.tmn_server_Ka = skeleton_tmn_0.skeleton_tmn_0_Ka
+    skeleton_server_0_strand_2.tmn_server_Kb = skeleton_tmn_0.skeleton_tmn_0_Kb
   }
-  skeleton_tmn_0.skeleton_tmn_0_a != skeleton_tmn_0.skeleton_tmn_0_b
-  skeleton_tmn_0.skeleton_tmn_0_a != skeleton_tmn_0.skeleton_tmn_0_s
-  skeleton_tmn_0.skeleton_tmn_0_b != skeleton_tmn_0.skeleton_tmn_0_s
 }
 inst alt_tmn_small {
   PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2 + `PublicKey3
@@ -622,34 +634,128 @@ inst alt_tmn_small {
 
   generated_times in name -> (Key + text) -> Timeslot
   hash_of in Hashed -> text
-  tmn_A = `tmn_A0
-  tmn_B = `tmn_B0
-  tmn_S = `tmn_S0
+  tmn_init = `tmn_init0
+  tmn_resp = `tmn_resp0
+  tmn_server = `tmn_server0
   AttackerStrand = `AttackerStrand0
-  strand = tmn_A + tmn_B + tmn_S + AttackerStrand
+  strand = tmn_init + tmn_resp + tmn_server + AttackerStrand
+}
+inst alt_tmn_attack {
+  PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2 + `PublicKey3
+  PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2 + `PrivateKey3
+  akey = PublicKey + PrivateKey
+  skey = `skey0 + `skey1 + `skey2
+  Key = akey + skey
+  Attacker = `Attacker0
+  name = `name0 + `name1 + `name2 + Attacker
+  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7
+  text = `text0 + `text1 + `text2 + `text3
+  no Hashed
+  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5
+  mesg = Key + name + Ciphertext + text + tuple
+
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7
+
+  components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple + Hashed)
+  KeyPairs = `KeyPairs0
+  Microtick = `Microtick0 + `Microtick1 + `Microtick2
+  pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2 + `PrivateKey3->`PublicKey3)
+  owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`name2 + `PrivateKey3->`Attacker0)
+  no ltks
+
+  `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2 + `PublicKey3->`PrivateKey3 + `PrivateKey3->`PublicKey3 + `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7
+  mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
+
+  generated_times in name -> (Key + text) -> Timeslot
+  hash_of in Hashed -> text
+  tmn_init = `tmn_init0
+  tmn_resp = `tmn_resp0
+  tmn_server = `tmn_server0
+  AttackerStrand = `AttackerStrand0
+  strand = tmn_init + tmn_resp + tmn_server + AttackerStrand
 }
 option run_sterling "../../crypto_viz_seq_tuple.js"
 option verbose 5
 option solver Glucose
 
-pred corrected_attacker_learns[d: mesg] {
+pred attacker_learns2[d: mesg] {
   d in Attacker.learned_times.Timeslot
 }
 
+pred self_names_constraint{
+    all arbitrary_init_tmn : tmn_init | {
+        arbitrary_init_tmn.tmn_init_a = arbitrary_init_tmn.agent
+    }
+    all arbitrary_resp_tmn : tmn_resp | {
+        arbitrary_resp_tmn.tmn_resp_b = arbitrary_resp_tmn.agent
+    }
+    all arbitrary_server_tmn : tmn_server | {
+        arbitrary_server_tmn.tmn_server_s = arbitrary_server_tmn.agent
+    }
+}
+pred not_talking_with_attacker{
+    all arbitrary_init_tmn : tmn_init | {
+        arbitrary_init_tmn.tmn_init_a != Attacker
+        arbitrary_init_tmn.tmn_init_b != Attacker
+        arbitrary_init_tmn.tmn_init_s != Attacker
+    }
+    all arbitrary_resp_tmn : tmn_resp | {
+        arbitrary_resp_tmn.tmn_resp_a != Attacker
+        arbitrary_resp_tmn.tmn_resp_b != Attacker
+        arbitrary_resp_tmn.tmn_resp_s != Attacker
+    }
+    all arbitrary_server_tmn : tmn_server | {
+        arbitrary_server_tmn.tmn_server_a != Attacker
+        arbitrary_server_tmn.tmn_server_b != Attacker
+        arbitrary_server_tmn.tmn_server_s != Attacker
+    }
+}
+
+pred all_distinct_agents{
+    no (tmn_init.agent & tmn_resp.agent)
+    no (tmn_resp.agent & tmn_server.agent)
+    no (tmn_server.agent & tmn_init.agent)
+}
+pred gen_honest_run{
+    self_names_constraint
+    not_talking_with_attacker
+    all_distinct_agents
+}
+pred cannot_gen_privk{
+    -- no private key can be generated
+    no (PrivateKey & ((name.generated_times).Timeslot))
+}
+pred gen_attack{
+    self_names_constraint
+    cannot_gen_privk
+    tmn_resp.tmn_resp_a != Attacker
+    tmn_resp.tmn_resp_s != Attacker
+    attacker_learns2[tmn_resp.tmn_resp_Kb]
+}
 
 tmn_attack : run {
 
   wellformed
 
-  exec_tmn_A
-  exec_tmn_B
-  exec_tmn_S
+  exec_tmn_init
+  exec_tmn_resp
+  exec_tmn_server
 
-  constrain_skeleton_tmn_0
+  -- constrain_skeleton_tmn_0
 
+  -- honest participants
+  tmn_init.agent != Attacker
+  tmn_resp.agent != Attacker
+  tmn_server.agent != Attacker
+
+  -- tmn_init.tmn_init_a != tmn_init.tmn_init_b
+  -- tmn_init.tmn_init_a != tmn_init.tmn_init_s
+  -- tmn_init.tmn_init_b != tmn_init.tmn_init_s
+
+  -- gen_honest_run
   -- secrecy violation
-  corrected_attacker_learns[tmn_A.tmn_A_Kb]
-
+  gen_attack
 } for {
   next is linear
   alt_tmn_small
