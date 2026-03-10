@@ -43,10 +43,11 @@ ccit_x_509_run : run {
     exec_ccit_x_509_B
 
     gen_honest_run
-    not protocol_constr
+    -- not protocol_constr
 }for
     exactly 4 Int
     for{
         next is linear
-        honest_run_test
+        -- honest_run_test
+        attack_run_test
     }

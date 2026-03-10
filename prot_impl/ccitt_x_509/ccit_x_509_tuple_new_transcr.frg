@@ -662,6 +662,40 @@ inst honest_run_test {
   AttackerStrand = `AttackerStrand0
   strand = ccit_x_509_A + ccit_x_509_B + AttackerStrand
 }
+inst attack_run_test {
+  PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2
+  PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2
+  akey = PublicKey + PrivateKey
+  no skey
+  Key = akey
+  Attacker = `Attacker0
+  name = `name0 + `name1 + Attacker
+  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7 + `Ciphertext8 + `Ciphertext9 + `Ciphertext10 + `Ciphertext11 + `Ciphertext12 + `Ciphertext13 + `Ciphertext14 + `Ciphertext15 + `Ciphertext16 + `Ciphertext17 + `Ciphertext18 + `Ciphertext19
+  text = `text0 + `text1 + `text2 + `text3 + `text4 + `text5 + `text6 + `text7 + `text8 + `text9 + `text10 + `text11 + `text12 + `text13 + `text14 + `text15 + `text16 + `text17 + `text18 + `text19
+  no Hashed
+  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7 + `tuple8 + `tuple9 + `tuple10 + `tuple11 + `tuple12 + `tuple13 + `tuple14 + `tuple15 + `tuple16 + `tuple17 + `tuple18 + `tuple19
+  mesg = Key + name + Ciphertext + text + tuple
+
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7 + `Timeslot8
+
+  components in tuple -> (0+1+2+3+4+5) -> (Key + name + text + Ciphertext + tuple + Hashed)
+  KeyPairs = `KeyPairs0
+  Microtick = `Microtick0 + `Microtick1 + `Microtick2
+  pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2)
+  owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`Attacker0)
+  no ltks
+
+  `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7 + `Timeslot7->`Timeslot8
+  mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
+
+  generated_times in name -> (Key + text) -> Timeslot
+  hash_of in Hashed -> text
+  ccit_x_509_A = `ccit_x_509_A0 + `ccit_x_509_A1
+  ccit_x_509_B = `ccit_x_509_B0
+  AttackerStrand = `AttackerStrand0
+  strand = ccit_x_509_A + ccit_x_509_B + AttackerStrand
+}
 
 option run_sterling "../../crypto_viz_seq_tuple.js"
 option verbose 5
@@ -707,10 +741,11 @@ ccit_x_509_run : run {
     exec_ccit_x_509_B
 
     gen_honest_run
-    not protocol_constr
+    -- not protocol_constr
 }for
     exactly 4 Int
     for{
         next is linear
-        honest_run_test
+        -- honest_run_test
+        attack_run_test
     }

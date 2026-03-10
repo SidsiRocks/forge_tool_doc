@@ -1,0 +1,33 @@
+* syntax requirements:
+arrow notation like syntax
+
+import aenc
+-- if also using hash then
+-- import aenc,hash
+-- helps clarify what function names are
+
+A->B: (n1) aenc(n1,pubk(B))
+B->A: (n2) aenc(<n1,n2>,pubk(A))
+A->B: aenc(n2,pubk(B))
+
+ requirements:
+secrecy
+originates
+-- also figure out mutual authentication
+
+type annotations with prefixes
+$A is agent name
+~m is nonce
+@T is timestamp
+
+-- every nonce which is sent is either freshly generated or previously recieved
+-- add that constraint when parsing
+
+ how to specify bounds: give explicit bounds for this for now,
+ have check that it fits in minimum and maximum bounds
+
+-- TODO if can figure out checking that an honest run itself is consistent with constraints
+
+** ask prof tim
+doumentation about implementation of forge
+* ask classmate to implement some stuff

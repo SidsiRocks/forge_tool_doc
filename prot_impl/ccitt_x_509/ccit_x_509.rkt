@@ -51,3 +51,14 @@
   (enc-depth 2) (tuple-length 6)
   (A 1) (B 1)
 )
+
+(defaltinstance attack_run_test
+  (Timeslot 9)
+  (mesg 69)
+  ;; 6 + 3 + 20 + 20 + 20 = 69
+  (Key 6) (name 3) (Ciphertext 20) (text 20) (tuple 20) (Hashed 0)
+  (akey 6) (skey 0) (Attacker 1)
+  (PublicKey 3) (PrivateKey 3)
+  (enc-depth 2) (tuple-length 6)
+  (A 2) (B 1)
+)
