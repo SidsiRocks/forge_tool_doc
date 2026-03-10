@@ -70,6 +70,8 @@ def main(cpsa_file:File,destination_forge_file:File,base_file:File,extra_func_fi
     s_expr_lst = load_cspa_as_s_expr_new(cpsa_file)
     protocol = parser.parse_protocol(s_expr_lst[0])
     skeletons:List[Skeleton|InstanceBounds|AltInstanceBounds] = []
+    print("protocol:\n" + str(protocol))
+    print("skeletons:\n"+str(skeletons))
 
     for s_expr in s_expr_lst[1:]:
         if type(s_expr) == sexpdata.Symbol:
