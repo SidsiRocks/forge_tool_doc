@@ -1,0 +1,4 @@
+two_nonce:
+A->B: [n1] aenc(~n1,pubk($B))
+B->A: [n2] aenc(<~n1,~n2>,pubk($A))
+A->B: aenc(~n2,pubk($B))

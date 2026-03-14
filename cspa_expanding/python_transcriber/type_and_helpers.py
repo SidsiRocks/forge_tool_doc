@@ -1,7 +1,8 @@
+from copyreg import add_extension
 import sexpdata
 from dataclasses import dataclass
 from enum import Enum
-from typing import List,Tuple,Dict,Optional
+from typing import List, Sequence,Tuple,Dict,Optional
 from functools import reduce
 
 class MsgTypes(Enum):
@@ -34,6 +35,10 @@ class Variable:
         return self.var_name
     def __repr__(self) -> str:
         return f"{self.var_name}:{self.var_type}"
+    def __eq__(self,other):
+        return (self.var_name == other.var_name) and (self.var_type == other.var_type)
+    def __hash__(self) -> int:
+        return hash((self.var_name,self.var_type))
 
 VarMap = Dict[str,Variable]
 
@@ -58,6 +63,9 @@ class PrivkTerm:
     def __repr__(self):
         return f"(privk {self.agent_name})"
 KeyTerm = LtkTerm | PubkTerm | PrivkTerm | Variable
+
+# TODO: data in EncTerm should just be CatTerm now, as enc now contatins a tuple
+# instead of a sequence of messages
 @dataclass
 class EncTerm:
     data: List["Message"]
@@ -108,6 +116,34 @@ NonCatTerm = KeyTerm | EncTerm | SeqTerm | HashTerm | EncTermNoTpl
 IndvTrace = Tuple[SendRecv,Message]
 MessageTrace = List[IndvTrace]
 
+def get_direct_subterms(msg:Message) -> Sequence[Message]:
+    match msg:
+        case Variable(_):
+            return [msg]
+        case EncTerm(data,key):
+            return data + [key]
+        case CatTerm(data):
+            return data
+        case PubkTerm(name) | PrivkTerm(name):
+            return [Variable(name,MsgTypes.NAME)]
+        case LtkTerm(name1,name2):
+            return [Variable(name1,MsgTypes.NAME),Variable(name2,MsgTypes.NAME)]
+        case SeqTerm(data):
+            return data
+        case HashTerm(msg):
+            return [msg]
+        case EncTermNoTpl(msg):
+            return [msg]
+
+def get_vars_in_msg(msg:Message,vars_so_far:set[Variable] = set()) -> set[Variable]:
+    match msg:
+        case Variable(_):
+            vars_so_far.add(msg)
+        case _:
+            for sub_msg in get_direct_subterms(msg):
+                get_vars_in_msg(sub_msg,vars_so_far)
+    return vars_so_far
+
 def trace_to_str(send_recv_msg:Tuple[SendRecv,Message]):
     send_recv,message = send_recv_msg
     match send_recv:
@@ -143,14 +179,14 @@ class Role:
             result = (f"(defrole {self.role_name}"
                       f"(vars {var_map_str})"
                       f"(trace"
-                      f"{trace_str})"
+                      f"{trace_str}"
                       f")"
                       f")")
         else:
             result = (f"(defrole {self.role_name}"
                       f"(vars {var_map_str})"
                       f"(trace"
-                      f"{trace_str})"
+                      f"{trace_str}"
                       f")"
                       f"(constraint"
                       f"{role_constrain_strs}"
@@ -165,7 +201,7 @@ class Protocol:
     role_arr: List[Role]
     def __repr__(self):
         return (f"(defprotocol {self.protocol_name} basic"
-                f"{' '.join([f"{role}" for role in self.role_arr])})")
+                f"{' '.join([f'{role}' for role in self.role_arr])})")
     def __str__(self):
         return self.__repr__()
     def role_obj_of_name(self,role_name:str):
@@ -324,7 +360,7 @@ class InstanceBounds:
         role_count_names = list(self.role_counts.keys())
         if role_count_names != protocol_role_names:
             raise ParseException(f"expected role counts for {protocol_role_names} not {role_count_names}")
-
+# TODO when removing other base frg files now only AltInstanceBounds is needed remove other later
 @dataclass
 class AltInstanceBounds:
     instance_name:str
