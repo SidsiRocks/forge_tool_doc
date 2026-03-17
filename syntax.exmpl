@@ -2,3 +2,21 @@ two_nonce:
 A->B: [n1] aenc(~n1,pubk($B))
 B->A: [n2] aenc(<~n1,~n2>,pubk($A))
 A->B: aenc(~n2,pubk($B))
+
+Bounds:
+{
+  alt_single_session:
+  {
+    Timeslot:6,mesg:33,Key:6,name:3,Ciphertext:10,text:6,tuple:8,Hashed:0,
+    akey:6,skey:0,Attacker:1,PublicKey:3,PrivateKey:3,enc_depth:2,tuple_length:2,
+    have_ltks:0,
+    A:1,B:1
+  },
+  alt_double_session:
+  {
+    Timeslot:12,mesg:49,Key:6,name:3,Ciphertext:15,text:10,tuple:15,Hashed:0,
+    akey:6,skey:0,Attacker:1,PublicKey:3,PrivateKey:3,enc_depth:2,tuple_length:2,
+    have_ltks:0,
+    A:2,B:2
+  }
+}

@@ -39,6 +39,8 @@ class Variable:
         return (self.var_name == other.var_name) and (self.var_type == other.var_type)
     def __hash__(self) -> int:
         return hash((self.var_name,self.var_type))
+    def get_subterms(self):
+        yield self
 
 VarMap = Dict[str,Variable]
 
@@ -50,6 +52,10 @@ class LtkTerm:
         return f"(ltk {self.agent1_name} {self.agent2_name})"
     def __str__(self):
         return self.__repr__()
+    def get_subterms(self):
+        yield self
+        yield Variable(self.agent1_name,MsgTypes.NAME)
+        yield Variable(self.agent2_name,MsgTypes.NAME)
 @dataclass
 class PubkTerm:
     agent_name:str
@@ -57,12 +63,22 @@ class PubkTerm:
         return f"(pubk {self.agent_name})"
     def __str__(self):
         return self.__repr__()
+    def get_subterms(self):
+        yield self
+        yield Variable(self.agent_name,MsgTypes.NAME)
 @dataclass
 class PrivkTerm:
     agent_name:str
     def __repr__(self):
         return f"(privk {self.agent_name})"
+    def get_subterms(self):
+        yield self
+        yield Variable(self.agent_name,MsgTypes.NAME)
 KeyTerm = LtkTerm | PubkTerm | PrivkTerm | Variable
+def is_key_term(msg:"Message") -> KeyTerm|None:
+    match msg:
+        case LtkTerm(_) | PubkTerm(_) | PrivkTerm(_) | Variable(_):
+            return msg
 
 # TODO: data in EncTerm should just be CatTerm now, as enc now contatins a tuple
 # instead of a sequence of messages
@@ -73,13 +89,23 @@ class EncTerm:
     def __repr__(self):
         data_str = ' '.join([f"{msg}" for msg in self.data])
         return f"(enc {data_str} {self.key})"
+    def get_subterms(self):
+        yield self
+        for msg in self.data:
+            yield from msg.get_subterms()
+        yield from self.key.get_subterms()
 
 @dataclass
 class EncTermNoTpl:
-    data: "Message"
+    data: "CatTerm"
     key: KeyTerm
     def __repr__(self) -> str:
         return f"(enc {self.data} {self.key})"
+    def get_subterms(self):
+        yield self
+        for msg in self.data.data:
+            yield from msg.get_subterms()
+        yield from self.key.get_subterms()
 
 @dataclass
 class CatTerm:
@@ -89,6 +115,10 @@ class CatTerm:
         return f"(cat {data_str})"
     def __str__(self) -> str:
         return self.__repr__()
+    def get_subterms(self):
+        yield self
+        for msg in self.data:
+            yield from msg.get_subterms()
 
 @dataclass
 class SeqTerm:
@@ -99,6 +129,11 @@ class SeqTerm:
         return f"(seq {data_str})"
     def __str__(self) -> str:
         return self.__repr__()
+    def get_subterms(self):
+        yield self
+        for msg in self.data:
+            yield from msg.get_subterms()
+
 
 @dataclass
 class HashTerm:
@@ -107,6 +142,9 @@ class HashTerm:
         return f"(hash {self.hash_of})"
     def __str__(self) -> str:
         return self.__repr__()
+    def get_subterms(self):
+        yield self
+        yield from self.hash_of.get_subterms()
 
 class SendRecv(Enum):
     SEND = 0
@@ -119,7 +157,7 @@ MessageTrace = List[IndvTrace]
 def get_direct_subterms(msg:Message) -> Sequence[Message]:
     match msg:
         case Variable(_):
-            return [msg]
+            return []
         case EncTerm(data,key):
             return data + [key]
         case CatTerm(data):
@@ -396,6 +434,18 @@ class AltInstanceBounds:
         if role_count_names != protocol_role_names:
             raise ParseException(f"expected role counts for {protocol_role_names} not {role_count_names}")
 
+    def __repr__(self) -> str:
+        sig_bounds = " ".join([f"({sig_name} {sig_count})" for sig_name,sig_count in self.sig_counts.items()])
+        role_bounds = " ".join([f"({role_name} {role_count})" for role_name,role_count in self.role_counts.items()])
+        enc_bound = f"(enc-depth {self.encryption_depth})"
+        tuple_length = f"(tuple-length {self.tuple_length})"
+        all_bounds =  [sig_bounds,enc_bound,tuple_length,role_bounds]
+        if self.have_ltks:
+            all_bounds.append("(have-ltks)")
+        return f"(defaltinstance {self.instance_name} {' '.join(all_bounds)})"
+    def __str__(self) -> str:
+        return self.__repr__()
+
 
 # TODO can add a helper function which handles parsing enums encoded as strings
 def get_role_sig_name(role:Role,protocol:Protocol):
@@ -526,11 +576,15 @@ def var_in_msg_term(variable:Variable,msg_term:Message) -> bool:
         case CatTerm(_) as cat:
             return reduce(func_or,map(var_in_msg_lam,cat.data))
         case LtkTerm(_) as ltk:
-            return (variable == ltk.agent1_name) or (variable == ltk.agent2_name)
+            agent1 = Variable(ltk.agent1_name,MsgTypes.NAME)
+            agent2 = Variable(ltk.agent2_name,MsgTypes.NAME)
+            return (variable == agent1) or (variable == agent2)
         case PrivkTerm(_) as privk:
-            return (variable == privk.agent_name)
+            agent_name = Variable(privk.agent_name,MsgTypes.NAME)
+            return (variable == agent_name)
         case PubkTerm(_) as pubk:
-            return (variable == pubk.agent_name)
+            agent_name = Variable(pubk.agent_name,MsgTypes.NAME)
+            return (variable == agent_name)
         case SeqTerm(_) as seq:
             return reduce(func_or,map(var_in_msg_lam,seq.data))
         case HashTerm(_) as hash:
