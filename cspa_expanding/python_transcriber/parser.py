@@ -234,10 +234,10 @@ def parse_trace(s_expr, var_map: VarMap) -> MessageTrace:
     Example : (trace (send (enc n1 (pubk b))) (recv (enc n1 n2 (pubk a))) (send (enc n2 (pubk b))))"""
     #currently forcing limit of 3 becuase the current racket code seems
     #to have that restriction as well will see what to do with this later
-    if len(s_expr) < 3:
-        raise ParseException(
-            f"Expecred 'trace' and atleast two messages current length of s_expr is: {len(s_expr)}"
-        )
+    # if len(s_expr) < 3:
+    #     raise ParseException(
+    #         f"Expecred 'trace' and atleast two messages current length of s_expr is: {len(s_expr)}"
+    #     )
     match_type_and_str(s_expr[0], TRACE_STR)
     result = []
     for indv_trace in s_expr[1:]:
