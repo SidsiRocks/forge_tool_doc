@@ -521,7 +521,7 @@ inst alt_single_session {
   tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7
   mesg = Key + name + Ciphertext + text + tuple
 
-  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3
 
   components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple + Hashed)
   KeyPairs = `KeyPairs0
@@ -531,7 +531,7 @@ inst alt_single_session {
   no ltks
 
   `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2
-  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3
   mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
 
   generated_times in name -> (Key + text) -> Timeslot
@@ -555,7 +555,7 @@ inst alt_double_session {
   tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7 + `tuple8 + `tuple9 + `tuple10 + `tuple11 + `tuple12 + `tuple13 + `tuple14
   mesg = Key + name + Ciphertext + text + tuple
 
-  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7 + `Timeslot8 + `Timeslot9 + `Timeslot10 + `Timeslot11
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7
 
   components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple + Hashed)
   KeyPairs = `KeyPairs0
@@ -565,7 +565,7 @@ inst alt_double_session {
   no ltks
 
   `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2
-  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7 + `Timeslot7->`Timeslot8 + `Timeslot8->`Timeslot9 + `Timeslot9->`Timeslot10 + `Timeslot10->`Timeslot11
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7
   mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
 
   generated_times in name -> (Key + text) -> Timeslot

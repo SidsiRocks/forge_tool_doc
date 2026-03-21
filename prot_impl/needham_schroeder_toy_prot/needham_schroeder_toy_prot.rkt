@@ -35,7 +35,7 @@
 )
 
 (defaltinstance alt_single_session
-  (Timeslot 6)
+  (Timeslot 4)
   (mesg 33)
   (Key 6) (name 3) (Ciphertext 10) (text 6) (tuple 8) (Hashed 0)
   (akey 6) (skey 0) (Attacker 1)
@@ -45,7 +45,7 @@
 )
 
 (defaltinstance alt_double_session
-  (Timeslot 12)
+  (Timeslot 8)
   (mesg 49)
   (Key 6) (name 3) (Ciphertext 15) (text 10) (tuple 15) (Hashed 0)
   (akey 6) (skey 0) (Attacker 1)
