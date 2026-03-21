@@ -31,3 +31,8 @@ $A is agent name
 ** ask prof tim
 doumentation about implementation of forge
 * ask classmate to implement some stuff
+
+For bounds remove some redundant information
+Change from exact bounds to less than equal to bounds again
+
+* TODO add documentation for the parser and the bounds decisions

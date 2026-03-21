@@ -398,11 +398,15 @@ def var_in_msg_term(variable:Variable,msg_term:Message) -> bool:
         case CatTerm(_) as cat:
             return reduce(func_or,map(var_in_msg_lam,cat.data))
         case LtkTerm(_) as ltk:
-            return (variable == ltk.agent1_name) or (variable == ltk.agent2_name)
+            agent1_var = Variable(ltk.agent1_name,MsgTypes.NAME)
+            agent2_var = Variable(ltk.agent2_name,MsgTypes.NAME)
+            return (variable == agent1_var) or (variable == agent2_var)
         case PrivkTerm(_) as privk:
-            return (variable == privk.agent_name)
+            agent_var = Variable(privk.agent_name,MsgTypes.NAME)
+            return (variable == agent_var)
         case PubkTerm(_) as pubk:
-            return (variable == pubk.agent_name)
+            agent_var = Variable(pubk.agent_name,MsgTypes.NAME)
+            return (variable == agent_var)
         case SeqTerm(_) as seq:
             return reduce(func_or,map(var_in_msg_lam,seq.data))
         case HashTerm(_) as hash:

@@ -1,0 +1,84 @@
+#+TITLE: Tamarin like Grammar
+#+AUTHOR: Siddhartha Singh
+#+OPTIONS: num:nul
+#+SETUPFILE:  https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+
+#+NAME: startup
+
+#+begin_src elisp :exports none
+  (setq org-confirm-babel-evaluate nil)
+#+end_src
+
+#+RESULTS:
+
+#+NAME: latex-generate-func
+#+BEGIN_SRC python :results output :exports none :tangle temp.py :comments link
+  import io
+
+  ARROW = "->"
+  math_tokens = ['*',"+","?",")","("]
+
+  def parse_ebnf_one_line(ebnf_line):
+      result_stream = io.StringIO("")
+      result_stream.write(r"\begin{equation*}")
+      result_stream.write("\n")
+
+      tokens = ebnf_line.split()
+      new_tokens = []
+      for token in tokens:
+          if token[-1] in math_tokens:
+              if len(token[:-1]) != 0:
+                  new_tokens.append(token[:-1])
+              new_tokens.append(token[-1])
+          else:
+              new_tokens.append(token)
+      tokens = new_tokens
+
+      space_str = r"\space"
+      for indx,token in enumerate(tokens):
+          new_space_str = space_str
+          if token == ARROW:
+              result_stream.write(r"\rightarrow ")
+              new_space_str = r"\;"
+          elif token in math_tokens:
+              result_stream.write(token + " ")
+          else:
+              result_stream.write(r"\text{" + token + "} ")
+
+          next_token = None
+          if indx+1 < len(tokens):
+              next_token = tokens[indx+1]
+          if next_token not in math_tokens:
+              result_stream.write(space_str + " ")
+          space_str = new_space_str
+
+      result_stream.write("\n")
+      result_stream.write(r"\end{equation*}")
+      result_stream.write("\n")
+      result_stream.seek(0)
+      result = result_stream.read()
+      result_stream.close()
+      return result
+
+  def parse_ebnf(ebnf_lines:str):
+      ebnf_line_arr = ebnf_lines.split("\n")
+      ebnf_line_arr = [elm for elm in ebnf_line_arr if elm != ""]
+      result_arr = [parse_ebnf_one_line(ebnf_line) for ebnf_line in ebnf_line_arr]
+      return "\n".join(result_arr)
+  ebnf_line = "PROTOCOL -> (defprotcol PROTOCOL_NAME basic ROLE* )"
+  ebnf_lines = """
+    ROLE -> (defrole (vars VAR_MAP+) (trace SEND_RECV_MSG))
+    VAR_MAP -> (VAR_NAME VAR_TYPE+)
+    SEND_RECV_MSG -> (send MSG) | (recv MSG)
+    MSG -> (cat MSG+) | (enc MSG+) | (ltk MSG MSG) | (pubk MSG) | (privk MSG)
+  """
+  print(parse_ebnf(ebnf_line))
+  print("="*10)
+  print(parse_ebnf(ebnf_lines))
+#+END_SRC
+
+
+* Introduction
+
+This document aims to explain the tamarin like syntax used to specify protocols.
+* Grammar
