@@ -15,9 +15,8 @@ needham_schroeder_sym_key_honest_run: run {
     needham_schroeder_sym_key_init.agent != needham_schroeder_sym_key_resp.agent
     needham_schroeder_sym_key_server.agent != needham_schroeder_sym_key_resp.agent
 
-    needham_schroeder_sym_key_init.agent != Attacker
-    needham_schroeder_sym_key_server.agent != Attacker
-    needham_schroeder_sym_key_resp.agent != Attacker
+    not Attacker in (needham_schroeder_sym_key_init + needham_schroeder_sym_key_server + needham_schroeder_sym_key_resp).agent
+
 } for {
     next is linear
     honest_run_bounds
