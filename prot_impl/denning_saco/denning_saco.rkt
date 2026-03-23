@@ -1,34 +1,32 @@
 #lang forge/domains/crypto
 
-;; Problem: The length of the trace has to be at least 2 but 
-;; for the responder role, there is only one message.
-
 (defprotocol denning_saco basic
     (defrole init
-        (vars (a b s name) (Kas Kbs Kab skey) (T text))
+        (vars (a b s name) (Kab skey) (T text))
         (trace
             (send (cat a b))
-            (recv (enc (cat b Kab T (enc (cat Kab a T) Kbs)) Kas))
-            (send (enc (cat Kab a T) Kbs))
+            (recv (enc (cat b Kab T (enc (cat Kab a T) (ltk b s))) (ltk a s)))
+            (send (enc (cat Kab a T) (ltk b s)))
         )
         (constraint
             (non-orig (privk a))
-            (non-orig Kas)
+            (non-orig (ltk a s))
             (not-eq a b) (not-eq a s) (not-eq b s)
         )
     )
 
     (defrole server
-        (vars (a b s name) (Kas Kbs Kab skey) (T text))
+        (vars (a b s name) (Kab skey) (T text))
         (trace
             (recv (cat a b))
-            (send (enc (cat b Kab T (enc (cat Kab a T) Kbs)) Kas))
+            (send (enc (cat b Kab T (enc (cat Kab a T) (ltk b s))) (ltk a s)))
         )
         (constraint
             (non-orig (privk s))
-            (non-orig Kas)
-            (non-orig Kbs)
+            (non-orig (ltk a s))
+            (non-orig (ltk b s))
             (uniq-orig Kab)
+            (fresh-gen Kab)
             (uniq-orig T)
             (fresh-gen T)
             (not-eq a b) (not-eq a s) (not-eq b s)
@@ -36,23 +34,23 @@
     )
 
     (defrole resp
-        (vars (a b s name) (Kas Kbs Kab skey) (T text))
+        (vars (a b s name) (Kab skey) (T text))
         (trace
-            (recv (enc (cat Kab a T) Kbs))
+            (recv (enc (cat Kab a T) (ltk b s)))
         )
         (constraint
             (non-orig (privk b))
-            (non-orig Kbs)
+            (non-orig (ltk b s))
             (not-eq a b) (not-eq a s) (not-eq b s)
         )
     )
 )
 
 (defskeleton denning_saco
-    (vars (a b s name) (Kas Kbs Kab skey) (T text))
-    (defstrand init 3 (a a) (b b) (s s) (Kas Kas) (Kbs Kbs) (Kab Kab) (T T))
-    (defstrand server 2 (a a) (b b) (s s) (Kas Kas) (Kbs Kbs) (Kab Kab) (T T))
-    (defstrand resp 1 (a a) (b b) (s s) (Kas Kas) (Kbs Kbs) (Kab Kab) (T T))
+    (vars (a b s name) (Kab skey) (T text))
+    (defstrand init 3 (a a) (b b) (s s) (Kab Kab) (T T))
+    (defstrand server 2 (a a) (b b) (s s) (Kab Kab) (T T))
+    (defstrand resp 1 (a a) (b b) (s s) (Kab Kab) (T T))
 )
 
 (defaltinstance honest_run_bounds

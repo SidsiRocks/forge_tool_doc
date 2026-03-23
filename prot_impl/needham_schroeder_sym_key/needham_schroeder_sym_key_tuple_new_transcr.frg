@@ -427,6 +427,9 @@ pred exec_needham_schroeder_sym_key_init {
       originates[aStrand,getPRIVK[arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_a]] or generates [aStrand,getPRIVK[arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_a]]
     }
     no aStrand : strand | {
+      originates[aStrand,getLTK[arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_a,arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_s]] or generates [aStrand,getLTK[arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_a,arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_s]]
+    }
+    no aStrand : strand | {
       originates[aStrand,arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Na] or generates [aStrand,arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Na]
     }
     arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_a != arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_b
@@ -528,6 +531,12 @@ pred exec_needham_schroeder_sym_key_server {
     no aStrand : strand | {
       originates[aStrand,getPRIVK[arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s]] or generates [aStrand,getPRIVK[arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s]]
     }
+    no aStrand : strand | {
+      originates[aStrand,getLTK[arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a,arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s]] or generates [aStrand,getLTK[arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a,arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s]]
+    }
+    no aStrand : strand | {
+      originates[aStrand,getLTK[arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b,arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s]] or generates [aStrand,getLTK[arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b,arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s]]
+    }
     (generated_times.Timeslot).(arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Kab) = arbitrary_server_needham_schroeder_sym_key.agent
     arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a != arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b
     arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a != arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s
@@ -592,6 +601,9 @@ pred exec_needham_schroeder_sym_key_resp {
     (generated_times.Timeslot).(arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Nb) = arbitrary_resp_needham_schroeder_sym_key.agent
     no aStrand : strand | {
       originates[aStrand,getPRIVK[arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b]] or generates [aStrand,getPRIVK[arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b]]
+    }
+    no aStrand : strand | {
+      originates[aStrand,getLTK[arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b,arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_s]] or generates [aStrand,getLTK[arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b,arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_s]]
     }
     arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_a != arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b
     arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_a != arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_s

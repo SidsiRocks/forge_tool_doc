@@ -9,9 +9,9 @@ denning_saco_attack: run {
     exec_denning_saco_resp
     exec_denning_saco_server
 
-    denning_saco_init.agent != Attacker
-    denning_saco_resp.agent != Attacker
-    denning_saco_server.agent != Attacker
+    constrain_skeleton_denning_saco_0
+
+    not Attacker in (denning_saco_init + denning_saco_resp + denning_saco_server).agent
 
     denning_saco_init.agent != denning_saco_resp.agent
     denning_saco_resp.agent != denning_saco_server.agent

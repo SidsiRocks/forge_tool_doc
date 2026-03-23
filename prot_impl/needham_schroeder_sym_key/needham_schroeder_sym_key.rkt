@@ -12,6 +12,7 @@
         )
         (constraint
             (non-orig (privk a))
+            (non-orig (ltk a s))
             (non-orig Na) 
             (fresh-gen Na)
             (not-eq a b) (not-eq a s) (not-eq b s)
@@ -26,6 +27,8 @@
         )
         (constraint
             (non-orig (privk s))
+            (non-orig (ltk a s))
+            (non-orig (ltk b s))
             (uniq-orig Kab)
             (fresh-gen Kab)
             (not-eq a b) (not-eq a s) (not-eq b s)
@@ -42,6 +45,7 @@
         (constraint
             (uniq-orig Nb) (fresh-gen Nb)
             (non-orig (privk b))
+            (non-orig (ltk b s))
             (not-eq a b) (not-eq a s) (not-eq b s)
         )
     )
