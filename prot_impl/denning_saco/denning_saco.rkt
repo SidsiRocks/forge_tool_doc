@@ -51,6 +51,7 @@
     (defstrand init 3 (a a) (b b) (s s) (Kab Kab) (T T))
     (defstrand server 2 (a a) (b b) (s s) (Kab Kab) (T T))
     (defstrand resp 1 (a a) (b b) (s s) (Kab Kab) (T T))
+    (defstrand resp 1 (a a) (b b) (s s) (Kab Kab) (T T))
 )
 
 (defaltinstance honest_run_bounds
@@ -61,4 +62,14 @@
     (PublicKey 4) (PrivateKey 4)
     (enc-depth 2) (tuple-length 4)
     (init 1) (server 1) (resp 1)
+)
+
+(defaltinstance attack_bounds
+    (Timeslot 16)
+    (mesg 35)
+    (Key 11) (name 4) (Ciphertext 6) (text 6) (tuple 8) (Hashed 0) 
+    (akey 8) (skey 3) (Attacker 1)
+    (PublicKey 4) (PrivateKey 4)
+    (enc-depth 2) (tuple-length 4)
+    (init 1) (server 1) (resp 2)
 )

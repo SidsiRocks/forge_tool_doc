@@ -432,11 +432,8 @@ pred exec_needham_schroeder_sym_key_init {
     arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_b != arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_s
     some t0 : Timeslot {
     some t1 : t0.(^next) {
-    some t2 : t1.(^next) {
-    some t3 : t2.(^next) {
-    some t4 : t3.(^next) {
       ((arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Na)->t0) in (arbitrary_init_needham_schroeder_sym_key.agent).generated_times
-      t0+t1+t2+t3+t4 = sender.arbitrary_init_needham_schroeder_sym_key + receiver.arbitrary_init_needham_schroeder_sym_key
+      t0+t1 = sender.arbitrary_init_needham_schroeder_sym_key + receiver.arbitrary_init_needham_schroeder_sym_key
       t0.sender = arbitrary_init_needham_schroeder_sym_key
       inds[((t0.data).components)] = 0+1+2
       let name_1  = (((t0.data).components))[0] | {
@@ -450,75 +447,28 @@ pred exec_needham_schroeder_sym_key_init {
 
       t1.receiver = arbitrary_init_needham_schroeder_sym_key
       learnt_term_by[getLTK[arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_a,arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_s],arbitrary_init_needham_schroeder_sym_key.agent,t1]
-      inds[((t1.data)).plaintext.components] = 0
-      let cat_5  = (((t1.data)).plaintext.components)[0] | {
-        ((t1.data)).plaintext.components = 0->cat_5
-        inds[(cat_5.components)] = 0+1+2+3
-        let text_6  = ((cat_5.components))[0] | {
-        let name_7  = ((cat_5.components))[1] | {
-        let skey_8  = ((cat_5.components))[2] | {
-        let enc_9  = ((cat_5.components))[3] | {
-          (cat_5.components) = 0->text_6 + 1->name_7 + 2->skey_8 + 3->enc_9
-          text_6 = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Na
-          name_7 = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_b
-          skey_8 = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Kab
-          learnt_term_by[getLTK[arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_b,arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_s],arbitrary_init_needham_schroeder_sym_key.agent,t1]
-          inds[(enc_9).plaintext.components] = 0
-          let cat_11  = ((enc_9).plaintext.components)[0] | {
-            (enc_9).plaintext.components = 0->cat_11
-            inds[(cat_11.components)] = 0+1
-            let skey_12  = ((cat_11.components))[0] | {
-            let name_13  = ((cat_11.components))[1] | {
-              (cat_11.components) = 0->skey_12 + 1->name_13
-              skey_12 = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Kab
-              name_13 = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_a
-            }}
-          }
-          (enc_9).encryptionKey = getLTK[arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_b,arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_s]
-        }}}}
-      }
+      inds[((t1.data)).plaintext.components] = 0+1+2+3
+      let text_8  = (((t1.data)).plaintext.components)[0] | {
+      let name_9  = (((t1.data)).plaintext.components)[1] | {
+      let skey_10  = (((t1.data)).plaintext.components)[2] | {
+      let enc_11  = (((t1.data)).plaintext.components)[3] | {
+        ((t1.data)).plaintext.components = 0->text_8 + 1->name_9 + 2->skey_10 + 3->enc_11
+        text_8 = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Na
+        name_9 = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_b
+        skey_10 = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Kab
+        learnt_term_by[getLTK[arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_b,arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_s],arbitrary_init_needham_schroeder_sym_key.agent,t1]
+        inds[(enc_11).plaintext.components] = 0+1
+        let skey_14  = ((enc_11).plaintext.components)[0] | {
+        let name_15  = ((enc_11).plaintext.components)[1] | {
+          (enc_11).plaintext.components = 0->skey_14 + 1->name_15
+          skey_14 = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Kab
+          name_15 = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_a
+        }}
+        (enc_11).encryptionKey = getLTK[arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_b,arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_s]
+      }}}}
       ((t1.data)).encryptionKey = getLTK[arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_a,arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_s]
 
-      t2.sender = arbitrary_init_needham_schroeder_sym_key
-      inds[((t2.data)).plaintext.components] = 0
-      let cat_15  = (((t2.data)).plaintext.components)[0] | {
-        ((t2.data)).plaintext.components = 0->cat_15
-        inds[(cat_15.components)] = 0+1
-        let skey_16  = ((cat_15.components))[0] | {
-        let name_17  = ((cat_15.components))[1] | {
-          (cat_15.components) = 0->skey_16 + 1->name_17
-          skey_16 = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Kab
-          name_17 = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_a
-        }}
-      }
-      ((t2.data)).encryptionKey = getLTK[arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_b,arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_s]
-
-      t3.receiver = arbitrary_init_needham_schroeder_sym_key
-      learnt_term_by[arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Kab,arbitrary_init_needham_schroeder_sym_key.agent,t3]
-      inds[((t3.data)).plaintext.components] = 0
-      let cat_19  = (((t3.data)).plaintext.components)[0] | {
-        ((t3.data)).plaintext.components = 0->cat_19
-        inds[(cat_19.components)] = 0
-        let text_20  = ((cat_19.components))[0] | {
-          (cat_19.components) = 0->text_20
-          text_20 = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Nb
-        }
-      }
-      ((t3.data)).encryptionKey = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Kab
-
-      t4.sender = arbitrary_init_needham_schroeder_sym_key
-      inds[((t4.data)).plaintext.components] = 0
-      let cat_22  = (((t4.data)).plaintext.components)[0] | {
-        ((t4.data)).plaintext.components = 0->cat_22
-        inds[(cat_22.components)] = 0
-        let hash_23  = ((cat_22.components))[0] | {
-          (cat_22.components) = 0->hash_23
-          (hash_23).hash_of = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Nb
-        }
-      }
-      ((t4.data)).encryptionKey = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Kab
-
-    }}}}}
+    }}
   }
 }
 sig needham_schroeder_sym_key_server extends strand {
@@ -546,109 +496,37 @@ pred exec_needham_schroeder_sym_key_server {
       t0+t1 = sender.arbitrary_server_needham_schroeder_sym_key + receiver.arbitrary_server_needham_schroeder_sym_key
       t0.receiver = arbitrary_server_needham_schroeder_sym_key
       inds[((t0.data).components)] = 0+1+2
-      let name_24  = (((t0.data).components))[0] | {
-      let name_25  = (((t0.data).components))[1] | {
-      let text_26  = (((t0.data).components))[2] | {
-        ((t0.data).components) = 0->name_24 + 1->name_25 + 2->text_26
-        name_24 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a
-        name_25 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b
-        text_26 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Na
+      let name_16  = (((t0.data).components))[0] | {
+      let name_17  = (((t0.data).components))[1] | {
+      let text_18  = (((t0.data).components))[2] | {
+        ((t0.data).components) = 0->name_16 + 1->name_17 + 2->text_18
+        name_16 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a
+        name_17 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b
+        text_18 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Na
       }}}
 
       t1.sender = arbitrary_server_needham_schroeder_sym_key
-      inds[((t1.data)).plaintext.components] = 0
-      let cat_28  = (((t1.data)).plaintext.components)[0] | {
-        ((t1.data)).plaintext.components = 0->cat_28
-        inds[(cat_28.components)] = 0+1+2+3
-        let text_29  = ((cat_28.components))[0] | {
-        let name_30  = ((cat_28.components))[1] | {
-        let skey_31  = ((cat_28.components))[2] | {
-        let enc_32  = ((cat_28.components))[3] | {
-          (cat_28.components) = 0->text_29 + 1->name_30 + 2->skey_31 + 3->enc_32
-          text_29 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Na
-          name_30 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b
-          skey_31 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Kab
-          inds[(enc_32).plaintext.components] = 0
-          let cat_34  = ((enc_32).plaintext.components)[0] | {
-            (enc_32).plaintext.components = 0->cat_34
-            inds[(cat_34.components)] = 0+1
-            let skey_35  = ((cat_34.components))[0] | {
-            let name_36  = ((cat_34.components))[1] | {
-              (cat_34.components) = 0->skey_35 + 1->name_36
-              skey_35 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Kab
-              name_36 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a
-            }}
-          }
-          (enc_32).encryptionKey = getLTK[arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b,arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s]
-        }}}}
-      }
+      inds[((t1.data)).plaintext.components] = 0+1+2+3
+      let text_23  = (((t1.data)).plaintext.components)[0] | {
+      let name_24  = (((t1.data)).plaintext.components)[1] | {
+      let skey_25  = (((t1.data)).plaintext.components)[2] | {
+      let enc_26  = (((t1.data)).plaintext.components)[3] | {
+        ((t1.data)).plaintext.components = 0->text_23 + 1->name_24 + 2->skey_25 + 3->enc_26
+        text_23 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Na
+        name_24 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b
+        skey_25 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Kab
+        inds[(enc_26).plaintext.components] = 0+1
+        let skey_29  = ((enc_26).plaintext.components)[0] | {
+        let name_30  = ((enc_26).plaintext.components)[1] | {
+          (enc_26).plaintext.components = 0->skey_29 + 1->name_30
+          skey_29 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Kab
+          name_30 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a
+        }}
+        (enc_26).encryptionKey = getLTK[arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b,arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s]
+      }}}}
       ((t1.data)).encryptionKey = getLTK[arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a,arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s]
 
     }}
-  }
-}
-sig needham_schroeder_sym_key_resp extends strand {
-  needham_schroeder_sym_key_resp_a : one name,
-  needham_schroeder_sym_key_resp_b : one name,
-  needham_schroeder_sym_key_resp_s : one name,
-  needham_schroeder_sym_key_resp_Nb : one text,
-  needham_schroeder_sym_key_resp_Kab : one skey
-}
-pred exec_needham_schroeder_sym_key_resp {
-  all arbitrary_resp_needham_schroeder_sym_key : needham_schroeder_sym_key_resp | {
-    (generated_times.Timeslot).(arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Nb) = arbitrary_resp_needham_schroeder_sym_key.agent
-    no aStrand : strand | {
-      originates[aStrand,getLTK[arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b,arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_s]] or generates [aStrand,getLTK[arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b,arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_s]]
-    }
-    arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_a != arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b
-    arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_a != arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_s
-    arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b != arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_s
-    some t0 : Timeslot {
-    some t1 : t0.(^next) {
-    some t2 : t1.(^next) {
-      ((arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Nb)->t1) in (arbitrary_resp_needham_schroeder_sym_key.agent).generated_times
-      t0+t1+t2 = sender.arbitrary_resp_needham_schroeder_sym_key + receiver.arbitrary_resp_needham_schroeder_sym_key
-      t0.receiver = arbitrary_resp_needham_schroeder_sym_key
-      learnt_term_by[getLTK[arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b,arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_s],arbitrary_resp_needham_schroeder_sym_key.agent,t0]
-      inds[((t0.data)).plaintext.components] = 0
-      let cat_38  = (((t0.data)).plaintext.components)[0] | {
-        ((t0.data)).plaintext.components = 0->cat_38
-        inds[(cat_38.components)] = 0+1
-        let skey_39  = ((cat_38.components))[0] | {
-        let name_40  = ((cat_38.components))[1] | {
-          (cat_38.components) = 0->skey_39 + 1->name_40
-          skey_39 = arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Kab
-          name_40 = arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_a
-        }}
-      }
-      ((t0.data)).encryptionKey = getLTK[arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b,arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_s]
-
-      t1.sender = arbitrary_resp_needham_schroeder_sym_key
-      inds[((t1.data)).plaintext.components] = 0
-      let cat_42  = (((t1.data)).plaintext.components)[0] | {
-        ((t1.data)).plaintext.components = 0->cat_42
-        inds[(cat_42.components)] = 0
-        let text_43  = ((cat_42.components))[0] | {
-          (cat_42.components) = 0->text_43
-          text_43 = arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Nb
-        }
-      }
-      ((t1.data)).encryptionKey = arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Kab
-
-      t2.receiver = arbitrary_resp_needham_schroeder_sym_key
-      learnt_term_by[arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Kab,arbitrary_resp_needham_schroeder_sym_key.agent,t2]
-      inds[((t2.data)).plaintext.components] = 0
-      let cat_45  = (((t2.data)).plaintext.components)[0] | {
-        ((t2.data)).plaintext.components = 0->cat_45
-        inds[(cat_45.components)] = 0
-        let hash_46  = ((cat_45.components))[0] | {
-          (cat_45.components) = 0->hash_46
-          (hash_46).hash_of = arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Nb
-        }
-      }
-      ((t2.data)).encryptionKey = arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Kab
-
-    }}}
   }
 }
 one sig skeleton_needham_schroeder_sym_key_0 {
@@ -673,59 +551,20 @@ pred constrain_skeleton_needham_schroeder_sym_key_0 {
     skeleton_server_0_strand_1.needham_schroeder_sym_key_server_Kab = skeleton_needham_schroeder_sym_key_0.skeleton_needham_schroeder_sym_key_0_Kab
     skeleton_server_0_strand_1.needham_schroeder_sym_key_server_Na = skeleton_needham_schroeder_sym_key_0.skeleton_needham_schroeder_sym_key_0_Na
   }
-  some skeleton_resp_0_strand_2 : needham_schroeder_sym_key_resp | {
-    skeleton_resp_0_strand_2.needham_schroeder_sym_key_resp_a = skeleton_needham_schroeder_sym_key_0.skeleton_needham_schroeder_sym_key_0_a
-    skeleton_resp_0_strand_2.needham_schroeder_sym_key_resp_b = skeleton_needham_schroeder_sym_key_0.skeleton_needham_schroeder_sym_key_0_b
-    skeleton_resp_0_strand_2.needham_schroeder_sym_key_resp_s = skeleton_needham_schroeder_sym_key_0.skeleton_needham_schroeder_sym_key_0_s
-    skeleton_resp_0_strand_2.needham_schroeder_sym_key_resp_Kab = skeleton_needham_schroeder_sym_key_0.skeleton_needham_schroeder_sym_key_0_Kab
-  }
 }
 inst honest_run_bounds {
   no akey
   skey = `skey0 + `skey1 + `skey2
   Key = skey
   Attacker = `Attacker0
-  name = `name0 + `name1 + `name2 + Attacker
+  name = `name0 + `name1 + Attacker
   Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7 + `Ciphertext8 + `Ciphertext9
   text = `text0 + `text1 + `text2 + `text3 + `text4 + `text5 + `text6 + `text7
   Hashed = `Hashed0 + `Hashed1
   tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7 + `tuple8 + `tuple9 + `tuple10 + `tuple11 + `tuple12 + `tuple13 + `tuple14 + `tuple15 + `tuple16 + `tuple17
   mesg = Key + name + Ciphertext + text + Hashed + tuple
 
-  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7 + `Timeslot8 + `Timeslot9
-
-  components in tuple -> (0+1+2+3) -> (Key + name + text + Ciphertext + tuple + Hashed)
-  KeyPairs = `KeyPairs0
-  Microtick = `Microtick0 + `Microtick1 + `Microtick2
-  no PublicKey
-  no PrivateKey
-  no ltks
-
-  `KeyPairs0.inv_key_helper = `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2
-  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7 + `Timeslot7->`Timeslot8 + `Timeslot8->`Timeslot9
-  mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
-
-  generated_times in name -> (Key + text) -> Timeslot
-  hash_of in Hashed -> text
-  needham_schroeder_sym_key_init = `needham_schroeder_sym_key_init0
-  needham_schroeder_sym_key_server = `needham_schroeder_sym_key_server0
-  needham_schroeder_sym_key_resp = `needham_schroeder_sym_key_resp0
-  AttackerStrand = `AttackerStrand0
-  strand = needham_schroeder_sym_key_init + needham_schroeder_sym_key_server + needham_schroeder_sym_key_resp + AttackerStrand
-}
-inst honest_run_bounds2 {
-  no akey
-  skey = `skey0 + `skey1 + `skey2 + `skey3
-  Key = skey
-  Attacker = `Attacker0
-  name = `name0 + `name1 + `name2 + `name3 + Attacker
-  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7 + `Ciphertext8 + `Ciphertext9 + `Ciphertext10 + `Ciphertext11
-  text = `text0 + `text1 + `text2 + `text3 + `text4 + `text5 + `text6 + `text7 + `text8 + `text9
-  Hashed = `Hashed0 + `Hashed1 + `Hashed2
-  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7 + `tuple8 + `tuple9 + `tuple10 + `tuple11 + `tuple12 + `tuple13 + `tuple14 + `tuple15 + `tuple16 + `tuple17 + `tuple18 + `tuple19 + `tuple20 + `tuple21 + `tuple22 + `tuple23 + `tuple24
-  mesg = Key + name + Ciphertext + text + Hashed + tuple
-
-  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7 + `Timeslot8 + `Timeslot9
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3
 
   components in tuple -> (0+1+2+3+4) -> (Key + name + text + Ciphertext + tuple + Hashed)
   KeyPairs = `KeyPairs0
@@ -734,17 +573,16 @@ inst honest_run_bounds2 {
   no PrivateKey
   no ltks
 
-  `KeyPairs0.inv_key_helper = `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2 + `skey3->`skey3
-  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7 + `Timeslot7->`Timeslot8 + `Timeslot8->`Timeslot9
+  `KeyPairs0.inv_key_helper = `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3
   mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2 + `Microtick2 -> `Microtick3
 
   generated_times in name -> (Key + text) -> Timeslot
   hash_of in Hashed -> text
   needham_schroeder_sym_key_init = `needham_schroeder_sym_key_init0
   needham_schroeder_sym_key_server = `needham_schroeder_sym_key_server0
-  needham_schroeder_sym_key_resp = `needham_schroeder_sym_key_resp0
   AttackerStrand = `AttackerStrand0
-  strand = needham_schroeder_sym_key_init + needham_schroeder_sym_key_server + needham_schroeder_sym_key_resp + AttackerStrand
+  strand = needham_schroeder_sym_key_init + needham_schroeder_sym_key_server + AttackerStrand
 }
 option run_sterling "../../crypto_viz_seq_tuple.js"
 option solver Glucose
@@ -754,16 +592,16 @@ needham_schroeder_sym_key_honest_run: run {
     wellformed
 
     exec_needham_schroeder_sym_key_init
-    // exec_needham_schroeder_sym_key_server
+    exec_needham_schroeder_sym_key_server
     // exec_needham_schroeder_sym_key_resp
 
-    // constrain_skeleton_needham_schroeder_sym_key_0
+    constrain_skeleton_needham_schroeder_sym_key_0
 
-    // needham_schroeder_sym_key_init.agent != needham_schroeder_sym_key_server.agent
+    needham_schroeder_sym_key_init.agent != needham_schroeder_sym_key_server.agent
     // needham_schroeder_sym_key_init.agent != needham_schroeder_sym_key_resp.agent
     // needham_schroeder_sym_key_server.agent != needham_schroeder_sym_key_resp.agent
 
-    // not Attacker in (needham_schroeder_sym_key_init + needham_schroeder_sym_key_server + needham_schroeder_sym_key_resp).agent
+    not Attacker in (needham_schroeder_sym_key_init + needham_schroeder_sym_key_server).agent
 
     // needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_Kab in Attacker.learned_times.Timeslot
 

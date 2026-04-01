@@ -18,5 +18,5 @@ denning_saco_attack: run {
     denning_saco_server.agent != denning_saco_init.agent
 } for {
     next is linear
-    honest_run_bounds
+    attack_bounds
 }
