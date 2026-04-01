@@ -5,11 +5,11 @@
         (vars (a b s name) (Kab skey) (Na Nb text))
         (trace
             (send (cat a b Na))
-            ; (recv (cat 
-            ;     (enc a b Na Kab (ltk a s)) 
-            ;     (enc Na Kab) 
-            ;     Nb
-            ; ))
+            (recv (cat 
+                (enc a b Na Kab (ltk a s)) 
+                (enc Na Kab) 
+                Nb
+            ))
             ; (send (enc Nb Kab))
         )
         (constraint
@@ -44,11 +44,11 @@
                 (enc a b Na Kab (ltk a s))
                 (enc a b Na Kab (ltk b s))
             ))
-            ; (send (cat 
-            ;     (enc a b Na Kab (ltk a s)) 
-            ;     (enc Na Kab) 
-            ;     Nb
-            ; ))
+            (send (cat 
+                (enc a b Na Kab (ltk a s)) 
+                (enc Na Kab) 
+                Nb
+            ))
             ; (recv (enc Nb Kab))
         )
         (constraint
