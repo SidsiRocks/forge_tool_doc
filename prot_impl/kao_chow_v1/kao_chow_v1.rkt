@@ -12,36 +12,38 @@
             ; ))
             ; (send (enc Nb Kab))
         )
-        ; (constraint
-            ; (non-orig (ltk a s))
-            ; (uniq-orig Na) 
-            ; (fresh-gen Na)
+        (constraint
+            (non-orig (ltk a s))
+            (uniq-orig Na) 
+            (fresh-gen Na)
             ; (not-eq a b) (not-eq a s) (not-eq b s)
-        ; )
+        )
     )
 
     (defrole server
         (vars (a b s name) (Kab skey) (Na Nb text))
         (trace 
             (recv (cat a b Na))
-            (send 
-                (enc a b Na (ltk b s))
-            )
+            (send (cat
+                (enc a b Na Kab (ltk a s))
+                (enc a b Na Kab (ltk b s))
+            ))
         )
-        ; (constraint
-            ; (non-orig (ltk a s))
-            ; (non-orig (ltk b s))
+        (constraint
+            (non-orig (ltk a s))
+            (non-orig (ltk b s))
             ; (uniq-orig Kab) (fresh-gen Kab)
             ; (not-eq a b) (not-eq a s) (not-eq b s)
-        ; )
+        )
     )
 
     (defrole resp 
         (vars (a b s name) (Kab skey) (Na Nb text))
         (trace
-            (recv
-                (enc a b Na (ltk b s))
-            )
+            (recv (cat
+                (enc a b Na Kab (ltk a s))
+                (enc a b Na Kab (ltk b s))
+            ))
             ; (send (cat 
             ;     (enc a b Na Kab (ltk a s)) 
             ;     (enc Na Kab) 
@@ -49,12 +51,12 @@
             ; ))
             ; (recv (enc Nb Kab))
         )
-        ; (constraint
-            ; (non-orig (ltk b s))
+        (constraint
+            (non-orig (ltk b s))
             ; (uniq-orig Nb)
             ; (fresh-gen Nb)
             ; (not-eq a b) (not-eq a s) (not-eq b s)
-        ; )
+        )
     )
 )
 
@@ -72,18 +74,6 @@
     (skey 6) (Attacker 1)
     (akey 0)
     (PublicKey 0) (PrivateKey 0)
-    (enc-depth 2) (tuple-length 6)
-    (init 1) (server 1) (resp 1)
-    (have-ltks)
-)
-
-(defaltinstance honest_run_bounds2
-    (Timeslot 4)
-    (mesg 47)
-    (Key 14) (name 4) (Ciphertext 10) (text 4) (tuple 15) (Hashed 0)
-    (skey 6) (Attacker 1)
-    (akey 8)
-    (PublicKey 4) (PrivateKey 4)
     (enc-depth 2) (tuple-length 6)
     (init 1) (server 1) (resp 1)
     (have-ltks)
