@@ -423,15 +423,7 @@ sig kao_chow_v1_init extends strand {
 }
 pred exec_kao_chow_v1_init {
   all arbitrary_init_kao_chow_v1 : kao_chow_v1_init | {
-    no aStrand : strand | {
-      originates[aStrand,getPRIVK[arbitrary_init_kao_chow_v1.kao_chow_v1_init_a]] or generates [aStrand,getPRIVK[arbitrary_init_kao_chow_v1.kao_chow_v1_init_a]]
-    }
-    (generated_times.Timeslot).(arbitrary_init_kao_chow_v1.kao_chow_v1_init_Na) = arbitrary_init_kao_chow_v1.agent
-    arbitrary_init_kao_chow_v1.kao_chow_v1_init_a != arbitrary_init_kao_chow_v1.kao_chow_v1_init_b
-    arbitrary_init_kao_chow_v1.kao_chow_v1_init_a != arbitrary_init_kao_chow_v1.kao_chow_v1_init_s
-    arbitrary_init_kao_chow_v1.kao_chow_v1_init_b != arbitrary_init_kao_chow_v1.kao_chow_v1_init_s
     some t0 : Timeslot {
-      ((arbitrary_init_kao_chow_v1.kao_chow_v1_init_Na)->t0) in (arbitrary_init_kao_chow_v1.agent).generated_times
       t0 = sender.arbitrary_init_kao_chow_v1 + receiver.arbitrary_init_kao_chow_v1
       t0.sender = arbitrary_init_kao_chow_v1
       inds[((t0.data).components)] = 0+1+2
@@ -457,12 +449,6 @@ sig kao_chow_v1_server extends strand {
 }
 pred exec_kao_chow_v1_server {
   all arbitrary_server_kao_chow_v1 : kao_chow_v1_server | {
-    no aStrand : strand | {
-      originates[aStrand,getPRIVK[arbitrary_server_kao_chow_v1.kao_chow_v1_server_s]] or generates [aStrand,getPRIVK[arbitrary_server_kao_chow_v1.kao_chow_v1_server_s]]
-    }
-    arbitrary_server_kao_chow_v1.kao_chow_v1_server_a != arbitrary_server_kao_chow_v1.kao_chow_v1_server_b
-    arbitrary_server_kao_chow_v1.kao_chow_v1_server_a != arbitrary_server_kao_chow_v1.kao_chow_v1_server_s
-    arbitrary_server_kao_chow_v1.kao_chow_v1_server_b != arbitrary_server_kao_chow_v1.kao_chow_v1_server_s
     some t0 : Timeslot {
     some t1 : t0.(^next) {
       t0+t1 = sender.arbitrary_server_kao_chow_v1 + receiver.arbitrary_server_kao_chow_v1
@@ -487,7 +473,7 @@ pred exec_kao_chow_v1_server {
         name_11 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_b
         text_12 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_Na
       }}}
-      ((t1.data)).encryptionKey = getPUBK[arbitrary_server_kao_chow_v1.kao_chow_v1_server_b]
+      ((t1.data)).encryptionKey = getLTK[arbitrary_server_kao_chow_v1.kao_chow_v1_server_b,arbitrary_server_kao_chow_v1.kao_chow_v1_server_s]
 
     }}
   }
@@ -502,16 +488,10 @@ sig kao_chow_v1_resp extends strand {
 }
 pred exec_kao_chow_v1_resp {
   all arbitrary_resp_kao_chow_v1 : kao_chow_v1_resp | {
-    no aStrand : strand | {
-      originates[aStrand,getPRIVK[arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b]] or generates [aStrand,getPRIVK[arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b]]
-    }
-    arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_a != arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b
-    arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_a != arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_s
-    arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b != arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_s
     some t0 : Timeslot {
       t0 = sender.arbitrary_resp_kao_chow_v1 + receiver.arbitrary_resp_kao_chow_v1
       t0.receiver = arbitrary_resp_kao_chow_v1
-      learnt_term_by[getPRIVK[arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b],arbitrary_resp_kao_chow_v1.agent,t0]
+      learnt_term_by[getLTK[arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b,arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_s],arbitrary_resp_kao_chow_v1.agent,t0]
       inds[((t0.data)).plaintext.components] = 0+1+2
       let name_16  = (((t0.data)).plaintext.components)[0] | {
       let name_17  = (((t0.data)).plaintext.components)[1] | {
@@ -521,7 +501,7 @@ pred exec_kao_chow_v1_resp {
         name_17 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b
         text_18 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_Na
       }}}
-      ((t0.data)).encryptionKey = getPUBK[arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b]
+      ((t0.data)).encryptionKey = getLTK[arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b,arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_s]
 
     }
   }
@@ -561,10 +541,43 @@ pred constrain_skeleton_kao_chow_v1_0 {
   }
 }
 inst honest_run_bounds {
+  no akey
+  skey = `skey0 + `skey1 + `skey2 + `skey3 + `skey4 + `skey5
+  Key = skey
+  Attacker = `Attacker0
+  name = `name0 + `name1 + `name2 + Attacker
+  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7 + `Ciphertext8 + `Ciphertext9
+  text = `text0 + `text1
+  no Hashed
+  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7 + `tuple8 + `tuple9 + `tuple10 + `tuple11 + `tuple12 + `tuple13 + `tuple14
+  mesg = Key + name + Ciphertext + text + tuple
+
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3
+
+  components in tuple -> (0+1+2+3+4+5) -> (Key + name + text + Ciphertext + tuple + Hashed)
+  KeyPairs = `KeyPairs0
+  Microtick = `Microtick0 + `Microtick1 + `Microtick2
+  no PublicKey
+  no PrivateKey
+
+  `KeyPairs0.ltks = `name0->`name1->`skey0 + `name0->`name2->`skey1 + `name0->`Attacker0->`skey2 + `name1->`name2->`skey3 + `name1->`Attacker0->`skey4 + `name2->`Attacker0->`skey5
+  `KeyPairs0.inv_key_helper = `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2 + `skey3->`skey3 + `skey4->`skey4 + `skey5->`skey5
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3
+  mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
+
+  generated_times in name -> (Key + text) -> Timeslot
+  hash_of in Hashed -> text
+  kao_chow_v1_init = `kao_chow_v1_init0
+  kao_chow_v1_server = `kao_chow_v1_server0
+  kao_chow_v1_resp = `kao_chow_v1_resp0
+  AttackerStrand = `AttackerStrand0
+  strand = kao_chow_v1_init + kao_chow_v1_server + kao_chow_v1_resp + AttackerStrand
+}
+inst honest_run_bounds2 {
   PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2 + `PublicKey3
   PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2 + `PrivateKey3
   akey = PublicKey + PrivateKey
-  skey = `skey0 + `skey1 + `skey2
+  skey = `skey0 + `skey1 + `skey2 + `skey3 + `skey4 + `skey5
   Key = akey + skey
   Attacker = `Attacker0
   name = `name0 + `name1 + `name2 + Attacker
@@ -581,9 +594,9 @@ inst honest_run_bounds {
   Microtick = `Microtick0 + `Microtick1 + `Microtick2
   pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2 + `PrivateKey3->`PublicKey3)
   owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`name2 + `PrivateKey3->`Attacker0)
-  no ltks
 
-  `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2 + `PublicKey3->`PrivateKey3 + `PrivateKey3->`PublicKey3 + `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2
+  `KeyPairs0.ltks = `name0->`name1->`skey0 + `name0->`name2->`skey1 + `name0->`Attacker0->`skey2 + `name1->`name2->`skey3 + `name1->`Attacker0->`skey4 + `name2->`Attacker0->`skey5
+  `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2 + `PublicKey3->`PrivateKey3 + `PrivateKey3->`PublicKey3 + `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2 + `skey3->`skey3 + `skey4->`skey4 + `skey5->`skey5
   next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3
   mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
 
