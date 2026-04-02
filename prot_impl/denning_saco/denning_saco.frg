@@ -2,7 +2,7 @@ option run_sterling "../../crypto_viz_seq_tuple.js"
 option solver Glucose
 option verbose 5
 
-denning_saco_attack: run {
+denning_saco_honest_run: run {
     wellformed
 
     exec_denning_saco_init
