@@ -15,6 +15,10 @@ needham_schroeder_sym_key_honest_run: run {
 
     // needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_a != needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_b
 
+    needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_b != Attacker
+    needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_s != Attacker
+    needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_a != Attacker
+
     needham_schroeder_sym_key_init.agent != needham_schroeder_sym_key_server.agent
     needham_schroeder_sym_key_init.agent != needham_schroeder_sym_key_resp.agent
     needham_schroeder_sym_key_server.agent != needham_schroeder_sym_key_resp.agent

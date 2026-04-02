@@ -2,10 +2,11 @@
 
 (defprotocol needham_schroeder_sym_key basic
     (defrole init 
-        (vars (a b s name) (Na Nb text) (Kab skey))
+        (vars (a b s name) (Na Nb text) (Kab skey) (msg mesg))
         (trace 
             (send (cat a b Na))
-            (recv (enc Na b Kab (enc Kab a (ltk b s)) (ltk a s)))
+            ; (recv (enc Na b Kab (enc Kab a (ltk b s)) (ltk a s))) ; actual message
+            (recv (enc Na b Kab msg (ltk a s)))
             ; (send (enc (cat Kab a) (ltk b s)))
             ; (recv (enc (cat Nb) Kab))
             ; (send (enc (cat (hash Nb)) Kab))
@@ -14,7 +15,7 @@
             (non-orig (ltk a s))
             (uniq-orig Na) 
             (fresh-gen Na)
-            ; (not-eq a b) (not-eq a s) (not-eq b s)
+            (not-eq a b) (not-eq a s) (not-eq b s)
         )
     )
 
@@ -57,9 +58,9 @@
 
 (defaltinstance honest_run_bounds 
     (Timeslot 4)
-    (mesg 24)
-    (Key 12) (name 5) (Ciphertext 2) (text 2) (tuple 3) (Hashed 0)
-    (skey 12) (Attacker 1)
+    (mesg 19)
+    (Key 7) (name 4) (Ciphertext 3) (text 2) (tuple 3) (Hashed 0)
+    (skey 7) (Attacker 1)
     (akey 0)
     (PublicKey 0) (PrivateKey 0)
     (enc-depth 3) (tuple-length 5)
