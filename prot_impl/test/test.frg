@@ -19,13 +19,21 @@ needham_schroeder_sym_key_honest_run: run {
     needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_s != Attacker
     needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_a != Attacker
 
+    needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_a != Attacker
+    needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_b != Attacker
+    needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_s != Attacker
+
+    needham_schroeder_sym_key_resp.needham_schroeder_sym_key_resp_a != Attacker
+    needham_schroeder_sym_key_resp.needham_schroeder_sym_key_resp_b != Attacker
+    needham_schroeder_sym_key_resp.needham_schroeder_sym_key_resp_s != Attacker
+
     needham_schroeder_sym_key_init.agent != needham_schroeder_sym_key_server.agent
     needham_schroeder_sym_key_init.agent != needham_schroeder_sym_key_resp.agent
     needham_schroeder_sym_key_server.agent != needham_schroeder_sym_key_resp.agent
 
     not Attacker in (needham_schroeder_sym_key_init + needham_schroeder_sym_key_server + needham_schroeder_sym_key_resp).agent
 
-    // no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)) )
+    no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)) )
 
     // needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_Kab in Attacker.learned_times.Timeslot
 

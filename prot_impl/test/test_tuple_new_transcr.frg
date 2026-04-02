@@ -434,8 +434,10 @@ pred exec_needham_schroeder_sym_key_init {
     some t0 : Timeslot {
     some t1 : t0.(^next) {
     some t2 : t1.(^next) {
+    some t3 : t2.(^next) {
+    some t4 : t3.(^next) {
       ((arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Na)->t0) in (arbitrary_init_needham_schroeder_sym_key.agent).generated_times
-      t0+t1+t2 = sender.arbitrary_init_needham_schroeder_sym_key + receiver.arbitrary_init_needham_schroeder_sym_key
+      t0+t1+t2+t3+t4 = sender.arbitrary_init_needham_schroeder_sym_key + receiver.arbitrary_init_needham_schroeder_sym_key
       t0.sender = arbitrary_init_needham_schroeder_sym_key
       inds[((t0.data).components)] = 0+1+2
       let name_1  = (((t0.data).components))[0] | {
@@ -465,7 +467,24 @@ pred exec_needham_schroeder_sym_key_init {
       t2.sender = arbitrary_init_needham_schroeder_sym_key
       (t2.data) = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_msg
 
-    }}}
+      t3.receiver = arbitrary_init_needham_schroeder_sym_key
+      learnt_term_by[arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Kab,arbitrary_init_needham_schroeder_sym_key.agent,t3]
+      inds[((t3.data)).plaintext.components] = 0
+      let text_13  = (((t3.data)).plaintext.components)[0] | {
+        ((t3.data)).plaintext.components = 0->text_13
+        text_13 = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Nb
+      }
+      ((t3.data)).encryptionKey = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Kab
+
+      t4.sender = arbitrary_init_needham_schroeder_sym_key
+      inds[((t4.data)).plaintext.components] = 0
+      let hash_15  = (((t4.data)).plaintext.components)[0] | {
+        ((t4.data)).plaintext.components = 0->hash_15
+        (hash_15).hash_of = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Nb
+      }
+      ((t4.data)).encryptionKey = arbitrary_init_needham_schroeder_sym_key.needham_schroeder_sym_key_init_Kab
+
+    }}}}}
   }
 }
 sig needham_schroeder_sym_key_server extends strand {
@@ -484,39 +503,42 @@ pred exec_needham_schroeder_sym_key_server {
       originates[aStrand,getLTK[arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b,arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s]] or generates [aStrand,getLTK[arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b,arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s]]
     }
     (generated_times.Timeslot).(arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Kab) = arbitrary_server_needham_schroeder_sym_key.agent
+    arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a != arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b
+    arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a != arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s
+    arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b != arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s
     some t0 : Timeslot {
     some t1 : t0.(^next) {
       ((arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Kab)->t1) in (arbitrary_server_needham_schroeder_sym_key.agent).generated_times
       t0+t1 = sender.arbitrary_server_needham_schroeder_sym_key + receiver.arbitrary_server_needham_schroeder_sym_key
       t0.receiver = arbitrary_server_needham_schroeder_sym_key
       inds[((t0.data).components)] = 0+1+2
-      let name_12  = (((t0.data).components))[0] | {
-      let name_13  = (((t0.data).components))[1] | {
-      let text_14  = (((t0.data).components))[2] | {
-        ((t0.data).components) = 0->name_12 + 1->name_13 + 2->text_14
-        name_12 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a
-        name_13 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b
-        text_14 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Na
+      let name_16  = (((t0.data).components))[0] | {
+      let name_17  = (((t0.data).components))[1] | {
+      let text_18  = (((t0.data).components))[2] | {
+        ((t0.data).components) = 0->name_16 + 1->name_17 + 2->text_18
+        name_16 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a
+        name_17 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b
+        text_18 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Na
       }}}
 
       t1.sender = arbitrary_server_needham_schroeder_sym_key
       inds[((t1.data)).plaintext.components] = 0+1+2+3
-      let text_19  = (((t1.data)).plaintext.components)[0] | {
-      let name_20  = (((t1.data)).plaintext.components)[1] | {
-      let skey_21  = (((t1.data)).plaintext.components)[2] | {
-      let enc_22  = (((t1.data)).plaintext.components)[3] | {
-        ((t1.data)).plaintext.components = 0->text_19 + 1->name_20 + 2->skey_21 + 3->enc_22
-        text_19 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Na
-        name_20 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b
-        skey_21 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Kab
-        inds[(enc_22).plaintext.components] = 0+1
-        let skey_25  = ((enc_22).plaintext.components)[0] | {
-        let name_26  = ((enc_22).plaintext.components)[1] | {
-          (enc_22).plaintext.components = 0->skey_25 + 1->name_26
-          skey_25 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Kab
-          name_26 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a
+      let text_23  = (((t1.data)).plaintext.components)[0] | {
+      let name_24  = (((t1.data)).plaintext.components)[1] | {
+      let skey_25  = (((t1.data)).plaintext.components)[2] | {
+      let enc_26  = (((t1.data)).plaintext.components)[3] | {
+        ((t1.data)).plaintext.components = 0->text_23 + 1->name_24 + 2->skey_25 + 3->enc_26
+        text_23 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Na
+        name_24 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b
+        skey_25 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Kab
+        inds[(enc_26).plaintext.components] = 0+1
+        let skey_29  = ((enc_26).plaintext.components)[0] | {
+        let name_30  = ((enc_26).plaintext.components)[1] | {
+          (enc_26).plaintext.components = 0->skey_29 + 1->name_30
+          skey_29 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Kab
+          name_30 = arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a
         }}
-        (enc_22).encryptionKey = getLTK[arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b,arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s]
+        (enc_26).encryptionKey = getLTK[arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b,arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s]
       }}}}
       ((t1.data)).encryptionKey = getLTK[arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a,arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s]
 
@@ -532,23 +554,47 @@ sig needham_schroeder_sym_key_resp extends strand {
 }
 pred exec_needham_schroeder_sym_key_resp {
   all arbitrary_resp_needham_schroeder_sym_key : needham_schroeder_sym_key_resp | {
+    (generated_times.Timeslot).(arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Nb) = arbitrary_resp_needham_schroeder_sym_key.agent
     no aStrand : strand | {
       originates[aStrand,getLTK[arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b,arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_s]] or generates [aStrand,getLTK[arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b,arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_s]]
     }
+    arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_a != arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b
+    arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_a != arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_s
+    arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b != arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_s
     some t0 : Timeslot {
-      t0 = sender.arbitrary_resp_needham_schroeder_sym_key + receiver.arbitrary_resp_needham_schroeder_sym_key
+    some t1 : t0.(^next) {
+    some t2 : t1.(^next) {
+      ((arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Nb)->t1) in (arbitrary_resp_needham_schroeder_sym_key.agent).generated_times
+      t0+t1+t2 = sender.arbitrary_resp_needham_schroeder_sym_key + receiver.arbitrary_resp_needham_schroeder_sym_key
       t0.receiver = arbitrary_resp_needham_schroeder_sym_key
       learnt_term_by[getLTK[arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b,arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_s],arbitrary_resp_needham_schroeder_sym_key.agent,t0]
       inds[((t0.data)).plaintext.components] = 0+1
-      let skey_29  = (((t0.data)).plaintext.components)[0] | {
-      let name_30  = (((t0.data)).plaintext.components)[1] | {
-        ((t0.data)).plaintext.components = 0->skey_29 + 1->name_30
-        skey_29 = arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Kab
-        name_30 = arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_a
+      let skey_33  = (((t0.data)).plaintext.components)[0] | {
+      let name_34  = (((t0.data)).plaintext.components)[1] | {
+        ((t0.data)).plaintext.components = 0->skey_33 + 1->name_34
+        skey_33 = arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Kab
+        name_34 = arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_a
       }}
       ((t0.data)).encryptionKey = getLTK[arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_b,arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_s]
 
-    }
+      t1.sender = arbitrary_resp_needham_schroeder_sym_key
+      inds[((t1.data)).plaintext.components] = 0
+      let text_36  = (((t1.data)).plaintext.components)[0] | {
+        ((t1.data)).plaintext.components = 0->text_36
+        text_36 = arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Nb
+      }
+      ((t1.data)).encryptionKey = arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Kab
+
+      t2.receiver = arbitrary_resp_needham_schroeder_sym_key
+      learnt_term_by[arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Kab,arbitrary_resp_needham_schroeder_sym_key.agent,t2]
+      inds[((t2.data)).plaintext.components] = 0
+      let hash_38  = (((t2.data)).plaintext.components)[0] | {
+        ((t2.data)).plaintext.components = 0->hash_38
+        (hash_38).hash_of = arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Nb
+      }
+      ((t2.data)).encryptionKey = arbitrary_resp_needham_schroeder_sym_key.needham_schroeder_sym_key_resp_Kab
+
+    }}}
   }
 }
 one sig skeleton_needham_schroeder_sym_key_0 {
@@ -586,13 +632,13 @@ inst honest_run_bounds {
   Key = skey
   Attacker = `Attacker0
   name = `name0 + `name1 + `name2 + Attacker
-  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3
+  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5
   text = `text0 + `text1
-  no Hashed
-  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3
-  mesg = Key + name + Ciphertext + text + tuple
+  Hashed = `Hashed0
+  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5
+  mesg = Key + name + Ciphertext + text + Hashed + tuple
 
-  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7 + `Timeslot8 + `Timeslot9
 
   components in tuple -> (0+1+2+3+4) -> (Key + name + text + Ciphertext + tuple + Hashed)
   KeyPairs = `KeyPairs0
@@ -602,7 +648,7 @@ inst honest_run_bounds {
 
   `KeyPairs0.ltks = `name0->`name1->`skey0 + `name0->`name2->`skey1 + `name0->`Attacker0->`skey2 + `name1->`name2->`skey3 + `name1->`Attacker0->`skey4 + `name2->`Attacker0->`skey5
   `KeyPairs0.inv_key_helper = `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2 + `skey3->`skey3 + `skey4->`skey4 + `skey5->`skey5 + `skey6->`skey6
-  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7 + `Timeslot7->`Timeslot8 + `Timeslot8->`Timeslot9
   mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2 + `Microtick2 -> `Microtick3
 
   generated_times in name -> (Key + text) -> Timeslot
@@ -634,13 +680,21 @@ needham_schroeder_sym_key_honest_run: run {
     needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_s != Attacker
     needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_a != Attacker
 
+    needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_a != Attacker
+    needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_b != Attacker
+    needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_s != Attacker
+
+    needham_schroeder_sym_key_resp.needham_schroeder_sym_key_resp_a != Attacker
+    needham_schroeder_sym_key_resp.needham_schroeder_sym_key_resp_b != Attacker
+    needham_schroeder_sym_key_resp.needham_schroeder_sym_key_resp_s != Attacker
+
     needham_schroeder_sym_key_init.agent != needham_schroeder_sym_key_server.agent
     needham_schroeder_sym_key_init.agent != needham_schroeder_sym_key_resp.agent
     needham_schroeder_sym_key_server.agent != needham_schroeder_sym_key_resp.agent
 
     not Attacker in (needham_schroeder_sym_key_init + needham_schroeder_sym_key_server + needham_schroeder_sym_key_resp).agent
 
-    // no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)) )
+    no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)) )
 
     // needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_Kab in Attacker.learned_times.Timeslot
 

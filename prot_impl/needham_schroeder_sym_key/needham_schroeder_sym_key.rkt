@@ -2,13 +2,15 @@
 
 (defprotocol needham_schroeder_sym_key basic
     (defrole init 
-        (vars (a b s name) (Na Nb text) (Kab skey))
+        (vars (a b s name) (Na Nb text) (Kab skey) (msg mesg))
         (trace 
             (send (cat a b Na))
-            (recv (enc (cat Na b Kab (enc (cat Kab a) (ltk b s))) (ltk a s)))
-            (send (enc (cat Kab a) (ltk b s)))
-            (recv (enc (cat Nb) Kab))
-            (send (enc (cat (hash Nb)) Kab))
+            ; (recv (enc Na b Kab (enc Kab a (ltk b s)) (ltk a s))) ; actual message
+            (recv (enc Na b Kab msg (ltk a s)))
+            ; (send (enc Kab a (ltk b s)))
+            (send msg)
+            (recv (enc Nb Kab))
+            (send (enc (hash Nb) Kab))
         )
         (constraint
             (non-orig (ltk a s))
@@ -22,7 +24,7 @@
         (vars (a b s name) (Na text) (Kab skey))
         (trace
             (recv (cat a b Na))
-            (send (enc (cat Na b Kab (enc (cat Kab a) (ltk b s))) (ltk a s)))
+            (send (enc Na b Kab (enc Kab a (ltk b s)) (ltk a s)))
         )
         (constraint
             (non-orig (ltk a s))
@@ -36,9 +38,9 @@
     (defrole resp 
         (vars (a b s name) (Nb text) (Kab skey))
         (trace
-            (recv (enc (cat Kab a) (ltk b s)))
-            (send (enc (cat Nb) Kab))
-            (recv (enc (cat (hash Nb)) Kab))
+            (recv (enc Kab a (ltk b s)))
+            (send (enc Nb Kab))
+            (recv (enc (hash Nb) Kab))
         )
         (constraint
             (uniq-orig Nb) (fresh-gen Nb)
@@ -57,34 +59,12 @@
 
 (defaltinstance honest_run_bounds 
     (Timeslot 10)
-    (mesg 45)
-    (Key 3) (name 4) (Ciphertext 10) (text 8) (tuple 18) (Hashed 2)
-    (skey 3) (Attacker 1)
+    (mesg 26)
+    (Key 7) (name 4) (Ciphertext 6) (text 2) (tuple 6) (Hashed 1)
+    (skey 7) (Attacker 1)
     (akey 0)
     (PublicKey 0) (PrivateKey 0)
-    (enc-depth 2) (tuple-length 4)
+    (enc-depth 3) (tuple-length 5)
     (init 1) (server 1) (resp 1)
-)
-
-(defaltinstance honest_run_bounds2
-    (Timeslot 10)
-    (mesg 59)
-
-    (name 5)
-
-    (Key 4) (skey 4)
-
-    (Ciphertext 12)
-    (tuple 25)
-    (text 10)
-    (Hashed 3)
-
-    (enc-depth 3)
-    (tuple-length 5)
-
-    (init 1) (server 1) (resp 1)
-
-    (Attacker 1)
-    (akey 0)
-    (PublicKey 0) (PrivateKey 0)
+    (have-ltks)
 )

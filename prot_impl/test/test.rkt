@@ -9,8 +9,8 @@
             (recv (enc Na b Kab msg (ltk a s)))
             ; (send (enc Kab a (ltk b s)))
             (send msg)
-            ; (recv (enc (cat Nb) Kab))
-            ; (send (enc (cat (hash Nb)) Kab))
+            (recv (enc Nb Kab))
+            (send (enc (hash Nb) Kab))
         )
         (constraint
             (non-orig (ltk a s))
@@ -31,7 +31,7 @@
             (non-orig (ltk b s))
             (uniq-orig Kab)
             (fresh-gen Kab)
-            ; (not-eq a b) (not-eq a s) (not-eq b s)
+            (not-eq a b) (not-eq a s) (not-eq b s)
         )
     )
 
@@ -39,28 +39,28 @@
         (vars (a b s name) (Nb text) (Kab skey))
         (trace
             (recv (enc Kab a (ltk b s)))
-            ; (send (enc (cat Nb) Kab))
-            ; (recv (enc (cat (hash Nb)) Kab))
+            (send (enc Nb Kab))
+            (recv (enc (hash Nb) Kab))
         )
         (constraint
-            ; (uniq-orig Nb) (fresh-gen Nb)
+            (uniq-orig Nb) (fresh-gen Nb)
             (non-orig (ltk b s))
-            ; (not-eq a b) (not-eq a s) (not-eq b s)
+            (not-eq a b) (not-eq a s) (not-eq b s)
         )
     )
 )
 
 (defskeleton needham_schroeder_sym_key
     (vars (a b s name) (Na text) (Kab skey))
-    (defstrand init 3 (a a) (b b) (s s) (Kab Kab) (Na Na))
+    (defstrand init 5 (a a) (b b) (s s) (Kab Kab) (Na Na))
     (defstrand server 2 (a a) (b b) (s s) (Kab Kab) (Na Na))
-    (defstrand resp 1 (a a) (b b) (s s) (Kab Kab))
+    (defstrand resp 3 (a a) (b b) (s s) (Kab Kab))
 )
 
 (defaltinstance honest_run_bounds 
-    (Timeslot 6)
-    (mesg 21)
-    (Key 7) (name 4) (Ciphertext 4) (text 2) (tuple 4) (Hashed 0)
+    (Timeslot 10)
+    (mesg 26)
+    (Key 7) (name 4) (Ciphertext 6) (text 2) (tuple 6) (Hashed 1)
     (skey 7) (Attacker 1)
     (akey 0)
     (PublicKey 0) (PrivateKey 0)
