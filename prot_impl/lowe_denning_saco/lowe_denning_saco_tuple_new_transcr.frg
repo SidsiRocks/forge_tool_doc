@@ -417,19 +417,15 @@ sig lowe_denning_saco_init extends strand {
   lowe_denning_saco_init_a : one name,
   lowe_denning_saco_init_b : one name,
   lowe_denning_saco_init_s : one name,
-  lowe_denning_saco_init_Kas : one skey,
-  lowe_denning_saco_init_Kbs : one skey,
   lowe_denning_saco_init_Kab : one skey,
   lowe_denning_saco_init_T : one text,
-  lowe_denning_saco_init_Nb : one text
+  lowe_denning_saco_init_Nb : one text,
+  lowe_denning_saco_init_msg : one mesg
 }
 pred exec_lowe_denning_saco_init {
   all arbitrary_init_lowe_denning_saco : lowe_denning_saco_init | {
     no aStrand : strand | {
-      originates[aStrand,getPRIVK[arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_a]] or generates [aStrand,getPRIVK[arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_a]]
-    }
-    no aStrand : strand | {
-      originates[aStrand,arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Kas] or generates [aStrand,arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Kas]
+      originates[aStrand,getLTK[arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_a,arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_s]] or generates [aStrand,getLTK[arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_a,arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_s]]
     }
     arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_a != arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_b
     arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_a != arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_s
@@ -450,68 +446,37 @@ pred exec_lowe_denning_saco_init {
       }}
 
       t1.receiver = arbitrary_init_lowe_denning_saco
-      learnt_term_by[arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Kas,arbitrary_init_lowe_denning_saco.agent,t1]
-      inds[((t1.data)).plaintext.components] = 0
-      let cat_4  = (((t1.data)).plaintext.components)[0] | {
-        ((t1.data)).plaintext.components = 0->cat_4
-        inds[(cat_4.components)] = 0+1+2+3
-        let name_5  = ((cat_4.components))[0] | {
-        let skey_6  = ((cat_4.components))[1] | {
-        let text_7  = ((cat_4.components))[2] | {
-        let enc_8  = ((cat_4.components))[3] | {
-          (cat_4.components) = 0->name_5 + 1->skey_6 + 2->text_7 + 3->enc_8
-          name_5 = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_b
-          skey_6 = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Kab
-          text_7 = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_T
-          learnt_term_by[arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Kbs,arbitrary_init_lowe_denning_saco.agent,t1]
-          inds[(enc_8).plaintext.components] = 0
-          let cat_10  = ((enc_8).plaintext.components)[0] | {
-            (enc_8).plaintext.components = 0->cat_10
-            inds[(cat_10.components)] = 0+1+2
-            let skey_11  = ((cat_10.components))[0] | {
-            let name_12  = ((cat_10.components))[1] | {
-            let text_13  = ((cat_10.components))[2] | {
-              (cat_10.components) = 0->skey_11 + 1->name_12 + 2->text_13
-              skey_11 = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Kab
-              name_12 = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_a
-              text_13 = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_T
-            }}}
-          }
-          (enc_8).encryptionKey = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Kbs
-        }}}}
-      }
-      ((t1.data)).encryptionKey = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Kas
+      learnt_term_by[getLTK[arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_a,arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_s],arbitrary_init_lowe_denning_saco.agent,t1]
+      inds[((t1.data)).plaintext.components] = 0+1+2+3
+      let name_7  = (((t1.data)).plaintext.components)[0] | {
+      let skey_8  = (((t1.data)).plaintext.components)[1] | {
+      let text_9  = (((t1.data)).plaintext.components)[2] | {
+      let mesg_10  = (((t1.data)).plaintext.components)[3] | {
+        ((t1.data)).plaintext.components = 0->name_7 + 1->skey_8 + 2->text_9 + 3->mesg_10
+        name_7 = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_b
+        skey_8 = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Kab
+        text_9 = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_T
+        mesg_10 = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_msg
+      }}}}
+      ((t1.data)).encryptionKey = getLTK[arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_a,arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_s]
 
       t2.sender = arbitrary_init_lowe_denning_saco
-      inds[((t2.data)).plaintext.components] = 0
-      let cat_15  = (((t2.data)).plaintext.components)[0] | {
-        ((t2.data)).plaintext.components = 0->cat_15
-        inds[(cat_15.components)] = 0+1+2
-        let skey_16  = ((cat_15.components))[0] | {
-        let name_17  = ((cat_15.components))[1] | {
-        let text_18  = ((cat_15.components))[2] | {
-          (cat_15.components) = 0->skey_16 + 1->name_17 + 2->text_18
-          skey_16 = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Kab
-          name_17 = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_a
-          text_18 = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_T
-        }}}
-      }
-      ((t2.data)).encryptionKey = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Kbs
+      (t2.data) = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_msg
 
       t3.receiver = arbitrary_init_lowe_denning_saco
       learnt_term_by[arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Kab,arbitrary_init_lowe_denning_saco.agent,t3]
       inds[((t3.data)).plaintext.components] = 0
-      let text_20  = (((t3.data)).plaintext.components)[0] | {
-        ((t3.data)).plaintext.components = 0->text_20
-        text_20 = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Nb
+      let text_12  = (((t3.data)).plaintext.components)[0] | {
+        ((t3.data)).plaintext.components = 0->text_12
+        text_12 = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Nb
       }
       ((t3.data)).encryptionKey = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Kab
 
       t4.sender = arbitrary_init_lowe_denning_saco
       inds[((t4.data)).plaintext.components] = 0
-      let hash_22  = (((t4.data)).plaintext.components)[0] | {
-        ((t4.data)).plaintext.components = 0->hash_22
-        (hash_22).hash_of = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Nb
+      let hash_14  = (((t4.data)).plaintext.components)[0] | {
+        ((t4.data)).plaintext.components = 0->hash_14
+        (hash_14).hash_of = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Nb
       }
       ((t4.data)).encryptionKey = arbitrary_init_lowe_denning_saco.lowe_denning_saco_init_Kab
 
@@ -522,22 +487,16 @@ sig lowe_denning_saco_server extends strand {
   lowe_denning_saco_server_a : one name,
   lowe_denning_saco_server_b : one name,
   lowe_denning_saco_server_s : one name,
-  lowe_denning_saco_server_Kas : one skey,
-  lowe_denning_saco_server_Kbs : one skey,
   lowe_denning_saco_server_Kab : one skey,
-  lowe_denning_saco_server_T : one text,
-  lowe_denning_saco_server_Nb : one text
+  lowe_denning_saco_server_T : one text
 }
 pred exec_lowe_denning_saco_server {
   all arbitrary_server_lowe_denning_saco : lowe_denning_saco_server | {
     no aStrand : strand | {
-      originates[aStrand,getPRIVK[arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_s]] or generates [aStrand,getPRIVK[arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_s]]
+      originates[aStrand,getLTK[arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_a,arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_s]] or generates [aStrand,getLTK[arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_a,arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_s]]
     }
     no aStrand : strand | {
-      originates[aStrand,arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_Kas] or generates [aStrand,arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_Kas]
-    }
-    no aStrand : strand | {
-      originates[aStrand,arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_Kbs] or generates [aStrand,arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_Kbs]
+      originates[aStrand,getLTK[arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_b,arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_s]] or generates [aStrand,getLTK[arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_b,arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_s]]
     }
     (generated_times.Timeslot).(arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_Kab) = arbitrary_server_lowe_denning_saco.agent
     (generated_times.Timeslot).(arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_T) = arbitrary_server_lowe_denning_saco.agent
@@ -546,47 +505,39 @@ pred exec_lowe_denning_saco_server {
     arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_b != arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_s
     some t0 : Timeslot {
     some t1 : t0.(^next) {
-      ((arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_T)->t1) in (arbitrary_server_lowe_denning_saco.agent).generated_times
+      ((arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_Kab)->t1 + (arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_T)->t1) in (arbitrary_server_lowe_denning_saco.agent).generated_times
       t0+t1 = sender.arbitrary_server_lowe_denning_saco + receiver.arbitrary_server_lowe_denning_saco
       t0.receiver = arbitrary_server_lowe_denning_saco
       inds[((t0.data).components)] = 0+1
-      let name_23  = (((t0.data).components))[0] | {
-      let name_24  = (((t0.data).components))[1] | {
-        ((t0.data).components) = 0->name_23 + 1->name_24
-        name_23 = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_a
-        name_24 = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_b
+      let name_15  = (((t0.data).components))[0] | {
+      let name_16  = (((t0.data).components))[1] | {
+        ((t0.data).components) = 0->name_15 + 1->name_16
+        name_15 = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_a
+        name_16 = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_b
       }}
 
       t1.sender = arbitrary_server_lowe_denning_saco
-      inds[((t1.data)).plaintext.components] = 0
-      let cat_26  = (((t1.data)).plaintext.components)[0] | {
-        ((t1.data)).plaintext.components = 0->cat_26
-        inds[(cat_26.components)] = 0+1+2+3
-        let name_27  = ((cat_26.components))[0] | {
-        let skey_28  = ((cat_26.components))[1] | {
-        let text_29  = ((cat_26.components))[2] | {
-        let enc_30  = ((cat_26.components))[3] | {
-          (cat_26.components) = 0->name_27 + 1->skey_28 + 2->text_29 + 3->enc_30
-          name_27 = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_b
+      inds[((t1.data)).plaintext.components] = 0+1+2+3
+      let name_21  = (((t1.data)).plaintext.components)[0] | {
+      let skey_22  = (((t1.data)).plaintext.components)[1] | {
+      let text_23  = (((t1.data)).plaintext.components)[2] | {
+      let enc_24  = (((t1.data)).plaintext.components)[3] | {
+        ((t1.data)).plaintext.components = 0->name_21 + 1->skey_22 + 2->text_23 + 3->enc_24
+        name_21 = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_b
+        skey_22 = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_Kab
+        text_23 = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_T
+        inds[(enc_24).plaintext.components] = 0+1+2
+        let skey_28  = ((enc_24).plaintext.components)[0] | {
+        let name_29  = ((enc_24).plaintext.components)[1] | {
+        let text_30  = ((enc_24).plaintext.components)[2] | {
+          (enc_24).plaintext.components = 0->skey_28 + 1->name_29 + 2->text_30
           skey_28 = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_Kab
-          text_29 = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_T
-          inds[(enc_30).plaintext.components] = 0
-          let cat_32  = ((enc_30).plaintext.components)[0] | {
-            (enc_30).plaintext.components = 0->cat_32
-            inds[(cat_32.components)] = 0+1+2
-            let skey_33  = ((cat_32.components))[0] | {
-            let name_34  = ((cat_32.components))[1] | {
-            let text_35  = ((cat_32.components))[2] | {
-              (cat_32.components) = 0->skey_33 + 1->name_34 + 2->text_35
-              skey_33 = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_Kab
-              name_34 = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_a
-              text_35 = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_T
-            }}}
-          }
-          (enc_30).encryptionKey = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_Kbs
-        }}}}
-      }
-      ((t1.data)).encryptionKey = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_Kas
+          name_29 = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_a
+          text_30 = arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_T
+        }}}
+        (enc_24).encryptionKey = getLTK[arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_b,arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_s]
+      }}}}
+      ((t1.data)).encryptionKey = getLTK[arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_a,arbitrary_server_lowe_denning_saco.lowe_denning_saco_server_s]
 
     }}
   }
@@ -595,21 +546,16 @@ sig lowe_denning_saco_resp extends strand {
   lowe_denning_saco_resp_a : one name,
   lowe_denning_saco_resp_b : one name,
   lowe_denning_saco_resp_s : one name,
-  lowe_denning_saco_resp_Kas : one skey,
-  lowe_denning_saco_resp_Kbs : one skey,
   lowe_denning_saco_resp_Kab : one skey,
   lowe_denning_saco_resp_T : one text,
   lowe_denning_saco_resp_Nb : one text
 }
 pred exec_lowe_denning_saco_resp {
   all arbitrary_resp_lowe_denning_saco : lowe_denning_saco_resp | {
+    no aStrand : strand | {
+      originates[aStrand,getLTK[arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_b,arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_s]] or generates [aStrand,getLTK[arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_b,arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_s]]
+    }
     (generated_times.Timeslot).(arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_Nb) = arbitrary_resp_lowe_denning_saco.agent
-    no aStrand : strand | {
-      originates[aStrand,getPRIVK[arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_b]] or generates [aStrand,getPRIVK[arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_b]]
-    }
-    no aStrand : strand | {
-      originates[aStrand,arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_Kbs] or generates [aStrand,arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_Kbs]
-    }
     arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_a != arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_b
     arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_a != arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_s
     arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_b != arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_s
@@ -619,36 +565,32 @@ pred exec_lowe_denning_saco_resp {
       ((arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_Nb)->t1) in (arbitrary_resp_lowe_denning_saco.agent).generated_times
       t0+t1+t2 = sender.arbitrary_resp_lowe_denning_saco + receiver.arbitrary_resp_lowe_denning_saco
       t0.receiver = arbitrary_resp_lowe_denning_saco
-      learnt_term_by[arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_Kbs,arbitrary_resp_lowe_denning_saco.agent,t0]
-      inds[((t0.data)).plaintext.components] = 0
-      let cat_37  = (((t0.data)).plaintext.components)[0] | {
-        ((t0.data)).plaintext.components = 0->cat_37
-        inds[(cat_37.components)] = 0+1+2
-        let skey_38  = ((cat_37.components))[0] | {
-        let name_39  = ((cat_37.components))[1] | {
-        let text_40  = ((cat_37.components))[2] | {
-          (cat_37.components) = 0->skey_38 + 1->name_39 + 2->text_40
-          skey_38 = arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_Kab
-          name_39 = arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_a
-          text_40 = arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_T
-        }}}
-      }
-      ((t0.data)).encryptionKey = arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_Kbs
+      learnt_term_by[getLTK[arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_b,arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_s],arbitrary_resp_lowe_denning_saco.agent,t0]
+      inds[((t0.data)).plaintext.components] = 0+1+2
+      let skey_34  = (((t0.data)).plaintext.components)[0] | {
+      let name_35  = (((t0.data)).plaintext.components)[1] | {
+      let text_36  = (((t0.data)).plaintext.components)[2] | {
+        ((t0.data)).plaintext.components = 0->skey_34 + 1->name_35 + 2->text_36
+        skey_34 = arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_Kab
+        name_35 = arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_a
+        text_36 = arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_T
+      }}}
+      ((t0.data)).encryptionKey = getLTK[arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_b,arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_s]
 
       t1.sender = arbitrary_resp_lowe_denning_saco
       inds[((t1.data)).plaintext.components] = 0
-      let text_42  = (((t1.data)).plaintext.components)[0] | {
-        ((t1.data)).plaintext.components = 0->text_42
-        text_42 = arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_Nb
+      let text_38  = (((t1.data)).plaintext.components)[0] | {
+        ((t1.data)).plaintext.components = 0->text_38
+        text_38 = arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_Nb
       }
       ((t1.data)).encryptionKey = arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_Kab
 
       t2.receiver = arbitrary_resp_lowe_denning_saco
       learnt_term_by[arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_Kab,arbitrary_resp_lowe_denning_saco.agent,t2]
       inds[((t2.data)).plaintext.components] = 0
-      let hash_44  = (((t2.data)).plaintext.components)[0] | {
-        ((t2.data)).plaintext.components = 0->hash_44
-        (hash_44).hash_of = arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_Nb
+      let hash_40  = (((t2.data)).plaintext.components)[0] | {
+        ((t2.data)).plaintext.components = 0->hash_40
+        (hash_40).hash_of = arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_Nb
       }
       ((t2.data)).encryptionKey = arbitrary_resp_lowe_denning_saco.lowe_denning_saco_resp_Kab
 
@@ -659,19 +601,134 @@ one sig skeleton_lowe_denning_saco_0 {
   skeleton_lowe_denning_saco_0_a : one name,
   skeleton_lowe_denning_saco_0_b : one name,
   skeleton_lowe_denning_saco_0_s : one name,
-  skeleton_lowe_denning_saco_0_Kas : one skey,
-  skeleton_lowe_denning_saco_0_Kbs : one skey,
   skeleton_lowe_denning_saco_0_Kab : one skey,
   skeleton_lowe_denning_saco_0_T : one text,
-  skeleton_lowe_denning_saco_0_Nb : one text
+  skeleton_lowe_denning_saco_0_Nb : one text,
+  skeleton_lowe_denning_saco_0_msg : one mesg,
+  skeleton_lowe_denning_saco_0_init : one lowe_denning_saco_init,
+  skeleton_lowe_denning_saco_0_server : one lowe_denning_saco_server,
+  skeleton_lowe_denning_saco_0_resp : one lowe_denning_saco_resp
+}
+pred constrain_skeleton_lowe_denning_saco_0_honest_run {
+  some t_0 : Timeslot {
+  some t_1 : t_0.(^next) {
+  some t_2 : t_1.(^next) {
+  some t_3 : t_2.(^next) {
+  some t_4 : t_3.(^next) {
+  some t_5 : t_4.(^next) {
+  some t_6 : t_5.(^next) {
+  some t_7 : t_6.(^next) {
+  some t_8 : t_7.(^next) {
+  some t_9 : t_8.(^next) {
+    t_0.sender = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_init
+    inds[(t_0.data.components)] = 0+1
+    let name_41  = ((t_0.data.components))[0] | {
+    let name_42  = ((t_0.data.components))[1] | {
+      (t_0.data.components) = 0->name_41 + 1->name_42
+      name_41 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_a
+      name_42 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_b
+    }}
+
+    t_1.receiver = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_server
+    inds[(t_1.data.components)] = 0+1
+    let name_43  = ((t_1.data.components))[0] | {
+    let name_44  = ((t_1.data.components))[1] | {
+      (t_1.data.components) = 0->name_43 + 1->name_44
+      name_43 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_a
+      name_44 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_b
+    }}
+
+    t_2.sender = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_server
+    inds[((t_2.data)).plaintext.components] = 0+1+2+3
+    let name_49  = (((t_2.data)).plaintext.components)[0] | {
+    let skey_50  = (((t_2.data)).plaintext.components)[1] | {
+    let text_51  = (((t_2.data)).plaintext.components)[2] | {
+    let enc_52  = (((t_2.data)).plaintext.components)[3] | {
+      ((t_2.data)).plaintext.components = 0->name_49 + 1->skey_50 + 2->text_51 + 3->enc_52
+      name_49 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_b
+      skey_50 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kab
+      text_51 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_T
+      inds[(enc_52).plaintext.components] = 0+1+2
+      let skey_56  = ((enc_52).plaintext.components)[0] | {
+      let name_57  = ((enc_52).plaintext.components)[1] | {
+      let text_58  = ((enc_52).plaintext.components)[2] | {
+        (enc_52).plaintext.components = 0->skey_56 + 1->name_57 + 2->text_58
+        skey_56 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kab
+        name_57 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_a
+        text_58 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_T
+      }}}
+      (enc_52).encryptionKey = getLTK[skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_b,skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_s]
+    }}}}
+    ((t_2.data)).encryptionKey = getLTK[skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_a,skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_s]
+
+    t_3.receiver = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_init
+    inds[((t_3.data)).plaintext.components] = 0+1+2+3
+    let name_63  = (((t_3.data)).plaintext.components)[0] | {
+    let skey_64  = (((t_3.data)).plaintext.components)[1] | {
+    let text_65  = (((t_3.data)).plaintext.components)[2] | {
+    let mesg_66  = (((t_3.data)).plaintext.components)[3] | {
+      ((t_3.data)).plaintext.components = 0->name_63 + 1->skey_64 + 2->text_65 + 3->mesg_66
+      name_63 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_b
+      skey_64 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kab
+      text_65 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_T
+      mesg_66 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_msg
+    }}}}
+    ((t_3.data)).encryptionKey = getLTK[skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_a,skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_s]
+
+    t_4.sender = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_init
+    (t_4.data) = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_msg
+
+    t_5.receiver = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_resp
+    inds[((t_5.data)).plaintext.components] = 0+1+2
+    let skey_70  = (((t_5.data)).plaintext.components)[0] | {
+    let name_71  = (((t_5.data)).plaintext.components)[1] | {
+    let text_72  = (((t_5.data)).plaintext.components)[2] | {
+      ((t_5.data)).plaintext.components = 0->skey_70 + 1->name_71 + 2->text_72
+      skey_70 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kab
+      name_71 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_a
+      text_72 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_T
+    }}}
+    ((t_5.data)).encryptionKey = getLTK[skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_b,skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_s]
+
+    t_6.sender = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_resp
+    inds[((t_6.data)).plaintext.components] = 0
+    let text_74  = (((t_6.data)).plaintext.components)[0] | {
+      ((t_6.data)).plaintext.components = 0->text_74
+      text_74 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Nb
+    }
+    ((t_6.data)).encryptionKey = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kab
+
+    t_7.receiver = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_init
+    inds[((t_7.data)).plaintext.components] = 0
+    let text_76  = (((t_7.data)).plaintext.components)[0] | {
+      ((t_7.data)).plaintext.components = 0->text_76
+      text_76 = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Nb
+    }
+    ((t_7.data)).encryptionKey = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kab
+
+    t_8.sender = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_init
+    inds[((t_8.data)).plaintext.components] = 0
+    let hash_78  = (((t_8.data)).plaintext.components)[0] | {
+      ((t_8.data)).plaintext.components = 0->hash_78
+      (hash_78).hash_of = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Nb
+    }
+    ((t_8.data)).encryptionKey = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kab
+
+    t_9.receiver = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_resp
+    inds[((t_9.data)).plaintext.components] = 0
+    let hash_80  = (((t_9.data)).plaintext.components)[0] | {
+      ((t_9.data)).plaintext.components = 0->hash_80
+      (hash_80).hash_of = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Nb
+    }
+    ((t_9.data)).encryptionKey = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kab
+
+  }}}}}}}}}}
 }
 pred constrain_skeleton_lowe_denning_saco_0 {
   some skeleton_init_0_strand_0 : lowe_denning_saco_init | {
     skeleton_init_0_strand_0.lowe_denning_saco_init_a = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_a
     skeleton_init_0_strand_0.lowe_denning_saco_init_b = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_b
     skeleton_init_0_strand_0.lowe_denning_saco_init_s = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_s
-    skeleton_init_0_strand_0.lowe_denning_saco_init_Kas = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kas
-    skeleton_init_0_strand_0.lowe_denning_saco_init_Kbs = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kbs
     skeleton_init_0_strand_0.lowe_denning_saco_init_Kab = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kab
     skeleton_init_0_strand_0.lowe_denning_saco_init_T = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_T
     skeleton_init_0_strand_0.lowe_denning_saco_init_Nb = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Nb
@@ -680,35 +737,29 @@ pred constrain_skeleton_lowe_denning_saco_0 {
     skeleton_server_0_strand_1.lowe_denning_saco_server_a = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_a
     skeleton_server_0_strand_1.lowe_denning_saco_server_b = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_b
     skeleton_server_0_strand_1.lowe_denning_saco_server_s = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_s
-    skeleton_server_0_strand_1.lowe_denning_saco_server_Kas = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kas
-    skeleton_server_0_strand_1.lowe_denning_saco_server_Kbs = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kbs
     skeleton_server_0_strand_1.lowe_denning_saco_server_Kab = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kab
     skeleton_server_0_strand_1.lowe_denning_saco_server_T = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_T
-    skeleton_server_0_strand_1.lowe_denning_saco_server_Nb = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Nb
   }
   some skeleton_resp_0_strand_2 : lowe_denning_saco_resp | {
     skeleton_resp_0_strand_2.lowe_denning_saco_resp_a = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_a
     skeleton_resp_0_strand_2.lowe_denning_saco_resp_b = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_b
     skeleton_resp_0_strand_2.lowe_denning_saco_resp_s = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_s
-    skeleton_resp_0_strand_2.lowe_denning_saco_resp_Kas = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kas
-    skeleton_resp_0_strand_2.lowe_denning_saco_resp_Kbs = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kbs
     skeleton_resp_0_strand_2.lowe_denning_saco_resp_Kab = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Kab
     skeleton_resp_0_strand_2.lowe_denning_saco_resp_T = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_T
     skeleton_resp_0_strand_2.lowe_denning_saco_resp_Nb = skeleton_lowe_denning_saco_0.skeleton_lowe_denning_saco_0_Nb
   }
+  constrain_skeleton_lowe_denning_saco_0_honest_run
 }
 inst honest_run_bounds {
-  PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2 + `PublicKey3
-  PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2 + `PrivateKey3
-  akey = PublicKey + PrivateKey
-  skey = `skey0 + `skey1 + `skey2
-  Key = akey + skey
+  no akey
+  skey = `skey0 + `skey1 + `skey2 + `skey3 + `skey4 + `skey5 + `skey6
+  Key = skey
   Attacker = `Attacker0
   name = `name0 + `name1 + `name2 + Attacker
-  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7 + `Ciphertext8 + `Ciphertext9
-  text = `text0 + `text1 + `text2 + `text3 + `text4 + `text5 + `text6 + `text7 + `text8 + `text9
-  Hashed = `Hashed0 + `Hashed1
-  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7
+  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5
+  text = `text0 + `text1
+  Hashed = `Hashed0
+  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5
   mesg = Key + name + Ciphertext + text + Hashed + tuple
 
   Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7 + `Timeslot8 + `Timeslot9
@@ -716,11 +767,11 @@ inst honest_run_bounds {
   components in tuple -> (0+1+2+3) -> (Key + name + text + Ciphertext + tuple + Hashed)
   KeyPairs = `KeyPairs0
   Microtick = `Microtick0 + `Microtick1 + `Microtick2
-  pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2 + `PrivateKey3->`PublicKey3)
-  owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`name2 + `PrivateKey3->`Attacker0)
-  no ltks
+  no PublicKey
+  no PrivateKey
 
-  `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2 + `PublicKey3->`PrivateKey3 + `PrivateKey3->`PublicKey3 + `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2
+  `KeyPairs0.ltks = `name0->`name1->`skey0 + `name0->`name2->`skey1 + `name0->`Attacker0->`skey2 + `name1->`name2->`skey3 + `name1->`Attacker0->`skey4 + `name2->`Attacker0->`skey5
+  `KeyPairs0.inv_key_helper = `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2 + `skey3->`skey3 + `skey4->`skey4 + `skey5->`skey5 + `skey6->`skey6
   next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7 + `Timeslot7->`Timeslot8 + `Timeslot8->`Timeslot9
   mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
 
@@ -743,14 +794,29 @@ lowe_denning_saco_honest_run: run {
     exec_lowe_denning_saco_resp
     exec_lowe_denning_saco_server
 
-    lowe_denning_saco_init.agent != Attacker
-    lowe_denning_saco_resp.agent != Attacker
-    lowe_denning_saco_server.agent != Attacker
+    constrain_skeleton_lowe_denning_saco_0
+
+    lowe_denning_saco_init.lowe_denning_saco_init_a != Attacker
+    lowe_denning_saco_init.lowe_denning_saco_init_b != Attacker
+    lowe_denning_saco_init.lowe_denning_saco_init_s != Attacker
+
+    lowe_denning_saco_resp.lowe_denning_saco_resp_a != Attacker
+    lowe_denning_saco_resp.lowe_denning_saco_resp_b != Attacker
+    lowe_denning_saco_resp.lowe_denning_saco_resp_s != Attacker
+
+    lowe_denning_saco_server.lowe_denning_saco_server_a != Attacker
+    lowe_denning_saco_server.lowe_denning_saco_server_b != Attacker
+    lowe_denning_saco_server.lowe_denning_saco_server_s != Attacker
 
     lowe_denning_saco_init.agent != lowe_denning_saco_resp.agent
     lowe_denning_saco_resp.agent != lowe_denning_saco_server.agent
     lowe_denning_saco_server.agent != lowe_denning_saco_init.agent
+
+    not Attacker in (lowe_denning_saco_init + lowe_denning_saco_resp + lowe_denning_saco_server).agent
+
+    no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)))
 } for {
     next is linear
+    mt_next is linear
     honest_run_bounds
 }
