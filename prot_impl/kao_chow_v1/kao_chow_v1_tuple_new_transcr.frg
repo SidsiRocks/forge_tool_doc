@@ -426,9 +426,10 @@ pred exec_kao_chow_v1_init {
     no aStrand : strand | {
       originates[aStrand,getLTK[arbitrary_init_kao_chow_v1.kao_chow_v1_init_a,arbitrary_init_kao_chow_v1.kao_chow_v1_init_s]] or generates [aStrand,getLTK[arbitrary_init_kao_chow_v1.kao_chow_v1_init_a,arbitrary_init_kao_chow_v1.kao_chow_v1_init_s]]
     }
+    (generated_times.Timeslot).(arbitrary_init_kao_chow_v1.kao_chow_v1_init_Na) = arbitrary_init_kao_chow_v1.agent
     some t0 : Timeslot {
-    some t1 : t0.(^next) {
-      t0+t1 = sender.arbitrary_init_kao_chow_v1 + receiver.arbitrary_init_kao_chow_v1
+      ((arbitrary_init_kao_chow_v1.kao_chow_v1_init_Na)->t0) in (arbitrary_init_kao_chow_v1.agent).generated_times
+      t0 = sender.arbitrary_init_kao_chow_v1 + receiver.arbitrary_init_kao_chow_v1
       t0.sender = arbitrary_init_kao_chow_v1
       inds[((t0.data).components)] = 0+1+2
       let name_1  = (((t0.data).components))[0] | {
@@ -440,36 +441,7 @@ pred exec_kao_chow_v1_init {
         text_3 = arbitrary_init_kao_chow_v1.kao_chow_v1_init_Na
       }}}
 
-      t1.receiver = arbitrary_init_kao_chow_v1
-      inds[((t1.data).components)] = 0+1+2
-      let enc_4  = (((t1.data).components))[0] | {
-      let enc_5  = (((t1.data).components))[1] | {
-      let text_6  = (((t1.data).components))[2] | {
-        ((t1.data).components) = 0->enc_4 + 1->enc_5 + 2->text_6
-        learnt_term_by[getLTK[arbitrary_init_kao_chow_v1.kao_chow_v1_init_a,arbitrary_init_kao_chow_v1.kao_chow_v1_init_s],arbitrary_init_kao_chow_v1.agent,t1]
-        inds[(enc_4).plaintext.components] = 0+1+2+3
-        let name_11  = ((enc_4).plaintext.components)[0] | {
-        let name_12  = ((enc_4).plaintext.components)[1] | {
-        let text_13  = ((enc_4).plaintext.components)[2] | {
-        let skey_14  = ((enc_4).plaintext.components)[3] | {
-          (enc_4).plaintext.components = 0->name_11 + 1->name_12 + 2->text_13 + 3->skey_14
-          name_11 = arbitrary_init_kao_chow_v1.kao_chow_v1_init_a
-          name_12 = arbitrary_init_kao_chow_v1.kao_chow_v1_init_b
-          text_13 = arbitrary_init_kao_chow_v1.kao_chow_v1_init_Na
-          skey_14 = arbitrary_init_kao_chow_v1.kao_chow_v1_init_Kab
-        }}}}
-        (enc_4).encryptionKey = getLTK[arbitrary_init_kao_chow_v1.kao_chow_v1_init_a,arbitrary_init_kao_chow_v1.kao_chow_v1_init_s]
-        learnt_term_by[arbitrary_init_kao_chow_v1.kao_chow_v1_init_Kab,arbitrary_init_kao_chow_v1.agent,t1]
-        inds[(enc_5).plaintext.components] = 0
-        let text_16  = ((enc_5).plaintext.components)[0] | {
-          (enc_5).plaintext.components = 0->text_16
-          text_16 = arbitrary_init_kao_chow_v1.kao_chow_v1_init_Na
-        }
-        (enc_5).encryptionKey = arbitrary_init_kao_chow_v1.kao_chow_v1_init_Kab
-        text_6 = arbitrary_init_kao_chow_v1.kao_chow_v1_init_Nb
-      }}}
-
-    }}
+    }
   }
 }
 sig kao_chow_v1_server extends strand {
@@ -493,44 +465,44 @@ pred exec_kao_chow_v1_server {
       t0+t1 = sender.arbitrary_server_kao_chow_v1 + receiver.arbitrary_server_kao_chow_v1
       t0.receiver = arbitrary_server_kao_chow_v1
       inds[((t0.data).components)] = 0+1+2
-      let name_17  = (((t0.data).components))[0] | {
-      let name_18  = (((t0.data).components))[1] | {
-      let text_19  = (((t0.data).components))[2] | {
-        ((t0.data).components) = 0->name_17 + 1->name_18 + 2->text_19
-        name_17 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_a
-        name_18 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_b
-        text_19 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_Na
+      let name_4  = (((t0.data).components))[0] | {
+      let name_5  = (((t0.data).components))[1] | {
+      let text_6  = (((t0.data).components))[2] | {
+        ((t0.data).components) = 0->name_4 + 1->name_5 + 2->text_6
+        name_4 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_a
+        name_5 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_b
+        text_6 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_Na
       }}}
 
       t1.sender = arbitrary_server_kao_chow_v1
       inds[((t1.data).components)] = 0+1
-      let enc_20  = (((t1.data).components))[0] | {
-      let enc_21  = (((t1.data).components))[1] | {
-        ((t1.data).components) = 0->enc_20 + 1->enc_21
-        inds[(enc_20).plaintext.components] = 0+1+2+3
-        let name_26  = ((enc_20).plaintext.components)[0] | {
-        let name_27  = ((enc_20).plaintext.components)[1] | {
-        let text_28  = ((enc_20).plaintext.components)[2] | {
-        let skey_29  = ((enc_20).plaintext.components)[3] | {
-          (enc_20).plaintext.components = 0->name_26 + 1->name_27 + 2->text_28 + 3->skey_29
-          name_26 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_a
-          name_27 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_b
-          text_28 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_Na
-          skey_29 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_Kab
+      let enc_7  = (((t1.data).components))[0] | {
+      let enc_8  = (((t1.data).components))[1] | {
+        ((t1.data).components) = 0->enc_7 + 1->enc_8
+        inds[(enc_7).plaintext.components] = 0+1+2+3
+        let name_13  = ((enc_7).plaintext.components)[0] | {
+        let name_14  = ((enc_7).plaintext.components)[1] | {
+        let text_15  = ((enc_7).plaintext.components)[2] | {
+        let skey_16  = ((enc_7).plaintext.components)[3] | {
+          (enc_7).plaintext.components = 0->name_13 + 1->name_14 + 2->text_15 + 3->skey_16
+          name_13 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_a
+          name_14 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_b
+          text_15 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_Na
+          skey_16 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_Kab
         }}}}
-        (enc_20).encryptionKey = getLTK[arbitrary_server_kao_chow_v1.kao_chow_v1_server_a,arbitrary_server_kao_chow_v1.kao_chow_v1_server_s]
-        inds[(enc_21).plaintext.components] = 0+1+2+3
-        let name_34  = ((enc_21).plaintext.components)[0] | {
-        let name_35  = ((enc_21).plaintext.components)[1] | {
-        let text_36  = ((enc_21).plaintext.components)[2] | {
-        let skey_37  = ((enc_21).plaintext.components)[3] | {
-          (enc_21).plaintext.components = 0->name_34 + 1->name_35 + 2->text_36 + 3->skey_37
-          name_34 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_a
-          name_35 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_b
-          text_36 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_Na
-          skey_37 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_Kab
+        (enc_7).encryptionKey = getLTK[arbitrary_server_kao_chow_v1.kao_chow_v1_server_a,arbitrary_server_kao_chow_v1.kao_chow_v1_server_s]
+        inds[(enc_8).plaintext.components] = 0+1+2+3
+        let name_21  = ((enc_8).plaintext.components)[0] | {
+        let name_22  = ((enc_8).plaintext.components)[1] | {
+        let text_23  = ((enc_8).plaintext.components)[2] | {
+        let skey_24  = ((enc_8).plaintext.components)[3] | {
+          (enc_8).plaintext.components = 0->name_21 + 1->name_22 + 2->text_23 + 3->skey_24
+          name_21 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_a
+          name_22 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_b
+          text_23 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_Na
+          skey_24 = arbitrary_server_kao_chow_v1.kao_chow_v1_server_Kab
         }}}}
-        (enc_21).encryptionKey = getLTK[arbitrary_server_kao_chow_v1.kao_chow_v1_server_b,arbitrary_server_kao_chow_v1.kao_chow_v1_server_s]
+        (enc_8).encryptionKey = getLTK[arbitrary_server_kao_chow_v1.kao_chow_v1_server_b,arbitrary_server_kao_chow_v1.kao_chow_v1_server_s]
       }}
 
     }}
@@ -550,69 +522,41 @@ pred exec_kao_chow_v1_resp {
       originates[aStrand,getLTK[arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b,arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_s]] or generates [aStrand,getLTK[arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b,arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_s]]
     }
     some t0 : Timeslot {
-    some t1 : t0.(^next) {
-      t0+t1 = sender.arbitrary_resp_kao_chow_v1 + receiver.arbitrary_resp_kao_chow_v1
+      t0 = sender.arbitrary_resp_kao_chow_v1 + receiver.arbitrary_resp_kao_chow_v1
       t0.receiver = arbitrary_resp_kao_chow_v1
       inds[((t0.data).components)] = 0+1
-      let enc_38  = (((t0.data).components))[0] | {
-      let enc_39  = (((t0.data).components))[1] | {
-        ((t0.data).components) = 0->enc_38 + 1->enc_39
+      let enc_25  = (((t0.data).components))[0] | {
+      let enc_26  = (((t0.data).components))[1] | {
+        ((t0.data).components) = 0->enc_25 + 1->enc_26
         learnt_term_by[getLTK[arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_a,arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_s],arbitrary_resp_kao_chow_v1.agent,t0]
-        inds[(enc_38).plaintext.components] = 0+1+2+3
-        let name_44  = ((enc_38).plaintext.components)[0] | {
-        let name_45  = ((enc_38).plaintext.components)[1] | {
-        let text_46  = ((enc_38).plaintext.components)[2] | {
-        let skey_47  = ((enc_38).plaintext.components)[3] | {
-          (enc_38).plaintext.components = 0->name_44 + 1->name_45 + 2->text_46 + 3->skey_47
-          name_44 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_a
-          name_45 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b
-          text_46 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_Na
-          skey_47 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_Kab
+        inds[(enc_25).plaintext.components] = 0+1+2+3
+        let name_31  = ((enc_25).plaintext.components)[0] | {
+        let name_32  = ((enc_25).plaintext.components)[1] | {
+        let text_33  = ((enc_25).plaintext.components)[2] | {
+        let skey_34  = ((enc_25).plaintext.components)[3] | {
+          (enc_25).plaintext.components = 0->name_31 + 1->name_32 + 2->text_33 + 3->skey_34
+          name_31 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_a
+          name_32 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b
+          text_33 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_Na
+          skey_34 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_Kab
         }}}}
-        (enc_38).encryptionKey = getLTK[arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_a,arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_s]
+        (enc_25).encryptionKey = getLTK[arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_a,arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_s]
         learnt_term_by[getLTK[arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b,arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_s],arbitrary_resp_kao_chow_v1.agent,t0]
-        inds[(enc_39).plaintext.components] = 0+1+2+3
-        let name_52  = ((enc_39).plaintext.components)[0] | {
-        let name_53  = ((enc_39).plaintext.components)[1] | {
-        let text_54  = ((enc_39).plaintext.components)[2] | {
-        let skey_55  = ((enc_39).plaintext.components)[3] | {
-          (enc_39).plaintext.components = 0->name_52 + 1->name_53 + 2->text_54 + 3->skey_55
-          name_52 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_a
-          name_53 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b
-          text_54 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_Na
-          skey_55 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_Kab
+        inds[(enc_26).plaintext.components] = 0+1+2+3
+        let name_39  = ((enc_26).plaintext.components)[0] | {
+        let name_40  = ((enc_26).plaintext.components)[1] | {
+        let text_41  = ((enc_26).plaintext.components)[2] | {
+        let skey_42  = ((enc_26).plaintext.components)[3] | {
+          (enc_26).plaintext.components = 0->name_39 + 1->name_40 + 2->text_41 + 3->skey_42
+          name_39 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_a
+          name_40 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b
+          text_41 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_Na
+          skey_42 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_Kab
         }}}}
-        (enc_39).encryptionKey = getLTK[arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b,arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_s]
+        (enc_26).encryptionKey = getLTK[arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b,arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_s]
       }}
 
-      t1.sender = arbitrary_resp_kao_chow_v1
-      inds[((t1.data).components)] = 0+1+2
-      let enc_56  = (((t1.data).components))[0] | {
-      let enc_57  = (((t1.data).components))[1] | {
-      let text_58  = (((t1.data).components))[2] | {
-        ((t1.data).components) = 0->enc_56 + 1->enc_57 + 2->text_58
-        inds[(enc_56).plaintext.components] = 0+1+2+3
-        let name_63  = ((enc_56).plaintext.components)[0] | {
-        let name_64  = ((enc_56).plaintext.components)[1] | {
-        let text_65  = ((enc_56).plaintext.components)[2] | {
-        let skey_66  = ((enc_56).plaintext.components)[3] | {
-          (enc_56).plaintext.components = 0->name_63 + 1->name_64 + 2->text_65 + 3->skey_66
-          name_63 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_a
-          name_64 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_b
-          text_65 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_Na
-          skey_66 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_Kab
-        }}}}
-        (enc_56).encryptionKey = getLTK[arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_a,arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_s]
-        inds[(enc_57).plaintext.components] = 0
-        let text_68  = ((enc_57).plaintext.components)[0] | {
-          (enc_57).plaintext.components = 0->text_68
-          text_68 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_Na
-        }
-        (enc_57).encryptionKey = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_Kab
-        text_58 = arbitrary_resp_kao_chow_v1.kao_chow_v1_resp_Nb
-      }}}
-
-    }}
+    }
   }
 }
 one sig skeleton_kao_chow_v1_0 {
@@ -638,6 +582,7 @@ pred constrain_skeleton_kao_chow_v1_0 {
     skeleton_server_0_strand_1.kao_chow_v1_server_s = skeleton_kao_chow_v1_0.skeleton_kao_chow_v1_0_s
     skeleton_server_0_strand_1.kao_chow_v1_server_Kab = skeleton_kao_chow_v1_0.skeleton_kao_chow_v1_0_Kab
     skeleton_server_0_strand_1.kao_chow_v1_server_Na = skeleton_kao_chow_v1_0.skeleton_kao_chow_v1_0_Na
+    skeleton_server_0_strand_1.kao_chow_v1_server_Nb = skeleton_kao_chow_v1_0.skeleton_kao_chow_v1_0_Nb
   }
   some skeleton_resp_0_strand_2 : kao_chow_v1_resp | {
     skeleton_resp_0_strand_2.kao_chow_v1_resp_a = skeleton_kao_chow_v1_0.skeleton_kao_chow_v1_0_a
@@ -654,13 +599,13 @@ inst honest_run_bounds {
   Key = skey
   Attacker = `Attacker0
   name = `name0 + `name1 + `name2 + Attacker
-  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7 + `Ciphertext8 + `Ciphertext9 + `Ciphertext10 + `Ciphertext11 + `Ciphertext12 + `Ciphertext13 + `Ciphertext14 + `Ciphertext15
-  text = `text0 + `text1 + `text2 + `text3 + `text4 + `text5 + `text6 + `text7
+  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7 + `Ciphertext8 + `Ciphertext9
+  text = `text0 + `text1
   no Hashed
   tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7 + `tuple8 + `tuple9 + `tuple10 + `tuple11 + `tuple12 + `tuple13 + `tuple14
   mesg = Key + name + Ciphertext + text + tuple
 
-  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3
 
   components in tuple -> (0+1+2+3+4+5) -> (Key + name + text + Ciphertext + tuple + Hashed)
   KeyPairs = `KeyPairs0
@@ -670,7 +615,7 @@ inst honest_run_bounds {
 
   `KeyPairs0.ltks = `name0->`name1->`skey0 + `name0->`name2->`skey1 + `name0->`Attacker0->`skey2 + `name1->`name2->`skey3 + `name1->`Attacker0->`skey4 + `name2->`Attacker0->`skey5
   `KeyPairs0.inv_key_helper = `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2 + `skey3->`skey3 + `skey4->`skey4 + `skey5->`skey5
-  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3
   mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
 
   generated_times in name -> (Key + text) -> Timeslot
