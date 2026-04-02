@@ -418,13 +418,11 @@ sig denning_saco_init extends strand {
   denning_saco_init_b : one name,
   denning_saco_init_s : one name,
   denning_saco_init_Kab : one skey,
-  denning_saco_init_T : one text
+  denning_saco_init_T : one text,
+  denning_saco_init_msg : one mesg
 }
 pred exec_denning_saco_init {
   all arbitrary_init_denning_saco : denning_saco_init | {
-    no aStrand : strand | {
-      originates[aStrand,getPRIVK[arbitrary_init_denning_saco.denning_saco_init_a]] or generates [aStrand,getPRIVK[arbitrary_init_denning_saco.denning_saco_init_a]]
-    }
     no aStrand : strand | {
       originates[aStrand,getLTK[arbitrary_init_denning_saco.denning_saco_init_a,arbitrary_init_denning_saco.denning_saco_init_s]] or generates [aStrand,getLTK[arbitrary_init_denning_saco.denning_saco_init_a,arbitrary_init_denning_saco.denning_saco_init_s]]
     }
@@ -446,52 +444,21 @@ pred exec_denning_saco_init {
 
       t1.receiver = arbitrary_init_denning_saco
       learnt_term_by[getLTK[arbitrary_init_denning_saco.denning_saco_init_a,arbitrary_init_denning_saco.denning_saco_init_s],arbitrary_init_denning_saco.agent,t1]
-      inds[((t1.data)).plaintext.components] = 0
-      let cat_4  = (((t1.data)).plaintext.components)[0] | {
-        ((t1.data)).plaintext.components = 0->cat_4
-        inds[(cat_4.components)] = 0+1+2+3
-        let name_5  = ((cat_4.components))[0] | {
-        let skey_6  = ((cat_4.components))[1] | {
-        let text_7  = ((cat_4.components))[2] | {
-        let enc_8  = ((cat_4.components))[3] | {
-          (cat_4.components) = 0->name_5 + 1->skey_6 + 2->text_7 + 3->enc_8
-          name_5 = arbitrary_init_denning_saco.denning_saco_init_b
-          skey_6 = arbitrary_init_denning_saco.denning_saco_init_Kab
-          text_7 = arbitrary_init_denning_saco.denning_saco_init_T
-          learnt_term_by[getLTK[arbitrary_init_denning_saco.denning_saco_init_b,arbitrary_init_denning_saco.denning_saco_init_s],arbitrary_init_denning_saco.agent,t1]
-          inds[(enc_8).plaintext.components] = 0
-          let cat_10  = ((enc_8).plaintext.components)[0] | {
-            (enc_8).plaintext.components = 0->cat_10
-            inds[(cat_10.components)] = 0+1+2
-            let skey_11  = ((cat_10.components))[0] | {
-            let name_12  = ((cat_10.components))[1] | {
-            let text_13  = ((cat_10.components))[2] | {
-              (cat_10.components) = 0->skey_11 + 1->name_12 + 2->text_13
-              skey_11 = arbitrary_init_denning_saco.denning_saco_init_Kab
-              name_12 = arbitrary_init_denning_saco.denning_saco_init_a
-              text_13 = arbitrary_init_denning_saco.denning_saco_init_T
-            }}}
-          }
-          (enc_8).encryptionKey = getLTK[arbitrary_init_denning_saco.denning_saco_init_b,arbitrary_init_denning_saco.denning_saco_init_s]
-        }}}}
-      }
+      inds[((t1.data)).plaintext.components] = 0+1+2+3
+      let name_7  = (((t1.data)).plaintext.components)[0] | {
+      let skey_8  = (((t1.data)).plaintext.components)[1] | {
+      let text_9  = (((t1.data)).plaintext.components)[2] | {
+      let mesg_10  = (((t1.data)).plaintext.components)[3] | {
+        ((t1.data)).plaintext.components = 0->name_7 + 1->skey_8 + 2->text_9 + 3->mesg_10
+        name_7 = arbitrary_init_denning_saco.denning_saco_init_b
+        skey_8 = arbitrary_init_denning_saco.denning_saco_init_Kab
+        text_9 = arbitrary_init_denning_saco.denning_saco_init_T
+        mesg_10 = arbitrary_init_denning_saco.denning_saco_init_msg
+      }}}}
       ((t1.data)).encryptionKey = getLTK[arbitrary_init_denning_saco.denning_saco_init_a,arbitrary_init_denning_saco.denning_saco_init_s]
 
       t2.sender = arbitrary_init_denning_saco
-      inds[((t2.data)).plaintext.components] = 0
-      let cat_15  = (((t2.data)).plaintext.components)[0] | {
-        ((t2.data)).plaintext.components = 0->cat_15
-        inds[(cat_15.components)] = 0+1+2
-        let skey_16  = ((cat_15.components))[0] | {
-        let name_17  = ((cat_15.components))[1] | {
-        let text_18  = ((cat_15.components))[2] | {
-          (cat_15.components) = 0->skey_16 + 1->name_17 + 2->text_18
-          skey_16 = arbitrary_init_denning_saco.denning_saco_init_Kab
-          name_17 = arbitrary_init_denning_saco.denning_saco_init_a
-          text_18 = arbitrary_init_denning_saco.denning_saco_init_T
-        }}}
-      }
-      ((t2.data)).encryptionKey = getLTK[arbitrary_init_denning_saco.denning_saco_init_b,arbitrary_init_denning_saco.denning_saco_init_s]
+      (t2.data) = arbitrary_init_denning_saco.denning_saco_init_msg
 
     }}}
   }
@@ -505,9 +472,6 @@ sig denning_saco_server extends strand {
 }
 pred exec_denning_saco_server {
   all arbitrary_server_denning_saco : denning_saco_server | {
-    no aStrand : strand | {
-      originates[aStrand,getPRIVK[arbitrary_server_denning_saco.denning_saco_server_s]] or generates [aStrand,getPRIVK[arbitrary_server_denning_saco.denning_saco_server_s]]
-    }
     no aStrand : strand | {
       originates[aStrand,getLTK[arbitrary_server_denning_saco.denning_saco_server_a,arbitrary_server_denning_saco.denning_saco_server_s]] or generates [aStrand,getLTK[arbitrary_server_denning_saco.denning_saco_server_a,arbitrary_server_denning_saco.denning_saco_server_s]]
     }
@@ -525,42 +489,34 @@ pred exec_denning_saco_server {
       t0+t1 = sender.arbitrary_server_denning_saco + receiver.arbitrary_server_denning_saco
       t0.receiver = arbitrary_server_denning_saco
       inds[((t0.data).components)] = 0+1
-      let name_19  = (((t0.data).components))[0] | {
-      let name_20  = (((t0.data).components))[1] | {
-        ((t0.data).components) = 0->name_19 + 1->name_20
-        name_19 = arbitrary_server_denning_saco.denning_saco_server_a
-        name_20 = arbitrary_server_denning_saco.denning_saco_server_b
+      let name_11  = (((t0.data).components))[0] | {
+      let name_12  = (((t0.data).components))[1] | {
+        ((t0.data).components) = 0->name_11 + 1->name_12
+        name_11 = arbitrary_server_denning_saco.denning_saco_server_a
+        name_12 = arbitrary_server_denning_saco.denning_saco_server_b
       }}
 
       t1.sender = arbitrary_server_denning_saco
-      inds[((t1.data)).plaintext.components] = 0
-      let cat_22  = (((t1.data)).plaintext.components)[0] | {
-        ((t1.data)).plaintext.components = 0->cat_22
-        inds[(cat_22.components)] = 0+1+2+3
-        let name_23  = ((cat_22.components))[0] | {
-        let skey_24  = ((cat_22.components))[1] | {
-        let text_25  = ((cat_22.components))[2] | {
-        let enc_26  = ((cat_22.components))[3] | {
-          (cat_22.components) = 0->name_23 + 1->skey_24 + 2->text_25 + 3->enc_26
-          name_23 = arbitrary_server_denning_saco.denning_saco_server_b
+      inds[((t1.data)).plaintext.components] = 0+1+2+3
+      let name_17  = (((t1.data)).plaintext.components)[0] | {
+      let skey_18  = (((t1.data)).plaintext.components)[1] | {
+      let text_19  = (((t1.data)).plaintext.components)[2] | {
+      let enc_20  = (((t1.data)).plaintext.components)[3] | {
+        ((t1.data)).plaintext.components = 0->name_17 + 1->skey_18 + 2->text_19 + 3->enc_20
+        name_17 = arbitrary_server_denning_saco.denning_saco_server_b
+        skey_18 = arbitrary_server_denning_saco.denning_saco_server_Kab
+        text_19 = arbitrary_server_denning_saco.denning_saco_server_T
+        inds[(enc_20).plaintext.components] = 0+1+2
+        let skey_24  = ((enc_20).plaintext.components)[0] | {
+        let name_25  = ((enc_20).plaintext.components)[1] | {
+        let text_26  = ((enc_20).plaintext.components)[2] | {
+          (enc_20).plaintext.components = 0->skey_24 + 1->name_25 + 2->text_26
           skey_24 = arbitrary_server_denning_saco.denning_saco_server_Kab
-          text_25 = arbitrary_server_denning_saco.denning_saco_server_T
-          inds[(enc_26).plaintext.components] = 0
-          let cat_28  = ((enc_26).plaintext.components)[0] | {
-            (enc_26).plaintext.components = 0->cat_28
-            inds[(cat_28.components)] = 0+1+2
-            let skey_29  = ((cat_28.components))[0] | {
-            let name_30  = ((cat_28.components))[1] | {
-            let text_31  = ((cat_28.components))[2] | {
-              (cat_28.components) = 0->skey_29 + 1->name_30 + 2->text_31
-              skey_29 = arbitrary_server_denning_saco.denning_saco_server_Kab
-              name_30 = arbitrary_server_denning_saco.denning_saco_server_a
-              text_31 = arbitrary_server_denning_saco.denning_saco_server_T
-            }}}
-          }
-          (enc_26).encryptionKey = getLTK[arbitrary_server_denning_saco.denning_saco_server_b,arbitrary_server_denning_saco.denning_saco_server_s]
-        }}}}
-      }
+          name_25 = arbitrary_server_denning_saco.denning_saco_server_a
+          text_26 = arbitrary_server_denning_saco.denning_saco_server_T
+        }}}
+        (enc_20).encryptionKey = getLTK[arbitrary_server_denning_saco.denning_saco_server_b,arbitrary_server_denning_saco.denning_saco_server_s]
+      }}}}
       ((t1.data)).encryptionKey = getLTK[arbitrary_server_denning_saco.denning_saco_server_a,arbitrary_server_denning_saco.denning_saco_server_s]
 
     }}
@@ -576,9 +532,6 @@ sig denning_saco_resp extends strand {
 pred exec_denning_saco_resp {
   all arbitrary_resp_denning_saco : denning_saco_resp | {
     no aStrand : strand | {
-      originates[aStrand,getPRIVK[arbitrary_resp_denning_saco.denning_saco_resp_b]] or generates [aStrand,getPRIVK[arbitrary_resp_denning_saco.denning_saco_resp_b]]
-    }
-    no aStrand : strand | {
       originates[aStrand,getLTK[arbitrary_resp_denning_saco.denning_saco_resp_b,arbitrary_resp_denning_saco.denning_saco_resp_s]] or generates [aStrand,getLTK[arbitrary_resp_denning_saco.denning_saco_resp_b,arbitrary_resp_denning_saco.denning_saco_resp_s]]
     }
     arbitrary_resp_denning_saco.denning_saco_resp_a != arbitrary_resp_denning_saco.denning_saco_resp_b
@@ -588,19 +541,15 @@ pred exec_denning_saco_resp {
       t0 = sender.arbitrary_resp_denning_saco + receiver.arbitrary_resp_denning_saco
       t0.receiver = arbitrary_resp_denning_saco
       learnt_term_by[getLTK[arbitrary_resp_denning_saco.denning_saco_resp_b,arbitrary_resp_denning_saco.denning_saco_resp_s],arbitrary_resp_denning_saco.agent,t0]
-      inds[((t0.data)).plaintext.components] = 0
-      let cat_33  = (((t0.data)).plaintext.components)[0] | {
-        ((t0.data)).plaintext.components = 0->cat_33
-        inds[(cat_33.components)] = 0+1+2
-        let skey_34  = ((cat_33.components))[0] | {
-        let name_35  = ((cat_33.components))[1] | {
-        let text_36  = ((cat_33.components))[2] | {
-          (cat_33.components) = 0->skey_34 + 1->name_35 + 2->text_36
-          skey_34 = arbitrary_resp_denning_saco.denning_saco_resp_Kab
-          name_35 = arbitrary_resp_denning_saco.denning_saco_resp_a
-          text_36 = arbitrary_resp_denning_saco.denning_saco_resp_T
-        }}}
-      }
+      inds[((t0.data)).plaintext.components] = 0+1+2
+      let skey_30  = (((t0.data)).plaintext.components)[0] | {
+      let name_31  = (((t0.data)).plaintext.components)[1] | {
+      let text_32  = (((t0.data)).plaintext.components)[2] | {
+        ((t0.data)).plaintext.components = 0->skey_30 + 1->name_31 + 2->text_32
+        skey_30 = arbitrary_resp_denning_saco.denning_saco_resp_Kab
+        name_31 = arbitrary_resp_denning_saco.denning_saco_resp_a
+        text_32 = arbitrary_resp_denning_saco.denning_saco_resp_T
+      }}}
       ((t0.data)).encryptionKey = getLTK[arbitrary_resp_denning_saco.denning_saco_resp_b,arbitrary_resp_denning_saco.denning_saco_resp_s]
 
     }
@@ -611,7 +560,90 @@ one sig skeleton_denning_saco_0 {
   skeleton_denning_saco_0_b : one name,
   skeleton_denning_saco_0_s : one name,
   skeleton_denning_saco_0_Kab : one skey,
-  skeleton_denning_saco_0_T : one text
+  skeleton_denning_saco_0_T : one text,
+  skeleton_denning_saco_0_msg : one mesg,
+  skeleton_denning_saco_0_init : one denning_saco_init,
+  skeleton_denning_saco_0_server : one denning_saco_server,
+  skeleton_denning_saco_0_resp : one denning_saco_resp
+}
+pred constrain_skeleton_denning_saco_0_honest_run {
+  some t_0 : Timeslot {
+  some t_1 : t_0.(^next) {
+  some t_2 : t_1.(^next) {
+  some t_3 : t_2.(^next) {
+  some t_4 : t_3.(^next) {
+  some t_5 : t_4.(^next) {
+    t_0.sender = skeleton_denning_saco_0.skeleton_denning_saco_0_init
+    inds[(t_0.data.components)] = 0+1
+    let name_33  = ((t_0.data.components))[0] | {
+    let name_34  = ((t_0.data.components))[1] | {
+      (t_0.data.components) = 0->name_33 + 1->name_34
+      name_33 = skeleton_denning_saco_0.skeleton_denning_saco_0_a
+      name_34 = skeleton_denning_saco_0.skeleton_denning_saco_0_b
+    }}
+
+    t_1.receiver = skeleton_denning_saco_0.skeleton_denning_saco_0_server
+    inds[(t_1.data.components)] = 0+1
+    let name_35  = ((t_1.data.components))[0] | {
+    let name_36  = ((t_1.data.components))[1] | {
+      (t_1.data.components) = 0->name_35 + 1->name_36
+      name_35 = skeleton_denning_saco_0.skeleton_denning_saco_0_a
+      name_36 = skeleton_denning_saco_0.skeleton_denning_saco_0_b
+    }}
+
+    t_2.sender = skeleton_denning_saco_0.skeleton_denning_saco_0_server
+    inds[((t_2.data)).plaintext.components] = 0+1+2+3
+    let name_41  = (((t_2.data)).plaintext.components)[0] | {
+    let skey_42  = (((t_2.data)).plaintext.components)[1] | {
+    let text_43  = (((t_2.data)).plaintext.components)[2] | {
+    let enc_44  = (((t_2.data)).plaintext.components)[3] | {
+      ((t_2.data)).plaintext.components = 0->name_41 + 1->skey_42 + 2->text_43 + 3->enc_44
+      name_41 = skeleton_denning_saco_0.skeleton_denning_saco_0_b
+      skey_42 = skeleton_denning_saco_0.skeleton_denning_saco_0_Kab
+      text_43 = skeleton_denning_saco_0.skeleton_denning_saco_0_T
+      inds[(enc_44).plaintext.components] = 0+1+2
+      let skey_48  = ((enc_44).plaintext.components)[0] | {
+      let name_49  = ((enc_44).plaintext.components)[1] | {
+      let text_50  = ((enc_44).plaintext.components)[2] | {
+        (enc_44).plaintext.components = 0->skey_48 + 1->name_49 + 2->text_50
+        skey_48 = skeleton_denning_saco_0.skeleton_denning_saco_0_Kab
+        name_49 = skeleton_denning_saco_0.skeleton_denning_saco_0_a
+        text_50 = skeleton_denning_saco_0.skeleton_denning_saco_0_T
+      }}}
+      (enc_44).encryptionKey = getLTK[skeleton_denning_saco_0.skeleton_denning_saco_0_b,skeleton_denning_saco_0.skeleton_denning_saco_0_s]
+    }}}}
+    ((t_2.data)).encryptionKey = getLTK[skeleton_denning_saco_0.skeleton_denning_saco_0_a,skeleton_denning_saco_0.skeleton_denning_saco_0_s]
+
+    t_3.receiver = skeleton_denning_saco_0.skeleton_denning_saco_0_init
+    inds[((t_3.data)).plaintext.components] = 0+1+2+3
+    let name_55  = (((t_3.data)).plaintext.components)[0] | {
+    let skey_56  = (((t_3.data)).plaintext.components)[1] | {
+    let text_57  = (((t_3.data)).plaintext.components)[2] | {
+    let mesg_58  = (((t_3.data)).plaintext.components)[3] | {
+      ((t_3.data)).plaintext.components = 0->name_55 + 1->skey_56 + 2->text_57 + 3->mesg_58
+      name_55 = skeleton_denning_saco_0.skeleton_denning_saco_0_b
+      skey_56 = skeleton_denning_saco_0.skeleton_denning_saco_0_Kab
+      text_57 = skeleton_denning_saco_0.skeleton_denning_saco_0_T
+      mesg_58 = skeleton_denning_saco_0.skeleton_denning_saco_0_msg
+    }}}}
+    ((t_3.data)).encryptionKey = getLTK[skeleton_denning_saco_0.skeleton_denning_saco_0_a,skeleton_denning_saco_0.skeleton_denning_saco_0_s]
+
+    t_4.sender = skeleton_denning_saco_0.skeleton_denning_saco_0_init
+    (t_4.data) = skeleton_denning_saco_0.skeleton_denning_saco_0_msg
+
+    t_5.receiver = skeleton_denning_saco_0.skeleton_denning_saco_0_resp
+    inds[((t_5.data)).plaintext.components] = 0+1+2
+    let skey_62  = (((t_5.data)).plaintext.components)[0] | {
+    let name_63  = (((t_5.data)).plaintext.components)[1] | {
+    let text_64  = (((t_5.data)).plaintext.components)[2] | {
+      ((t_5.data)).plaintext.components = 0->skey_62 + 1->name_63 + 2->text_64
+      skey_62 = skeleton_denning_saco_0.skeleton_denning_saco_0_Kab
+      name_63 = skeleton_denning_saco_0.skeleton_denning_saco_0_a
+      text_64 = skeleton_denning_saco_0.skeleton_denning_saco_0_T
+    }}}
+    ((t_5.data)).encryptionKey = getLTK[skeleton_denning_saco_0.skeleton_denning_saco_0_b,skeleton_denning_saco_0.skeleton_denning_saco_0_s]
+
+  }}}}}}
 }
 pred constrain_skeleton_denning_saco_0 {
   some skeleton_init_0_strand_0 : denning_saco_init | {
@@ -635,38 +667,30 @@ pred constrain_skeleton_denning_saco_0 {
     skeleton_resp_0_strand_2.denning_saco_resp_Kab = skeleton_denning_saco_0.skeleton_denning_saco_0_Kab
     skeleton_resp_0_strand_2.denning_saco_resp_T = skeleton_denning_saco_0.skeleton_denning_saco_0_T
   }
-  some skeleton_resp_0_strand_3 : denning_saco_resp | {
-    skeleton_resp_0_strand_3.denning_saco_resp_a = skeleton_denning_saco_0.skeleton_denning_saco_0_a
-    skeleton_resp_0_strand_3.denning_saco_resp_b = skeleton_denning_saco_0.skeleton_denning_saco_0_b
-    skeleton_resp_0_strand_3.denning_saco_resp_s = skeleton_denning_saco_0.skeleton_denning_saco_0_s
-    skeleton_resp_0_strand_3.denning_saco_resp_Kab = skeleton_denning_saco_0.skeleton_denning_saco_0_Kab
-    skeleton_resp_0_strand_3.denning_saco_resp_T = skeleton_denning_saco_0.skeleton_denning_saco_0_T
-  }
+  constrain_skeleton_denning_saco_0_honest_run
 }
 inst honest_run_bounds {
-  PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2 + `PublicKey3
-  PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2 + `PrivateKey3
-  akey = PublicKey + PrivateKey
-  skey = `skey0 + `skey1 + `skey2
-  Key = akey + skey
+  no akey
+  skey = `skey0 + `skey1 + `skey2 + `skey3 + `skey4 + `skey5 + `skey6
+  Key = skey
   Attacker = `Attacker0
   name = `name0 + `name1 + `name2 + Attacker
   Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5
-  text = `text0 + `text1 + `text2 + `text3 + `text4 + `text5
+  text = `text0 + `text1
   no Hashed
-  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7
+  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5
   mesg = Key + name + Ciphertext + text + tuple
 
   Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5
 
-  components in tuple -> (0+1+2+3) -> (Key + name + text + Ciphertext + tuple + Hashed)
+  components in tuple -> (0+1+2+3+4) -> (Key + name + text + Ciphertext + tuple + Hashed)
   KeyPairs = `KeyPairs0
   Microtick = `Microtick0 + `Microtick1 + `Microtick2
-  pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2 + `PrivateKey3->`PublicKey3)
-  owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`name2 + `PrivateKey3->`Attacker0)
-  no ltks
+  no PublicKey
+  no PrivateKey
 
-  `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2 + `PublicKey3->`PrivateKey3 + `PrivateKey3->`PublicKey3 + `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2
+  `KeyPairs0.ltks = `name0->`name1->`skey0 + `name0->`name2->`skey1 + `name0->`Attacker0->`skey2 + `name1->`name2->`skey3 + `name1->`Attacker0->`skey4 + `name2->`Attacker0->`skey5
+  `KeyPairs0.inv_key_helper = `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2 + `skey3->`skey3 + `skey4->`skey4 + `skey5->`skey5 + `skey6->`skey6
   next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5
   mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
 
@@ -678,44 +702,9 @@ inst honest_run_bounds {
   AttackerStrand = `AttackerStrand0
   strand = denning_saco_init + denning_saco_server + denning_saco_resp + AttackerStrand
 }
-inst attack_bounds {
-  PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2 + `PublicKey3
-  PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2 + `PrivateKey3
-  akey = PublicKey + PrivateKey
-  skey = `skey0 + `skey1 + `skey2
-  Key = akey + skey
-  Attacker = `Attacker0
-  name = `name0 + `name1 + `name2 + Attacker
-  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5
-  text = `text0 + `text1 + `text2 + `text3 + `text4 + `text5
-  no Hashed
-  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7
-  mesg = Key + name + Ciphertext + text + tuple
-
-  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7 + `Timeslot8 + `Timeslot9 + `Timeslot10 + `Timeslot11 + `Timeslot12 + `Timeslot13 + `Timeslot14 + `Timeslot15
-
-  components in tuple -> (0+1+2+3) -> (Key + name + text + Ciphertext + tuple + Hashed)
-  KeyPairs = `KeyPairs0
-  Microtick = `Microtick0 + `Microtick1 + `Microtick2
-  pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2 + `PrivateKey3->`PublicKey3)
-  owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`name2 + `PrivateKey3->`Attacker0)
-  no ltks
-
-  `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2 + `PublicKey3->`PrivateKey3 + `PrivateKey3->`PublicKey3 + `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2
-  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7 + `Timeslot7->`Timeslot8 + `Timeslot8->`Timeslot9 + `Timeslot9->`Timeslot10 + `Timeslot10->`Timeslot11 + `Timeslot11->`Timeslot12 + `Timeslot12->`Timeslot13 + `Timeslot13->`Timeslot14 + `Timeslot14->`Timeslot15
-  mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
-
-  generated_times in name -> (Key + text) -> Timeslot
-  hash_of in Hashed -> text
-  denning_saco_init = `denning_saco_init0
-  denning_saco_server = `denning_saco_server0
-  denning_saco_resp = `denning_saco_resp0 + `denning_saco_resp1
-  AttackerStrand = `AttackerStrand0
-  strand = denning_saco_init + denning_saco_server + denning_saco_resp + AttackerStrand
-}
 option run_sterling "../../crypto_viz_seq_tuple.js"
-option verbose 5
 option solver Glucose
+option verbose 5
 
 denning_saco_attack: run {
     wellformed
@@ -726,12 +715,27 @@ denning_saco_attack: run {
 
     constrain_skeleton_denning_saco_0
 
+    denning_saco_init.denning_saco_init_a != Attacker
+    denning_saco_init.denning_saco_init_b != Attacker
+    denning_saco_init.denning_saco_init_s != Attacker
+
+    denning_saco_resp.denning_saco_resp_a != Attacker
+    denning_saco_resp.denning_saco_resp_b != Attacker
+    denning_saco_resp.denning_saco_resp_s != Attacker
+
+    denning_saco_server.denning_saco_server_a != Attacker
+    denning_saco_server.denning_saco_server_b != Attacker
+    denning_saco_server.denning_saco_server_s != Attacker
+
     not Attacker in (denning_saco_init + denning_saco_resp + denning_saco_server).agent
 
     denning_saco_init.agent != denning_saco_resp.agent
     denning_saco_resp.agent != denning_saco_server.agent
     denning_saco_server.agent != denning_saco_init.agent
+
+    no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)))
 } for {
     next is linear
-    attack_bounds
+    mt_next is linear
+    honest_run_bounds
 }
