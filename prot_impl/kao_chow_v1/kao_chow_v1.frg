@@ -11,30 +11,23 @@ kao_chow_v1_honest_run: run {
 
     constrain_skeleton_kao_chow_v1_0
 
+    kao_chow_v1_init.kao_chow_v1_init_b != Attacker
+    kao_chow_v1_init.kao_chow_v1_init_s != Attacker
+    kao_chow_v1_init.kao_chow_v1_init_a != Attacker
+
+    kao_chow_v1_server.kao_chow_v1_server_b != Attacker
+    kao_chow_v1_server.kao_chow_v1_server_a != Attacker
+    kao_chow_v1_server.kao_chow_v1_server_s != Attacker
+
+    kao_chow_v1_resp.kao_chow_v1_resp_a != Attacker
+    kao_chow_v1_resp.kao_chow_v1_resp_s != Attacker
+    kao_chow_v1_resp.kao_chow_v1_resp_b != Attacker
+
     kao_chow_v1_init.agent != kao_chow_v1_server.agent
     kao_chow_v1_init.agent != kao_chow_v1_resp.agent
     kao_chow_v1_server.agent != kao_chow_v1_resp.agent
 
     not Attacker in (kao_chow_v1_init + kao_chow_v1_server + kao_chow_v1_resp).agent
-
-    // kao_chow_v1_init.kao_chow_v1_init_b != Attacker
-    // kao_chow_v1_init.kao_chow_v1_init_s != Attacker
-    // kao_chow_v1_server.kao_chow_v1_server_b != Attacker
-    // kao_chow_v1_server.kao_chow_v1_server_a != Attacker
-    // kao_chow_v1_resp.kao_chow_v1_resp_a != Attacker
-    // kao_chow_v1_resp.kao_chow_v1_resp_s != Attacker
-
-    // kao_chow_v1_init.kao_chow_v1_init_a != kao_chow_v1_init.kao_chow_v1_init_b
-    // kao_chow_v1_init.kao_chow_v1_init_a != kao_chow_v1_init.kao_chow_v1_init_s
-    // kao_chow_v1_init.kao_chow_v1_init_b != kao_chow_v1_init.kao_chow_v1_init_s
-
-    // kao_chow_v1_resp.kao_chow_v1_resp_a != kao_chow_v1_resp.kao_chow_v1_resp_b
-    // kao_chow_v1_resp.kao_chow_v1_resp_a != kao_chow_v1_resp.kao_chow_v1_resp_s
-    // kao_chow_v1_resp.kao_chow_v1_resp_b != kao_chow_v1_resp.kao_chow_v1_resp_s
-
-    // kao_chow_v1_server.kao_chow_v1_server_a != kao_chow_v1_server.kao_chow_v1_server_b
-    // kao_chow_v1_server.kao_chow_v1_server_a != kao_chow_v1_server.kao_chow_v1_server_s
-    // kao_chow_v1_server.kao_chow_v1_server_b != kao_chow_v1_server.kao_chow_v1_server_s
 
     
     no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)) )
