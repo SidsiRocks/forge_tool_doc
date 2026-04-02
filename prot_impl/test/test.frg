@@ -7,7 +7,7 @@ needham_schroeder_sym_key_honest_run: run {
 
     exec_needham_schroeder_sym_key_init
     exec_needham_schroeder_sym_key_server
-    // exec_needham_schroeder_sym_key_resp
+    exec_needham_schroeder_sym_key_resp
 
     constrain_skeleton_needham_schroeder_sym_key_0
 

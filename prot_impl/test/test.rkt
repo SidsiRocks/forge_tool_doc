@@ -7,7 +7,8 @@
             (send (cat a b Na))
             ; (recv (enc Na b Kab (enc Kab a (ltk b s)) (ltk a s))) ; actual message
             (recv (enc Na b Kab msg (ltk a s)))
-            ; (send (enc (cat Kab a) (ltk b s)))
+            ; (send (enc Kab a (ltk b s)))
+            (send msg)
             ; (recv (enc (cat Nb) Kab))
             ; (send (enc (cat (hash Nb)) Kab))
         )
@@ -37,29 +38,29 @@
     (defrole resp 
         (vars (a b s name) (Nb text) (Kab skey))
         (trace
-            (recv (enc (cat Kab a) (ltk b s)))
-            (send (enc (cat Nb) Kab))
-            (recv (enc (cat (hash Nb)) Kab))
+            (recv (enc Kab a (ltk b s)))
+            ; (send (enc (cat Nb) Kab))
+            ; (recv (enc (cat (hash Nb)) Kab))
         )
         (constraint
-            (uniq-orig Nb) (fresh-gen Nb)
+            ; (uniq-orig Nb) (fresh-gen Nb)
             (non-orig (ltk b s))
-            (not-eq a b) (not-eq a s) (not-eq b s)
+            ; (not-eq a b) (not-eq a s) (not-eq b s)
         )
     )
 )
 
 (defskeleton needham_schroeder_sym_key
     (vars (a b s name) (Na text) (Kab skey))
-    (defstrand init 2 (a a) (b b) (s s) (Kab Kab) (Na Na))
+    (defstrand init 3 (a a) (b b) (s s) (Kab Kab) (Na Na))
     (defstrand server 2 (a a) (b b) (s s) (Kab Kab) (Na Na))
-    ; (defstrand resp 0 (a a) (b b) (s s) (Kab Kab))
+    (defstrand resp 1 (a a) (b b) (s s) (Kab Kab))
 )
 
 (defaltinstance honest_run_bounds 
-    (Timeslot 4)
-    (mesg 19)
-    (Key 7) (name 4) (Ciphertext 3) (text 2) (tuple 3) (Hashed 0)
+    (Timeslot 6)
+    (mesg 21)
+    (Key 7) (name 4) (Ciphertext 4) (text 2) (tuple 4) (Hashed 0)
     (skey 7) (Attacker 1)
     (akey 0)
     (PublicKey 0) (PrivateKey 0)
