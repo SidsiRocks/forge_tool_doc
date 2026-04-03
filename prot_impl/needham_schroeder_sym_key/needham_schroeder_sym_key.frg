@@ -9,7 +9,8 @@ needham_schroeder_sym_key_honest_run: run {
     exec_needham_schroeder_sym_key_server
     exec_needham_schroeder_sym_key_resp
 
-    constrain_skeleton_needham_schroeder_sym_key_0
+    // constrain_skeleton_needham_schroeder_sym_key_0
+    constrain_skeleton_attack_1
 
     // no (needham_schroeder_sym_key_init.agent & needham_schroeder_sym_key_server.agent)
 
@@ -35,10 +36,14 @@ needham_schroeder_sym_key_honest_run: run {
 
     no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)) )
 
-    // needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_Kab in Attacker.learned_times.Timeslot
+    needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_Kab
+    in Attacker.learned_times.Timeslot
 
+    all x: name, y: name | needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_Kab != x.(KeyPairs.ltks)[y]
+    
 } for {
     next is linear
     mt_next is linear
-    honest_run_bounds
+    // honest_run_bounds
+    attack_bounds
 }

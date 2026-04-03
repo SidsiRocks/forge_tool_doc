@@ -502,7 +502,6 @@ pred exec_needham_schroeder_sym_key_server {
     no aStrand : strand | {
       originates[aStrand,getLTK[arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b,arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s]] or generates [aStrand,getLTK[arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b,arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s]]
     }
-    (generated_times.Timeslot).(arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_Kab) = arbitrary_server_needham_schroeder_sym_key.agent
     arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a != arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b
     arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_a != arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s
     arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_b != arbitrary_server_needham_schroeder_sym_key.needham_schroeder_sym_key_server_s
@@ -602,6 +601,7 @@ one sig skeleton_needham_schroeder_sym_key_0 {
   skeleton_needham_schroeder_sym_key_0_b : one name,
   skeleton_needham_schroeder_sym_key_0_s : one name,
   skeleton_needham_schroeder_sym_key_0_Na : one text,
+  skeleton_needham_schroeder_sym_key_0_Nb : one text,
   skeleton_needham_schroeder_sym_key_0_Kab : one skey
 }
 pred constrain_skeleton_needham_schroeder_sym_key_0 {
@@ -611,6 +611,7 @@ pred constrain_skeleton_needham_schroeder_sym_key_0 {
     skeleton_init_0_strand_0.needham_schroeder_sym_key_init_s = skeleton_needham_schroeder_sym_key_0.skeleton_needham_schroeder_sym_key_0_s
     skeleton_init_0_strand_0.needham_schroeder_sym_key_init_Kab = skeleton_needham_schroeder_sym_key_0.skeleton_needham_schroeder_sym_key_0_Kab
     skeleton_init_0_strand_0.needham_schroeder_sym_key_init_Na = skeleton_needham_schroeder_sym_key_0.skeleton_needham_schroeder_sym_key_0_Na
+    skeleton_init_0_strand_0.needham_schroeder_sym_key_init_Nb = skeleton_needham_schroeder_sym_key_0.skeleton_needham_schroeder_sym_key_0_Nb
   }
   some skeleton_server_0_strand_1 : needham_schroeder_sym_key_server | {
     skeleton_server_0_strand_1.needham_schroeder_sym_key_server_a = skeleton_needham_schroeder_sym_key_0.skeleton_needham_schroeder_sym_key_0_a
@@ -624,7 +625,183 @@ pred constrain_skeleton_needham_schroeder_sym_key_0 {
     skeleton_resp_0_strand_2.needham_schroeder_sym_key_resp_b = skeleton_needham_schroeder_sym_key_0.skeleton_needham_schroeder_sym_key_0_b
     skeleton_resp_0_strand_2.needham_schroeder_sym_key_resp_s = skeleton_needham_schroeder_sym_key_0.skeleton_needham_schroeder_sym_key_0_s
     skeleton_resp_0_strand_2.needham_schroeder_sym_key_resp_Kab = skeleton_needham_schroeder_sym_key_0.skeleton_needham_schroeder_sym_key_0_Kab
+    skeleton_resp_0_strand_2.needham_schroeder_sym_key_resp_Nb = skeleton_needham_schroeder_sym_key_0.skeleton_needham_schroeder_sym_key_0_Nb
   }
+}
+one sig skeleton_attack_1 {
+  skeleton_attack_1_a : one name,
+  skeleton_attack_1_b : one name,
+  skeleton_attack_1_s : one name,
+  skeleton_attack_1_Na : one text,
+  skeleton_attack_1_Nb1 : one text,
+  skeleton_attack_1_Nb2 : one text,
+  skeleton_attack_1_Kab : one skey,
+  skeleton_attack_1_msg : one mesg,
+  skeleton_attack_1_init_strand : one needham_schroeder_sym_key_init,
+  skeleton_attack_1_server_strand : one needham_schroeder_sym_key_server,
+  skeleton_attack_1_resp1_strand : one needham_schroeder_sym_key_resp,
+  skeleton_attack_1_resp2_strand : one needham_schroeder_sym_key_resp
+}
+pred constrain_skeleton_attack_1_attack_run {
+  some t_0 : Timeslot {
+  some t_1 : t_0.(^next) {
+  some t_2 : t_1.(^next) {
+  some t_3 : t_2.(^next) {
+  some t_4 : t_3.(^next) {
+  some t_5 : t_4.(^next) {
+  some t_6 : t_5.(^next) {
+  some t_7 : t_6.(^next) {
+  some t_8 : t_7.(^next) {
+  some t_9 : t_8.(^next) {
+  some t_10 : t_9.(^next) {
+  some t_11 : t_10.(^next) {
+  some t_12 : t_11.(^next) {
+    t_0.sender = skeleton_attack_1.skeleton_attack_1_init_strand
+    inds[(t_0.data.components)] = 0+1+2
+    let name_39  = ((t_0.data.components))[0] | {
+    let name_40  = ((t_0.data.components))[1] | {
+    let text_41  = ((t_0.data.components))[2] | {
+      (t_0.data.components) = 0->name_39 + 1->name_40 + 2->text_41
+      name_39 = skeleton_attack_1.skeleton_attack_1_a
+      name_40 = skeleton_attack_1.skeleton_attack_1_b
+      text_41 = skeleton_attack_1.skeleton_attack_1_Na
+    }}}
+
+    t_1.receiver = skeleton_attack_1.skeleton_attack_1_server_strand
+    inds[(t_1.data.components)] = 0+1+2
+    let name_42  = ((t_1.data.components))[0] | {
+    let name_43  = ((t_1.data.components))[1] | {
+    let text_44  = ((t_1.data.components))[2] | {
+      (t_1.data.components) = 0->name_42 + 1->name_43 + 2->text_44
+      name_42 = skeleton_attack_1.skeleton_attack_1_a
+      name_43 = skeleton_attack_1.skeleton_attack_1_b
+      text_44 = skeleton_attack_1.skeleton_attack_1_Na
+    }}}
+
+    t_2.sender = skeleton_attack_1.skeleton_attack_1_server_strand
+    inds[((t_2.data)).plaintext.components] = 0+1+2+3
+    let text_49  = (((t_2.data)).plaintext.components)[0] | {
+    let name_50  = (((t_2.data)).plaintext.components)[1] | {
+    let skey_51  = (((t_2.data)).plaintext.components)[2] | {
+    let enc_52  = (((t_2.data)).plaintext.components)[3] | {
+      ((t_2.data)).plaintext.components = 0->text_49 + 1->name_50 + 2->skey_51 + 3->enc_52
+      text_49 = skeleton_attack_1.skeleton_attack_1_Na
+      name_50 = skeleton_attack_1.skeleton_attack_1_b
+      skey_51 = skeleton_attack_1.skeleton_attack_1_Kab
+      inds[(enc_52).plaintext.components] = 0+1
+      let skey_55  = ((enc_52).plaintext.components)[0] | {
+      let name_56  = ((enc_52).plaintext.components)[1] | {
+        (enc_52).plaintext.components = 0->skey_55 + 1->name_56
+        skey_55 = skeleton_attack_1.skeleton_attack_1_Kab
+        name_56 = skeleton_attack_1.skeleton_attack_1_a
+      }}
+      (enc_52).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_b,skeleton_attack_1.skeleton_attack_1_s]
+    }}}}
+    ((t_2.data)).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_a,skeleton_attack_1.skeleton_attack_1_s]
+
+    t_3.receiver = skeleton_attack_1.skeleton_attack_1_init_strand
+    inds[((t_3.data)).plaintext.components] = 0+1+2+3
+    let text_61  = (((t_3.data)).plaintext.components)[0] | {
+    let name_62  = (((t_3.data)).plaintext.components)[1] | {
+    let skey_63  = (((t_3.data)).plaintext.components)[2] | {
+    let mesg_64  = (((t_3.data)).plaintext.components)[3] | {
+      ((t_3.data)).plaintext.components = 0->text_61 + 1->name_62 + 2->skey_63 + 3->mesg_64
+      text_61 = skeleton_attack_1.skeleton_attack_1_Na
+      name_62 = skeleton_attack_1.skeleton_attack_1_b
+      skey_63 = skeleton_attack_1.skeleton_attack_1_Kab
+      mesg_64 = skeleton_attack_1.skeleton_attack_1_msg
+    }}}}
+    ((t_3.data)).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_a,skeleton_attack_1.skeleton_attack_1_s]
+
+    t_4.sender = skeleton_attack_1.skeleton_attack_1_init_strand
+    (t_4.data) = skeleton_attack_1.skeleton_attack_1_msg
+
+    t_5.receiver = skeleton_attack_1.skeleton_attack_1_resp1_strand
+    inds[((t_5.data)).plaintext.components] = 0+1
+    let skey_67  = (((t_5.data)).plaintext.components)[0] | {
+    let name_68  = (((t_5.data)).plaintext.components)[1] | {
+      ((t_5.data)).plaintext.components = 0->skey_67 + 1->name_68
+      skey_67 = skeleton_attack_1.skeleton_attack_1_Kab
+      name_68 = skeleton_attack_1.skeleton_attack_1_a
+    }}
+    ((t_5.data)).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_b,skeleton_attack_1.skeleton_attack_1_s]
+
+    t_6.sender = skeleton_attack_1.skeleton_attack_1_resp1_strand
+    inds[((t_6.data)).plaintext.components] = 0
+    let text_70  = (((t_6.data)).plaintext.components)[0] | {
+      ((t_6.data)).plaintext.components = 0->text_70
+      text_70 = skeleton_attack_1.skeleton_attack_1_Nb1
+    }
+    ((t_6.data)).encryptionKey = skeleton_attack_1.skeleton_attack_1_Kab
+
+    t_7.receiver = skeleton_attack_1.skeleton_attack_1_init_strand
+    inds[((t_7.data)).plaintext.components] = 0
+    let text_72  = (((t_7.data)).plaintext.components)[0] | {
+      ((t_7.data)).plaintext.components = 0->text_72
+      text_72 = skeleton_attack_1.skeleton_attack_1_Nb1
+    }
+    ((t_7.data)).encryptionKey = skeleton_attack_1.skeleton_attack_1_Kab
+
+    t_8.sender = skeleton_attack_1.skeleton_attack_1_init_strand
+    inds[((t_8.data)).plaintext.components] = 0
+    let hash_74  = (((t_8.data)).plaintext.components)[0] | {
+      ((t_8.data)).plaintext.components = 0->hash_74
+      (hash_74).hash_of = skeleton_attack_1.skeleton_attack_1_Nb1
+    }
+    ((t_8.data)).encryptionKey = skeleton_attack_1.skeleton_attack_1_Kab
+
+    t_9.receiver = skeleton_attack_1.skeleton_attack_1_resp1_strand
+    inds[((t_9.data)).plaintext.components] = 0
+    let hash_76  = (((t_9.data)).plaintext.components)[0] | {
+      ((t_9.data)).plaintext.components = 0->hash_76
+      (hash_76).hash_of = skeleton_attack_1.skeleton_attack_1_Nb1
+    }
+    ((t_9.data)).encryptionKey = skeleton_attack_1.skeleton_attack_1_Kab
+
+    t_10.receiver = skeleton_attack_1.skeleton_attack_1_resp2_strand
+    inds[((t_10.data)).plaintext.components] = 0+1
+    let skey_79  = (((t_10.data)).plaintext.components)[0] | {
+    let name_80  = (((t_10.data)).plaintext.components)[1] | {
+      ((t_10.data)).plaintext.components = 0->skey_79 + 1->name_80
+      skey_79 = skeleton_attack_1.skeleton_attack_1_Kab
+      name_80 = skeleton_attack_1.skeleton_attack_1_a
+    }}
+    ((t_10.data)).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_b,skeleton_attack_1.skeleton_attack_1_s]
+
+    t_11.sender = skeleton_attack_1.skeleton_attack_1_resp2_strand
+    inds[((t_11.data)).plaintext.components] = 0
+    let text_82  = (((t_11.data)).plaintext.components)[0] | {
+      ((t_11.data)).plaintext.components = 0->text_82
+      text_82 = skeleton_attack_1.skeleton_attack_1_Nb2
+    }
+    ((t_11.data)).encryptionKey = skeleton_attack_1.skeleton_attack_1_Kab
+
+    t_12.receiver = skeleton_attack_1.skeleton_attack_1_resp2_strand
+    inds[((t_12.data)).plaintext.components] = 0
+    let hash_84  = (((t_12.data)).plaintext.components)[0] | {
+      ((t_12.data)).plaintext.components = 0->hash_84
+      (hash_84).hash_of = skeleton_attack_1.skeleton_attack_1_Nb2
+    }
+    ((t_12.data)).encryptionKey = skeleton_attack_1.skeleton_attack_1_Kab
+
+  }}}}}}}}}}}}}
+}
+pred constrain_skeleton_attack_1 {
+  some skeleton_init_1_strand_0 : needham_schroeder_sym_key_init | {
+    skeleton_init_1_strand_0.needham_schroeder_sym_key_init_a = skeleton_attack_1.skeleton_attack_1_a
+    skeleton_init_1_strand_0.needham_schroeder_sym_key_init_b = skeleton_attack_1.skeleton_attack_1_b
+    skeleton_init_1_strand_0.needham_schroeder_sym_key_init_s = skeleton_attack_1.skeleton_attack_1_s
+    skeleton_init_1_strand_0.needham_schroeder_sym_key_init_Kab = skeleton_attack_1.skeleton_attack_1_Kab
+    skeleton_init_1_strand_0.needham_schroeder_sym_key_init_Na = skeleton_attack_1.skeleton_attack_1_Na
+  }
+  some skeleton_server_1_strand_1 : needham_schroeder_sym_key_server | {
+    skeleton_server_1_strand_1.needham_schroeder_sym_key_server_a = skeleton_attack_1.skeleton_attack_1_a
+    skeleton_server_1_strand_1.needham_schroeder_sym_key_server_b = skeleton_attack_1.skeleton_attack_1_b
+    skeleton_server_1_strand_1.needham_schroeder_sym_key_server_s = skeleton_attack_1.skeleton_attack_1_s
+    skeleton_server_1_strand_1.needham_schroeder_sym_key_server_Kab = skeleton_attack_1.skeleton_attack_1_Kab
+    skeleton_server_1_strand_1.needham_schroeder_sym_key_server_Na = skeleton_attack_1.skeleton_attack_1_Na
+  }
+  constrain_skeleton_attack_1_attack_run
 }
 inst honest_run_bounds {
   no akey
@@ -659,6 +836,39 @@ inst honest_run_bounds {
   AttackerStrand = `AttackerStrand0
   strand = needham_schroeder_sym_key_init + needham_schroeder_sym_key_server + needham_schroeder_sym_key_resp + AttackerStrand
 }
+inst attack_bounds {
+  no akey
+  skey = `skey0 + `skey1 + `skey2 + `skey3 + `skey4 + `skey5 + `skey6
+  Key = skey
+  Attacker = `Attacker0
+  name = `name0 + `name1 + `name2 + Attacker
+  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7 + `Ciphertext8
+  text = `text0 + `text1 + `text2 + `text3
+  Hashed = `Hashed0 + `Hashed1 + `Hashed2
+  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7 + `tuple8 + `tuple9
+  mesg = Key + name + Ciphertext + text + Hashed + tuple
+
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7 + `Timeslot8 + `Timeslot9 + `Timeslot10 + `Timeslot11 + `Timeslot12
+
+  components in tuple -> (0+1+2+3+4) -> (Key + name + text + Ciphertext + tuple + Hashed)
+  KeyPairs = `KeyPairs0
+  Microtick = `Microtick0 + `Microtick1 + `Microtick2
+  no PublicKey
+  no PrivateKey
+
+  `KeyPairs0.ltks = `name0->`name1->`skey0 + `name0->`name2->`skey1 + `name0->`Attacker0->`skey2 + `name1->`name2->`skey3 + `name1->`Attacker0->`skey4 + `name2->`Attacker0->`skey5
+  `KeyPairs0.inv_key_helper = `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2 + `skey3->`skey3 + `skey4->`skey4 + `skey5->`skey5 + `skey6->`skey6
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7 + `Timeslot7->`Timeslot8 + `Timeslot8->`Timeslot9 + `Timeslot9->`Timeslot10 + `Timeslot10->`Timeslot11 + `Timeslot11->`Timeslot12
+  mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
+
+  generated_times in name -> (Key + text) -> Timeslot
+  hash_of in Hashed -> text
+  needham_schroeder_sym_key_init = `needham_schroeder_sym_key_init0
+  needham_schroeder_sym_key_server = `needham_schroeder_sym_key_server0
+  needham_schroeder_sym_key_resp = `needham_schroeder_sym_key_resp0 + `needham_schroeder_sym_key_resp1
+  AttackerStrand = `AttackerStrand0
+  strand = needham_schroeder_sym_key_init + needham_schroeder_sym_key_server + needham_schroeder_sym_key_resp + AttackerStrand
+}
 option run_sterling "../../crypto_viz_seq_tuple.js"
 option solver Glucose
 option verbose 5
@@ -670,7 +880,8 @@ needham_schroeder_sym_key_honest_run: run {
     exec_needham_schroeder_sym_key_server
     exec_needham_schroeder_sym_key_resp
 
-    constrain_skeleton_needham_schroeder_sym_key_0
+    // constrain_skeleton_needham_schroeder_sym_key_0
+    constrain_skeleton_attack_1
 
     // no (needham_schroeder_sym_key_init.agent & needham_schroeder_sym_key_server.agent)
 
@@ -696,10 +907,14 @@ needham_schroeder_sym_key_honest_run: run {
 
     no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)) )
 
-    // needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_Kab in Attacker.learned_times.Timeslot
+    needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_Kab
+    in Attacker.learned_times.Timeslot
 
+    all x: name, y: name | needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_Kab != x.(KeyPairs.ltks)[y]
+    
 } for {
     next is linear
     mt_next is linear
-    honest_run_bounds
+    // honest_run_bounds
+    attack_bounds
 }
