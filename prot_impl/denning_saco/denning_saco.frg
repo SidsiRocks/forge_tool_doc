@@ -9,7 +9,9 @@ denning_saco_honest_run: run {
     exec_denning_saco_resp
     exec_denning_saco_server
 
-    constrain_skeleton_denning_saco_0
+    // constrain_skeleton_denning_saco_0
+
+    constrain_skeleton_attack_1
 
     denning_saco_init.denning_saco_init_a != Attacker
     denning_saco_init.denning_saco_init_b != Attacker
@@ -33,5 +35,6 @@ denning_saco_honest_run: run {
 } for {
     next is linear
     mt_next is linear
-    honest_run_bounds
+    // honest_run_bounds
+    attack_bounds
 }
