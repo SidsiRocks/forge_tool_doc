@@ -32,7 +32,8 @@
         (constraint
             (non-orig (ltk a s))
             (non-orig (ltk b s))
-            (uniq-orig Kab) (fresh-gen Kab)
+            ; (uniq-orig Kab) 
+            (fresh-gen Kab)
             (not-eq a b) (not-eq a s) (not-eq b s)
         )
     )
@@ -67,6 +68,58 @@
     (defstrand resp 3 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb Nb))
 )
 
+(defskeleton attack 
+    (vars (a b s name) (Kab skey) (Na Nb1 Nb2 text)
+        (msg mesg)
+        (init_strand role_init)
+        (server_strand role_server)
+        (resp1_strand resp2_strand role_resp)
+    )
+
+    (defstrand init 3 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb1 Nb))
+    (defstrand server 2 (a a) (b b) (s s) (Kab Kab) (Na Na))
+    (defstrand resp 3 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb1 Nb))
+    (defstrand resp 3 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb2 Nb))
+
+    (deftrace attack_run
+        ;; session 1
+        (send-from init_strand (cat a b Na))
+        (recv-by server_strand (cat a b Na))
+        (send-from server_strand (cat
+            (enc a b Na Kab (ltk a s))
+            (enc a b Na Kab (ltk b s))
+        ))
+        (recv-by resp1_strand (cat
+            msg
+            (enc a b Na Kab (ltk b s))
+        ))
+        (send-from resp1_strand (cat 
+            msg
+            (enc Na Kab) 
+            Nb1
+        ))
+        (recv-by init_strand (cat 
+            (enc a b Na Kab (ltk a s)) 
+            (enc Na Kab) 
+            Nb1
+        ))
+        (send-from init_strand (enc Nb1 Kab))
+        (recv-by resp1_strand (enc Nb1 Kab))
+
+        ;; session 2
+        (recv-by resp2_strand (cat
+            msg
+            (enc a b Na Kab (ltk b s))
+        ))
+        (send-from resp2_strand (cat
+            msg
+            (enc Na Kab)
+            Nb2
+        ))
+        (recv-by resp2_strand (enc Nb2 Kab))
+    )
+)
+
 (defaltinstance honest_run_bounds 
     (Timeslot 8)
     (mesg 27)
@@ -76,5 +129,17 @@
     (PublicKey 0) (PrivateKey 0)
     (enc-depth 2) (tuple-length 6)
     (init 1) (server 1) (resp 1)
+    (have-ltks)
+)
+
+(defaltinstance attack_bounds 
+    (Timeslot 11)
+    (mesg 40)
+    (Key 7) (name 4) (Ciphertext 11) (text 3) (tuple 15) (Hashed 0)   
+    (skey 7) (Attacker 1)
+    (akey 0)
+    (PublicKey 0) (PrivateKey 0)
+    (enc-depth 2) (tuple-length 6)
+    (init 1) (server 1) (resp 2)
     (have-ltks)
 )

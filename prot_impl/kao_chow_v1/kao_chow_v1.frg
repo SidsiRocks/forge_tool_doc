@@ -9,7 +9,8 @@ kao_chow_v1_honest_run: run {
     exec_kao_chow_v1_server
     exec_kao_chow_v1_resp
 
-    constrain_skeleton_kao_chow_v1_0
+    // constrain_skeleton_kao_chow_v1_0
+    constrain_skeleton_attack_1
 
     kao_chow_v1_init.kao_chow_v1_init_b != Attacker
     kao_chow_v1_init.kao_chow_v1_init_s != Attacker
@@ -32,8 +33,14 @@ kao_chow_v1_honest_run: run {
     
     no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)) )
 
+    kao_chow_v1_server.kao_chow_v1_server_Kab
+    in Attacker.learned_times.Timeslot
+
+    all x: name, y: name | kao_chow_v1_server.kao_chow_v1_server_Kab != x.(KeyPairs.ltks)[y]
+
 } for {
     next is linear
     mt_next is linear
-    honest_run_bounds
+    // honest_run_bounds
+    attack_bounds
 }

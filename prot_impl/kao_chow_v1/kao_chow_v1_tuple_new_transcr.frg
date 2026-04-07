@@ -502,7 +502,6 @@ pred exec_kao_chow_v1_server {
     no aStrand : strand | {
       originates[aStrand,getLTK[arbitrary_server_kao_chow_v1.kao_chow_v1_server_b,arbitrary_server_kao_chow_v1.kao_chow_v1_server_s]] or generates [aStrand,getLTK[arbitrary_server_kao_chow_v1.kao_chow_v1_server_b,arbitrary_server_kao_chow_v1.kao_chow_v1_server_s]]
     }
-    (generated_times.Timeslot).(arbitrary_server_kao_chow_v1.kao_chow_v1_server_Kab) = arbitrary_server_kao_chow_v1.agent
     arbitrary_server_kao_chow_v1.kao_chow_v1_server_a != arbitrary_server_kao_chow_v1.kao_chow_v1_server_b
     arbitrary_server_kao_chow_v1.kao_chow_v1_server_a != arbitrary_server_kao_chow_v1.kao_chow_v1_server_s
     arbitrary_server_kao_chow_v1.kao_chow_v1_server_b != arbitrary_server_kao_chow_v1.kao_chow_v1_server_s
@@ -660,6 +659,244 @@ pred constrain_skeleton_kao_chow_v1_0 {
     skeleton_resp_0_strand_2.kao_chow_v1_resp_Nb = skeleton_kao_chow_v1_0.skeleton_kao_chow_v1_0_Nb
   }
 }
+one sig skeleton_attack_1 {
+  skeleton_attack_1_a : one name,
+  skeleton_attack_1_b : one name,
+  skeleton_attack_1_s : one name,
+  skeleton_attack_1_Kab : one skey,
+  skeleton_attack_1_Na : one text,
+  skeleton_attack_1_Nb1 : one text,
+  skeleton_attack_1_Nb2 : one text,
+  skeleton_attack_1_msg : one mesg,
+  skeleton_attack_1_init_strand : one kao_chow_v1_init,
+  skeleton_attack_1_server_strand : one kao_chow_v1_server,
+  skeleton_attack_1_resp1_strand : one kao_chow_v1_resp,
+  skeleton_attack_1_resp2_strand : one kao_chow_v1_resp
+}
+pred constrain_skeleton_attack_1_attack_run {
+  some t_0 : Timeslot {
+  some t_1 : t_0.(^next) {
+  some t_2 : t_1.(^next) {
+  some t_3 : t_2.(^next) {
+  some t_4 : t_3.(^next) {
+  some t_5 : t_4.(^next) {
+  some t_6 : t_5.(^next) {
+  some t_7 : t_6.(^next) {
+  some t_8 : t_7.(^next) {
+  some t_9 : t_8.(^next) {
+  some t_10 : t_9.(^next) {
+    t_0.sender = skeleton_attack_1.skeleton_attack_1_init_strand
+    inds[(t_0.data.components)] = 0+1+2
+    let name_57  = ((t_0.data.components))[0] | {
+    let name_58  = ((t_0.data.components))[1] | {
+    let text_59  = ((t_0.data.components))[2] | {
+      (t_0.data.components) = 0->name_57 + 1->name_58 + 2->text_59
+      name_57 = skeleton_attack_1.skeleton_attack_1_a
+      name_58 = skeleton_attack_1.skeleton_attack_1_b
+      text_59 = skeleton_attack_1.skeleton_attack_1_Na
+    }}}
+
+    t_1.receiver = skeleton_attack_1.skeleton_attack_1_server_strand
+    inds[(t_1.data.components)] = 0+1+2
+    let name_60  = ((t_1.data.components))[0] | {
+    let name_61  = ((t_1.data.components))[1] | {
+    let text_62  = ((t_1.data.components))[2] | {
+      (t_1.data.components) = 0->name_60 + 1->name_61 + 2->text_62
+      name_60 = skeleton_attack_1.skeleton_attack_1_a
+      name_61 = skeleton_attack_1.skeleton_attack_1_b
+      text_62 = skeleton_attack_1.skeleton_attack_1_Na
+    }}}
+
+    t_2.sender = skeleton_attack_1.skeleton_attack_1_server_strand
+    inds[(t_2.data.components)] = 0+1
+    let enc_63  = ((t_2.data.components))[0] | {
+    let enc_64  = ((t_2.data.components))[1] | {
+      (t_2.data.components) = 0->enc_63 + 1->enc_64
+      inds[(enc_63).plaintext.components] = 0+1+2+3
+      let name_69  = ((enc_63).plaintext.components)[0] | {
+      let name_70  = ((enc_63).plaintext.components)[1] | {
+      let text_71  = ((enc_63).plaintext.components)[2] | {
+      let skey_72  = ((enc_63).plaintext.components)[3] | {
+        (enc_63).plaintext.components = 0->name_69 + 1->name_70 + 2->text_71 + 3->skey_72
+        name_69 = skeleton_attack_1.skeleton_attack_1_a
+        name_70 = skeleton_attack_1.skeleton_attack_1_b
+        text_71 = skeleton_attack_1.skeleton_attack_1_Na
+        skey_72 = skeleton_attack_1.skeleton_attack_1_Kab
+      }}}}
+      (enc_63).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_a,skeleton_attack_1.skeleton_attack_1_s]
+      inds[(enc_64).plaintext.components] = 0+1+2+3
+      let name_77  = ((enc_64).plaintext.components)[0] | {
+      let name_78  = ((enc_64).plaintext.components)[1] | {
+      let text_79  = ((enc_64).plaintext.components)[2] | {
+      let skey_80  = ((enc_64).plaintext.components)[3] | {
+        (enc_64).plaintext.components = 0->name_77 + 1->name_78 + 2->text_79 + 3->skey_80
+        name_77 = skeleton_attack_1.skeleton_attack_1_a
+        name_78 = skeleton_attack_1.skeleton_attack_1_b
+        text_79 = skeleton_attack_1.skeleton_attack_1_Na
+        skey_80 = skeleton_attack_1.skeleton_attack_1_Kab
+      }}}}
+      (enc_64).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_b,skeleton_attack_1.skeleton_attack_1_s]
+    }}
+
+    t_3.receiver = skeleton_attack_1.skeleton_attack_1_resp1_strand
+    inds[(t_3.data.components)] = 0+1
+    let mesg_81  = ((t_3.data.components))[0] | {
+    let enc_82  = ((t_3.data.components))[1] | {
+      (t_3.data.components) = 0->mesg_81 + 1->enc_82
+      mesg_81 = skeleton_attack_1.skeleton_attack_1_msg
+      inds[(enc_82).plaintext.components] = 0+1+2+3
+      let name_87  = ((enc_82).plaintext.components)[0] | {
+      let name_88  = ((enc_82).plaintext.components)[1] | {
+      let text_89  = ((enc_82).plaintext.components)[2] | {
+      let skey_90  = ((enc_82).plaintext.components)[3] | {
+        (enc_82).plaintext.components = 0->name_87 + 1->name_88 + 2->text_89 + 3->skey_90
+        name_87 = skeleton_attack_1.skeleton_attack_1_a
+        name_88 = skeleton_attack_1.skeleton_attack_1_b
+        text_89 = skeleton_attack_1.skeleton_attack_1_Na
+        skey_90 = skeleton_attack_1.skeleton_attack_1_Kab
+      }}}}
+      (enc_82).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_b,skeleton_attack_1.skeleton_attack_1_s]
+    }}
+
+    t_4.sender = skeleton_attack_1.skeleton_attack_1_resp1_strand
+    inds[(t_4.data.components)] = 0+1+2
+    let mesg_91  = ((t_4.data.components))[0] | {
+    let enc_92  = ((t_4.data.components))[1] | {
+    let text_93  = ((t_4.data.components))[2] | {
+      (t_4.data.components) = 0->mesg_91 + 1->enc_92 + 2->text_93
+      mesg_91 = skeleton_attack_1.skeleton_attack_1_msg
+      inds[(enc_92).plaintext.components] = 0
+      let text_95  = ((enc_92).plaintext.components)[0] | {
+        (enc_92).plaintext.components = 0->text_95
+        text_95 = skeleton_attack_1.skeleton_attack_1_Na
+      }
+      (enc_92).encryptionKey = skeleton_attack_1.skeleton_attack_1_Kab
+      text_93 = skeleton_attack_1.skeleton_attack_1_Nb1
+    }}}
+
+    t_5.receiver = skeleton_attack_1.skeleton_attack_1_init_strand
+    inds[(t_5.data.components)] = 0+1+2
+    let enc_96  = ((t_5.data.components))[0] | {
+    let enc_97  = ((t_5.data.components))[1] | {
+    let text_98  = ((t_5.data.components))[2] | {
+      (t_5.data.components) = 0->enc_96 + 1->enc_97 + 2->text_98
+      inds[(enc_96).plaintext.components] = 0+1+2+3
+      let name_103  = ((enc_96).plaintext.components)[0] | {
+      let name_104  = ((enc_96).plaintext.components)[1] | {
+      let text_105  = ((enc_96).plaintext.components)[2] | {
+      let skey_106  = ((enc_96).plaintext.components)[3] | {
+        (enc_96).plaintext.components = 0->name_103 + 1->name_104 + 2->text_105 + 3->skey_106
+        name_103 = skeleton_attack_1.skeleton_attack_1_a
+        name_104 = skeleton_attack_1.skeleton_attack_1_b
+        text_105 = skeleton_attack_1.skeleton_attack_1_Na
+        skey_106 = skeleton_attack_1.skeleton_attack_1_Kab
+      }}}}
+      (enc_96).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_a,skeleton_attack_1.skeleton_attack_1_s]
+      inds[(enc_97).plaintext.components] = 0
+      let text_108  = ((enc_97).plaintext.components)[0] | {
+        (enc_97).plaintext.components = 0->text_108
+        text_108 = skeleton_attack_1.skeleton_attack_1_Na
+      }
+      (enc_97).encryptionKey = skeleton_attack_1.skeleton_attack_1_Kab
+      text_98 = skeleton_attack_1.skeleton_attack_1_Nb1
+    }}}
+
+    t_6.sender = skeleton_attack_1.skeleton_attack_1_init_strand
+    inds[((t_6.data)).plaintext.components] = 0
+    let text_110  = (((t_6.data)).plaintext.components)[0] | {
+      ((t_6.data)).plaintext.components = 0->text_110
+      text_110 = skeleton_attack_1.skeleton_attack_1_Nb1
+    }
+    ((t_6.data)).encryptionKey = skeleton_attack_1.skeleton_attack_1_Kab
+
+    t_7.receiver = skeleton_attack_1.skeleton_attack_1_resp1_strand
+    inds[((t_7.data)).plaintext.components] = 0
+    let text_112  = (((t_7.data)).plaintext.components)[0] | {
+      ((t_7.data)).plaintext.components = 0->text_112
+      text_112 = skeleton_attack_1.skeleton_attack_1_Nb1
+    }
+    ((t_7.data)).encryptionKey = skeleton_attack_1.skeleton_attack_1_Kab
+
+    t_8.receiver = skeleton_attack_1.skeleton_attack_1_resp2_strand
+    inds[(t_8.data.components)] = 0+1
+    let mesg_113  = ((t_8.data.components))[0] | {
+    let enc_114  = ((t_8.data.components))[1] | {
+      (t_8.data.components) = 0->mesg_113 + 1->enc_114
+      mesg_113 = skeleton_attack_1.skeleton_attack_1_msg
+      inds[(enc_114).plaintext.components] = 0+1+2+3
+      let name_119  = ((enc_114).plaintext.components)[0] | {
+      let name_120  = ((enc_114).plaintext.components)[1] | {
+      let text_121  = ((enc_114).plaintext.components)[2] | {
+      let skey_122  = ((enc_114).plaintext.components)[3] | {
+        (enc_114).plaintext.components = 0->name_119 + 1->name_120 + 2->text_121 + 3->skey_122
+        name_119 = skeleton_attack_1.skeleton_attack_1_a
+        name_120 = skeleton_attack_1.skeleton_attack_1_b
+        text_121 = skeleton_attack_1.skeleton_attack_1_Na
+        skey_122 = skeleton_attack_1.skeleton_attack_1_Kab
+      }}}}
+      (enc_114).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_b,skeleton_attack_1.skeleton_attack_1_s]
+    }}
+
+    t_9.sender = skeleton_attack_1.skeleton_attack_1_resp2_strand
+    inds[(t_9.data.components)] = 0+1+2
+    let mesg_123  = ((t_9.data.components))[0] | {
+    let enc_124  = ((t_9.data.components))[1] | {
+    let text_125  = ((t_9.data.components))[2] | {
+      (t_9.data.components) = 0->mesg_123 + 1->enc_124 + 2->text_125
+      mesg_123 = skeleton_attack_1.skeleton_attack_1_msg
+      inds[(enc_124).plaintext.components] = 0
+      let text_127  = ((enc_124).plaintext.components)[0] | {
+        (enc_124).plaintext.components = 0->text_127
+        text_127 = skeleton_attack_1.skeleton_attack_1_Na
+      }
+      (enc_124).encryptionKey = skeleton_attack_1.skeleton_attack_1_Kab
+      text_125 = skeleton_attack_1.skeleton_attack_1_Nb2
+    }}}
+
+    t_10.receiver = skeleton_attack_1.skeleton_attack_1_resp2_strand
+    inds[((t_10.data)).plaintext.components] = 0
+    let text_129  = (((t_10.data)).plaintext.components)[0] | {
+      ((t_10.data)).plaintext.components = 0->text_129
+      text_129 = skeleton_attack_1.skeleton_attack_1_Nb2
+    }
+    ((t_10.data)).encryptionKey = skeleton_attack_1.skeleton_attack_1_Kab
+
+  }}}}}}}}}}}
+}
+pred constrain_skeleton_attack_1 {
+  some skeleton_init_1_strand_0 : kao_chow_v1_init | {
+    skeleton_init_1_strand_0.kao_chow_v1_init_a = skeleton_attack_1.skeleton_attack_1_a
+    skeleton_init_1_strand_0.kao_chow_v1_init_b = skeleton_attack_1.skeleton_attack_1_b
+    skeleton_init_1_strand_0.kao_chow_v1_init_s = skeleton_attack_1.skeleton_attack_1_s
+    skeleton_init_1_strand_0.kao_chow_v1_init_Kab = skeleton_attack_1.skeleton_attack_1_Kab
+    skeleton_init_1_strand_0.kao_chow_v1_init_Na = skeleton_attack_1.skeleton_attack_1_Na
+    skeleton_init_1_strand_0.kao_chow_v1_init_Nb = skeleton_attack_1.skeleton_attack_1_Nb1
+  }
+  some skeleton_server_1_strand_1 : kao_chow_v1_server | {
+    skeleton_server_1_strand_1.kao_chow_v1_server_a = skeleton_attack_1.skeleton_attack_1_a
+    skeleton_server_1_strand_1.kao_chow_v1_server_b = skeleton_attack_1.skeleton_attack_1_b
+    skeleton_server_1_strand_1.kao_chow_v1_server_s = skeleton_attack_1.skeleton_attack_1_s
+    skeleton_server_1_strand_1.kao_chow_v1_server_Kab = skeleton_attack_1.skeleton_attack_1_Kab
+    skeleton_server_1_strand_1.kao_chow_v1_server_Na = skeleton_attack_1.skeleton_attack_1_Na
+  }
+  some skeleton_resp_1_strand_2 : kao_chow_v1_resp | {
+    skeleton_resp_1_strand_2.kao_chow_v1_resp_a = skeleton_attack_1.skeleton_attack_1_a
+    skeleton_resp_1_strand_2.kao_chow_v1_resp_b = skeleton_attack_1.skeleton_attack_1_b
+    skeleton_resp_1_strand_2.kao_chow_v1_resp_s = skeleton_attack_1.skeleton_attack_1_s
+    skeleton_resp_1_strand_2.kao_chow_v1_resp_Kab = skeleton_attack_1.skeleton_attack_1_Kab
+    skeleton_resp_1_strand_2.kao_chow_v1_resp_Na = skeleton_attack_1.skeleton_attack_1_Na
+    skeleton_resp_1_strand_2.kao_chow_v1_resp_Nb = skeleton_attack_1.skeleton_attack_1_Nb1
+  }
+  some skeleton_resp_1_strand_3 : kao_chow_v1_resp | {
+    skeleton_resp_1_strand_3.kao_chow_v1_resp_a = skeleton_attack_1.skeleton_attack_1_a
+    skeleton_resp_1_strand_3.kao_chow_v1_resp_b = skeleton_attack_1.skeleton_attack_1_b
+    skeleton_resp_1_strand_3.kao_chow_v1_resp_s = skeleton_attack_1.skeleton_attack_1_s
+    skeleton_resp_1_strand_3.kao_chow_v1_resp_Kab = skeleton_attack_1.skeleton_attack_1_Kab
+    skeleton_resp_1_strand_3.kao_chow_v1_resp_Na = skeleton_attack_1.skeleton_attack_1_Na
+    skeleton_resp_1_strand_3.kao_chow_v1_resp_Nb = skeleton_attack_1.skeleton_attack_1_Nb2
+  }
+  constrain_skeleton_attack_1_attack_run
+}
 inst honest_run_bounds {
   no akey
   skey = `skey0 + `skey1 + `skey2 + `skey3 + `skey4 + `skey5 + `skey6
@@ -693,6 +930,39 @@ inst honest_run_bounds {
   AttackerStrand = `AttackerStrand0
   strand = kao_chow_v1_init + kao_chow_v1_server + kao_chow_v1_resp + AttackerStrand
 }
+inst attack_bounds {
+  no akey
+  skey = `skey0 + `skey1 + `skey2 + `skey3 + `skey4 + `skey5 + `skey6
+  Key = skey
+  Attacker = `Attacker0
+  name = `name0 + `name1 + `name2 + Attacker
+  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7 + `Ciphertext8 + `Ciphertext9 + `Ciphertext10
+  text = `text0 + `text1 + `text2
+  no Hashed
+  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7 + `tuple8 + `tuple9 + `tuple10 + `tuple11 + `tuple12 + `tuple13 + `tuple14
+  mesg = Key + name + Ciphertext + text + tuple
+
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7 + `Timeslot8 + `Timeslot9 + `Timeslot10
+
+  components in tuple -> (0+1+2+3+4+5) -> (Key + name + text + Ciphertext + tuple + Hashed)
+  KeyPairs = `KeyPairs0
+  Microtick = `Microtick0 + `Microtick1 + `Microtick2
+  no PublicKey
+  no PrivateKey
+
+  `KeyPairs0.ltks = `name0->`name1->`skey0 + `name0->`name2->`skey1 + `name0->`Attacker0->`skey2 + `name1->`name2->`skey3 + `name1->`Attacker0->`skey4 + `name2->`Attacker0->`skey5
+  `KeyPairs0.inv_key_helper = `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2 + `skey3->`skey3 + `skey4->`skey4 + `skey5->`skey5 + `skey6->`skey6
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7 + `Timeslot7->`Timeslot8 + `Timeslot8->`Timeslot9 + `Timeslot9->`Timeslot10
+  mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
+
+  generated_times in name -> (Key + text) -> Timeslot
+  hash_of in Hashed -> text
+  kao_chow_v1_init = `kao_chow_v1_init0
+  kao_chow_v1_server = `kao_chow_v1_server0
+  kao_chow_v1_resp = `kao_chow_v1_resp0 + `kao_chow_v1_resp1
+  AttackerStrand = `AttackerStrand0
+  strand = kao_chow_v1_init + kao_chow_v1_server + kao_chow_v1_resp + AttackerStrand
+}
 option run_sterling "../../crypto_viz_seq_tuple.js"
 option solver Glucose
 option verbose 5
@@ -704,7 +974,8 @@ kao_chow_v1_honest_run: run {
     exec_kao_chow_v1_server
     exec_kao_chow_v1_resp
 
-    constrain_skeleton_kao_chow_v1_0
+    // constrain_skeleton_kao_chow_v1_0
+    constrain_skeleton_attack_1
 
     kao_chow_v1_init.kao_chow_v1_init_b != Attacker
     kao_chow_v1_init.kao_chow_v1_init_s != Attacker
@@ -727,8 +998,14 @@ kao_chow_v1_honest_run: run {
     
     no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)) )
 
+    kao_chow_v1_server.kao_chow_v1_server_Kab
+    in Attacker.learned_times.Timeslot
+
+    all x: name, y: name | kao_chow_v1_server.kao_chow_v1_server_Kab != x.(KeyPairs.ltks)[y]
+
 } for {
     next is linear
     mt_next is linear
-    honest_run_bounds
+    // honest_run_bounds
+    attack_bounds
 }
