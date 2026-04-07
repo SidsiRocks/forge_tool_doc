@@ -793,6 +793,7 @@ pred constrain_skeleton_attack_1 {
     skeleton_init_1_strand_0.needham_schroeder_sym_key_init_s = skeleton_attack_1.skeleton_attack_1_s
     skeleton_init_1_strand_0.needham_schroeder_sym_key_init_Kab = skeleton_attack_1.skeleton_attack_1_Kab
     skeleton_init_1_strand_0.needham_schroeder_sym_key_init_Na = skeleton_attack_1.skeleton_attack_1_Na
+    skeleton_init_1_strand_0.needham_schroeder_sym_key_init_Nb = skeleton_attack_1.skeleton_attack_1_Nb1
   }
   some skeleton_server_1_strand_1 : needham_schroeder_sym_key_server | {
     skeleton_server_1_strand_1.needham_schroeder_sym_key_server_a = skeleton_attack_1.skeleton_attack_1_a
@@ -800,6 +801,20 @@ pred constrain_skeleton_attack_1 {
     skeleton_server_1_strand_1.needham_schroeder_sym_key_server_s = skeleton_attack_1.skeleton_attack_1_s
     skeleton_server_1_strand_1.needham_schroeder_sym_key_server_Kab = skeleton_attack_1.skeleton_attack_1_Kab
     skeleton_server_1_strand_1.needham_schroeder_sym_key_server_Na = skeleton_attack_1.skeleton_attack_1_Na
+  }
+  some skeleton_resp_1_strand_2 : needham_schroeder_sym_key_resp | {
+    skeleton_resp_1_strand_2.needham_schroeder_sym_key_resp_a = skeleton_attack_1.skeleton_attack_1_a
+    skeleton_resp_1_strand_2.needham_schroeder_sym_key_resp_b = skeleton_attack_1.skeleton_attack_1_b
+    skeleton_resp_1_strand_2.needham_schroeder_sym_key_resp_s = skeleton_attack_1.skeleton_attack_1_s
+    skeleton_resp_1_strand_2.needham_schroeder_sym_key_resp_Kab = skeleton_attack_1.skeleton_attack_1_Kab
+    skeleton_resp_1_strand_2.needham_schroeder_sym_key_resp_Nb = skeleton_attack_1.skeleton_attack_1_Nb1
+  }
+  some skeleton_resp_1_strand_3 : needham_schroeder_sym_key_resp | {
+    skeleton_resp_1_strand_3.needham_schroeder_sym_key_resp_a = skeleton_attack_1.skeleton_attack_1_a
+    skeleton_resp_1_strand_3.needham_schroeder_sym_key_resp_b = skeleton_attack_1.skeleton_attack_1_b
+    skeleton_resp_1_strand_3.needham_schroeder_sym_key_resp_s = skeleton_attack_1.skeleton_attack_1_s
+    skeleton_resp_1_strand_3.needham_schroeder_sym_key_resp_Kab = skeleton_attack_1.skeleton_attack_1_Kab
+    skeleton_resp_1_strand_3.needham_schroeder_sym_key_resp_Nb = skeleton_attack_1.skeleton_attack_1_Nb2
   }
   constrain_skeleton_attack_1_attack_run
 }

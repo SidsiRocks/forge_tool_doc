@@ -64,8 +64,10 @@
           (server_strand role_server) 
           (resp1_strand resp2_strand role_resp))
 
-    (defstrand init 5 (a a) (b b) (s s) (Kab Kab) (Na Na))
+    (defstrand init 5 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb1 Nb))
     (defstrand server 2 (a a) (b b) (s s) (Kab Kab) (Na Na))
+    (defstrand resp 3 (a a) (b b) (s s) (Kab Kab) (Nb1 Nb))
+    (defstrand resp 3 (a a) (b b) (s s) (Kab Kab) (Nb2 Nb))
 
     (deftrace attack_run
         ;; session 1: legitimate run, establishes Kab
