@@ -24,14 +24,16 @@ kao_chow_v1_honest_run: run {
     kao_chow_v1_resp.kao_chow_v1_resp_s != Attacker
     kao_chow_v1_resp.kao_chow_v1_resp_b != Attacker
 
-    kao_chow_v1_init.agent != kao_chow_v1_server.agent
-    kao_chow_v1_init.agent != kao_chow_v1_resp.agent
-    kao_chow_v1_server.agent != kao_chow_v1_resp.agent
+    no (kao_chow_v1_init.agent & kao_chow_v1_resp.agent)
+    no (kao_chow_v1_resp.agent & kao_chow_v1_server.agent)
+    no (kao_chow_v1_server.agent & kao_chow_v1_init.agent)
 
     not Attacker in (kao_chow_v1_init + kao_chow_v1_server + kao_chow_v1_resp).agent
 
     
-    no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)) )
+    no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)))
+    no (Attacker.(KeyPairs.ltks))
+    no (KeyPairs.ltks[Attacker])
 
     kao_chow_v1_server.kao_chow_v1_server_Kab
     in Attacker.learned_times.Timeslot

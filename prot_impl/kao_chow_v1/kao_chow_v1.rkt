@@ -81,43 +81,43 @@
     (defstrand resp 3 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb1 Nb))
     (defstrand resp 3 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb2 Nb))
 
-    (deftrace attack_run
-        ;; session 1
-        (send-from init_strand (cat a b Na))
-        (recv-by server_strand (cat a b Na))
-        (send-from server_strand (cat
-            (enc a b Na Kab (ltk a s))
-            (enc a b Na Kab (ltk b s))
-        ))
-        (recv-by resp1_strand (cat
-            msg
-            (enc a b Na Kab (ltk b s))
-        ))
-        (send-from resp1_strand (cat 
-            msg
-            (enc Na Kab) 
-            Nb1
-        ))
-        (recv-by init_strand (cat 
-            (enc a b Na Kab (ltk a s)) 
-            (enc Na Kab) 
-            Nb1
-        ))
-        (send-from init_strand (enc Nb1 Kab))
-        (recv-by resp1_strand (enc Nb1 Kab))
+    ; (deftrace attack_run
+    ;     ;; session 1
+    ;     (send-from init_strand (cat a b Na))
+    ;     (recv-by server_strand (cat a b Na))
+    ;     (send-from server_strand (cat
+    ;         (enc a b Na Kab (ltk a s))
+    ;         (enc a b Na Kab (ltk b s))
+    ;     ))
+    ;     (recv-by resp1_strand (cat
+    ;         msg
+    ;         (enc a b Na Kab (ltk b s))
+    ;     ))
+    ;     (send-from resp1_strand (cat 
+    ;         msg
+    ;         (enc Na Kab) 
+    ;         Nb1
+    ;     ))
+    ;     (recv-by init_strand (cat 
+    ;         (enc a b Na Kab (ltk a s)) 
+    ;         (enc Na Kab) 
+    ;         Nb1
+    ;     ))
+    ;     (send-from init_strand (enc Nb1 Kab))
+    ;     (recv-by resp1_strand (enc Nb1 Kab))
 
-        ;; session 2
-        (recv-by resp2_strand (cat
-            msg
-            (enc a b Na Kab (ltk b s))
-        ))
-        (send-from resp2_strand (cat
-            msg
-            (enc Na Kab)
-            Nb2
-        ))
-        (recv-by resp2_strand (enc Nb2 Kab))
-    )
+    ;     ;; session 2
+    ;     (recv-by resp2_strand (cat
+    ;         msg
+    ;         (enc a b Na Kab (ltk b s))
+    ;     ))
+    ;     (send-from resp2_strand (cat
+    ;         msg
+    ;         (enc Na Kab)
+    ;         Nb2
+    ;     ))
+    ;     (recv-by resp2_strand (enc Nb2 Kab))
+    ; )
 )
 
 (defaltinstance honest_run_bounds 
