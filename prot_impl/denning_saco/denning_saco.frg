@@ -27,9 +27,12 @@ denning_saco_honest_run: run {
 
     not Attacker in (denning_saco_init + denning_saco_resp + denning_saco_server).agent
 
-    denning_saco_init.agent != denning_saco_resp.agent
-    denning_saco_resp.agent != denning_saco_server.agent
-    denning_saco_server.agent != denning_saco_init.agent
+    no (denning_saco_init.agent & denning_saco_resp.agent)
+    no (denning_saco_resp.agent & denning_saco_server.agent)
+    no (denning_saco_server.agent & denning_saco_init.agent)
+
+    no (Attacker.(KeyPairs.ltks))
+    no (KeyPairs.ltks[Attacker])
 
     no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)))
 } for {

@@ -66,24 +66,24 @@
           (init role_init) (server role_server)
           (resp1 resp2 role_resp))
 
-    ; (defstrand init 3 (a a) (b b) (s s) (Kab Kab) (T T))
-    ; (defstrand server 2 (a a) (b b) (s s) (Kab Kab) (T T))
-    ; (defstrand resp 1 (a a) (b b) (s s) (Kab Kab) (T T))
-    ; (defstrand resp 1 (a a) (b b) (s s) (Kab Kab) (T T))
+    (defstrand init 3 (a a) (b b) (s s) (Kab Kab) (T T))
+    (defstrand server 2 (a a) (b b) (s s) (Kab Kab) (T T))
+    (defstrand resp 1 (a a) (b b) (s s) (Kab Kab) (T T))
+    (defstrand resp 1 (a a) (b b) (s s) (Kab Kab) (T T))
 
-    (deftrace attack_run
-        (send-from init (cat a b))
-        (recv-by server (cat a b))
+    ; (deftrace attack_run
+    ;     (send-from init (cat a b))
+    ;     (recv-by server (cat a b))
 
-        (send-from server (enc b Kab T (enc Kab a T (ltk b s)) (ltk a s)))
-        (recv-by init (enc b Kab T msg (ltk a s)))
+    ;     (send-from server (enc b Kab T (enc Kab a T (ltk b s)) (ltk a s)))
+    ;     (recv-by init (enc b Kab T msg (ltk a s)))
 
-        (send-from init msg)
-        (recv-by resp1 (enc Kab a T (ltk b s)))
+    ;     (send-from init msg)
+    ;     (recv-by resp1 (enc Kab a T (ltk b s)))
 
-        ;; replay into a second session
-        (recv-by resp2 (enc Kab a T (ltk b s)))
-    )
+    ;     ;; replay into a second session
+    ;     (recv-by resp2 (enc Kab a T (ltk b s)))
+    ; )
 )
 
 (defaltinstance honest_run_bounds

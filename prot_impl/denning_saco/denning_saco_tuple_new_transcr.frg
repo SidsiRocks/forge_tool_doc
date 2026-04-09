@@ -681,100 +681,35 @@ one sig skeleton_attack_1 {
   skeleton_attack_1_resp1 : one denning_saco_resp,
   skeleton_attack_1_resp2 : one denning_saco_resp
 }
-pred constrain_skeleton_attack_1_attack_run {
-  some t_0 : Timeslot {
-  some t_1 : t_0.(^next) {
-  some t_2 : t_1.(^next) {
-  some t_3 : t_2.(^next) {
-  some t_4 : t_3.(^next) {
-  some t_5 : t_4.(^next) {
-  some t_6 : t_5.(^next) {
-    t_0.sender = skeleton_attack_1.skeleton_attack_1_init
-    inds[(t_0.data.components)] = 0+1
-    let name_65  = ((t_0.data.components))[0] | {
-    let name_66  = ((t_0.data.components))[1] | {
-      (t_0.data.components) = 0->name_65 + 1->name_66
-      name_65 = skeleton_attack_1.skeleton_attack_1_a
-      name_66 = skeleton_attack_1.skeleton_attack_1_b
-    }}
-
-    t_1.receiver = skeleton_attack_1.skeleton_attack_1_server
-    inds[(t_1.data.components)] = 0+1
-    let name_67  = ((t_1.data.components))[0] | {
-    let name_68  = ((t_1.data.components))[1] | {
-      (t_1.data.components) = 0->name_67 + 1->name_68
-      name_67 = skeleton_attack_1.skeleton_attack_1_a
-      name_68 = skeleton_attack_1.skeleton_attack_1_b
-    }}
-
-    t_2.sender = skeleton_attack_1.skeleton_attack_1_server
-    inds[((t_2.data)).plaintext.components] = 0+1+2+3
-    let name_73  = (((t_2.data)).plaintext.components)[0] | {
-    let skey_74  = (((t_2.data)).plaintext.components)[1] | {
-    let text_75  = (((t_2.data)).plaintext.components)[2] | {
-    let enc_76  = (((t_2.data)).plaintext.components)[3] | {
-      ((t_2.data)).plaintext.components = 0->name_73 + 1->skey_74 + 2->text_75 + 3->enc_76
-      name_73 = skeleton_attack_1.skeleton_attack_1_b
-      skey_74 = skeleton_attack_1.skeleton_attack_1_Kab
-      text_75 = skeleton_attack_1.skeleton_attack_1_T
-      inds[(enc_76).plaintext.components] = 0+1+2
-      let skey_80  = ((enc_76).plaintext.components)[0] | {
-      let name_81  = ((enc_76).plaintext.components)[1] | {
-      let text_82  = ((enc_76).plaintext.components)[2] | {
-        (enc_76).plaintext.components = 0->skey_80 + 1->name_81 + 2->text_82
-        skey_80 = skeleton_attack_1.skeleton_attack_1_Kab
-        name_81 = skeleton_attack_1.skeleton_attack_1_a
-        text_82 = skeleton_attack_1.skeleton_attack_1_T
-      }}}
-      (enc_76).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_b,skeleton_attack_1.skeleton_attack_1_s]
-    }}}}
-    ((t_2.data)).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_a,skeleton_attack_1.skeleton_attack_1_s]
-
-    t_3.receiver = skeleton_attack_1.skeleton_attack_1_init
-    inds[((t_3.data)).plaintext.components] = 0+1+2+3
-    let name_87  = (((t_3.data)).plaintext.components)[0] | {
-    let skey_88  = (((t_3.data)).plaintext.components)[1] | {
-    let text_89  = (((t_3.data)).plaintext.components)[2] | {
-    let mesg_90  = (((t_3.data)).plaintext.components)[3] | {
-      ((t_3.data)).plaintext.components = 0->name_87 + 1->skey_88 + 2->text_89 + 3->mesg_90
-      name_87 = skeleton_attack_1.skeleton_attack_1_b
-      skey_88 = skeleton_attack_1.skeleton_attack_1_Kab
-      text_89 = skeleton_attack_1.skeleton_attack_1_T
-      mesg_90 = skeleton_attack_1.skeleton_attack_1_msg
-    }}}}
-    ((t_3.data)).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_a,skeleton_attack_1.skeleton_attack_1_s]
-
-    t_4.sender = skeleton_attack_1.skeleton_attack_1_init
-    (t_4.data) = skeleton_attack_1.skeleton_attack_1_msg
-
-    t_5.receiver = skeleton_attack_1.skeleton_attack_1_resp1
-    inds[((t_5.data)).plaintext.components] = 0+1+2
-    let skey_94  = (((t_5.data)).plaintext.components)[0] | {
-    let name_95  = (((t_5.data)).plaintext.components)[1] | {
-    let text_96  = (((t_5.data)).plaintext.components)[2] | {
-      ((t_5.data)).plaintext.components = 0->skey_94 + 1->name_95 + 2->text_96
-      skey_94 = skeleton_attack_1.skeleton_attack_1_Kab
-      name_95 = skeleton_attack_1.skeleton_attack_1_a
-      text_96 = skeleton_attack_1.skeleton_attack_1_T
-    }}}
-    ((t_5.data)).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_b,skeleton_attack_1.skeleton_attack_1_s]
-
-    t_6.receiver = skeleton_attack_1.skeleton_attack_1_resp2
-    inds[((t_6.data)).plaintext.components] = 0+1+2
-    let skey_100  = (((t_6.data)).plaintext.components)[0] | {
-    let name_101  = (((t_6.data)).plaintext.components)[1] | {
-    let text_102  = (((t_6.data)).plaintext.components)[2] | {
-      ((t_6.data)).plaintext.components = 0->skey_100 + 1->name_101 + 2->text_102
-      skey_100 = skeleton_attack_1.skeleton_attack_1_Kab
-      name_101 = skeleton_attack_1.skeleton_attack_1_a
-      text_102 = skeleton_attack_1.skeleton_attack_1_T
-    }}}
-    ((t_6.data)).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_b,skeleton_attack_1.skeleton_attack_1_s]
-
-  }}}}}}}
-}
 pred constrain_skeleton_attack_1 {
-  constrain_skeleton_attack_1_attack_run
+  some skeleton_init_1_strand_0 : denning_saco_init | {
+    skeleton_init_1_strand_0.denning_saco_init_a = skeleton_attack_1.skeleton_attack_1_a
+    skeleton_init_1_strand_0.denning_saco_init_b = skeleton_attack_1.skeleton_attack_1_b
+    skeleton_init_1_strand_0.denning_saco_init_s = skeleton_attack_1.skeleton_attack_1_s
+    skeleton_init_1_strand_0.denning_saco_init_Kab = skeleton_attack_1.skeleton_attack_1_Kab
+    skeleton_init_1_strand_0.denning_saco_init_T = skeleton_attack_1.skeleton_attack_1_T
+  }
+  some skeleton_server_1_strand_1 : denning_saco_server | {
+    skeleton_server_1_strand_1.denning_saco_server_a = skeleton_attack_1.skeleton_attack_1_a
+    skeleton_server_1_strand_1.denning_saco_server_b = skeleton_attack_1.skeleton_attack_1_b
+    skeleton_server_1_strand_1.denning_saco_server_s = skeleton_attack_1.skeleton_attack_1_s
+    skeleton_server_1_strand_1.denning_saco_server_Kab = skeleton_attack_1.skeleton_attack_1_Kab
+    skeleton_server_1_strand_1.denning_saco_server_T = skeleton_attack_1.skeleton_attack_1_T
+  }
+  some skeleton_resp_1_strand_2 : denning_saco_resp | {
+    skeleton_resp_1_strand_2.denning_saco_resp_a = skeleton_attack_1.skeleton_attack_1_a
+    skeleton_resp_1_strand_2.denning_saco_resp_b = skeleton_attack_1.skeleton_attack_1_b
+    skeleton_resp_1_strand_2.denning_saco_resp_s = skeleton_attack_1.skeleton_attack_1_s
+    skeleton_resp_1_strand_2.denning_saco_resp_Kab = skeleton_attack_1.skeleton_attack_1_Kab
+    skeleton_resp_1_strand_2.denning_saco_resp_T = skeleton_attack_1.skeleton_attack_1_T
+  }
+  some skeleton_resp_1_strand_3 : denning_saco_resp | {
+    skeleton_resp_1_strand_3.denning_saco_resp_a = skeleton_attack_1.skeleton_attack_1_a
+    skeleton_resp_1_strand_3.denning_saco_resp_b = skeleton_attack_1.skeleton_attack_1_b
+    skeleton_resp_1_strand_3.denning_saco_resp_s = skeleton_attack_1.skeleton_attack_1_s
+    skeleton_resp_1_strand_3.denning_saco_resp_Kab = skeleton_attack_1.skeleton_attack_1_Kab
+    skeleton_resp_1_strand_3.denning_saco_resp_T = skeleton_attack_1.skeleton_attack_1_T
+  }
 }
 inst honest_run_bounds {
   no akey
@@ -871,9 +806,16 @@ denning_saco_honest_run: run {
 
     not Attacker in (denning_saco_init + denning_saco_resp + denning_saco_server).agent
 
-    denning_saco_init.agent != denning_saco_resp.agent
-    denning_saco_resp.agent != denning_saco_server.agent
-    denning_saco_server.agent != denning_saco_init.agent
+    // denning_saco_init.agent != denning_saco_resp.agent
+    // denning_saco_resp.agent != denning_saco_server.agent
+    // denning_saco_server.agent != denning_saco_init.agent
+
+    no (denning_saco_init.agent & denning_saco_resp.agent)
+    no (denning_saco_resp.agent & denning_saco_server.agent)
+    no (denning_saco_server.agent & denning_saco_init.agent)
+
+    no (Attacker.(KeyPairs.ltks))
+    no (KeyPairs.ltks[Attacker])
 
     no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)))
 } for {
