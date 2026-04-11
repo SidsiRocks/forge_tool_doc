@@ -792,23 +792,31 @@ denning_saco_honest_run: run {
 
     constrain_skeleton_attack_1
 
-    denning_saco_init.denning_saco_init_a != Attacker
-    denning_saco_init.denning_saco_init_b != Attacker
-    denning_saco_init.denning_saco_init_s != Attacker
+    // denning_saco_init.denning_saco_init_a != Attacker
+    // denning_saco_init.denning_saco_init_b != Attacker
+    // denning_saco_init.denning_saco_init_s != Attacker
 
-    denning_saco_resp.denning_saco_resp_a != Attacker
-    denning_saco_resp.denning_saco_resp_b != Attacker
-    denning_saco_resp.denning_saco_resp_s != Attacker
+    // denning_saco_resp.denning_saco_resp_a != Attacker
+    // denning_saco_resp.denning_saco_resp_b != Attacker
+    // denning_saco_resp.denning_saco_resp_s != Attacker
 
-    denning_saco_server.denning_saco_server_a != Attacker
-    denning_saco_server.denning_saco_server_b != Attacker
-    denning_saco_server.denning_saco_server_s != Attacker
+    // denning_saco_server.denning_saco_server_a != Attacker
+    // denning_saco_server.denning_saco_server_b != Attacker
+    // denning_saco_server.denning_saco_server_s != Attacker
+
+    no (denning_saco_init.denning_saco_init_a & Attacker)
+    no (denning_saco_init.denning_saco_init_b & Attacker)
+    no (denning_saco_init.denning_saco_init_s & Attacker)
+
+    no (denning_saco_resp.denning_saco_resp_a & Attacker)
+    no (denning_saco_resp.denning_saco_resp_b & Attacker)
+    no (denning_saco_resp.denning_saco_resp_s & Attacker)
+
+    no (denning_saco_server.denning_saco_server_a & Attacker)
+    no (denning_saco_server.denning_saco_server_b & Attacker)
+    no (denning_saco_server.denning_saco_server_s & Attacker)
 
     not Attacker in (denning_saco_init + denning_saco_resp + denning_saco_server).agent
-
-    // denning_saco_init.agent != denning_saco_resp.agent
-    // denning_saco_resp.agent != denning_saco_server.agent
-    // denning_saco_server.agent != denning_saco_init.agent
 
     no (denning_saco_init.agent & denning_saco_resp.agent)
     no (denning_saco_resp.agent & denning_saco_server.agent)

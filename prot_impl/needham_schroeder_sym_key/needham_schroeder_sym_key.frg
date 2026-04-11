@@ -16,30 +16,45 @@ needham_schroeder_sym_key_honest_run: run {
 
     // needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_a != needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_b
 
-    needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_b != Attacker
-    needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_s != Attacker
-    needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_a != Attacker
+    // needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_b != Attacker
+    // needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_s != Attacker
+    // needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_a != Attacker
 
-    needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_a != Attacker
-    needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_b != Attacker
-    needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_s != Attacker
+    // needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_a != Attacker
+    // needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_b != Attacker
+    // needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_s != Attacker
 
-    needham_schroeder_sym_key_resp.needham_schroeder_sym_key_resp_a != Attacker
-    needham_schroeder_sym_key_resp.needham_schroeder_sym_key_resp_b != Attacker
-    needham_schroeder_sym_key_resp.needham_schroeder_sym_key_resp_s != Attacker
+    // needham_schroeder_sym_key_resp.needham_schroeder_sym_key_resp_a != Attacker
+    // needham_schroeder_sym_key_resp.needham_schroeder_sym_key_resp_b != Attacker
+    // needham_schroeder_sym_key_resp.needham_schroeder_sym_key_resp_s != Attacker
 
-    needham_schroeder_sym_key_init.agent != needham_schroeder_sym_key_server.agent
-    needham_schroeder_sym_key_init.agent != needham_schroeder_sym_key_resp.agent
-    needham_schroeder_sym_key_server.agent != needham_schroeder_sym_key_resp.agent
+    no (needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_a & Attacker)
+    no (needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_b & Attacker)
+    no (needham_schroeder_sym_key_init.needham_schroeder_sym_key_init_s & Attacker)
+
+    no (needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_a & Attacker)
+    no (needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_b & Attacker)
+    no (needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_s & Attacker)
+
+    no (needham_schroeder_sym_key_resp.needham_schroeder_sym_key_resp_a & Attacker)
+    no (needham_schroeder_sym_key_resp.needham_schroeder_sym_key_resp_b & Attacker)
+    no (needham_schroeder_sym_key_resp.needham_schroeder_sym_key_resp_s & Attacker)
+
+    no (needham_schroeder_sym_key_init.agent & needham_schroeder_sym_key_server.agent)
+    no (needham_schroeder_sym_key_init.agent & needham_schroeder_sym_key_resp.agent)
+    no (needham_schroeder_sym_key_server.agent & needham_schroeder_sym_key_resp.agent)
 
     not Attacker in (needham_schroeder_sym_key_init + needham_schroeder_sym_key_server + needham_schroeder_sym_key_resp).agent
 
     no ((name.generated_times).Timeslot & name.(name.(KeyPairs.ltks)) )
+    no (Attacker.(KeyPairs.ltks))
+    no (KeyPairs.ltks[Attacker])
+
 
     needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_Kab
     in Attacker.learned_times.Timeslot
 
-    all x: name, y: name | needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_Kab != x.(KeyPairs.ltks)[y]
+    // all x: name, y: name | needham_schroeder_sym_key_server.needham_schroeder_sym_key_server_Kab != x.(KeyPairs.ltks)[y]
     
 } for {
     next is linear

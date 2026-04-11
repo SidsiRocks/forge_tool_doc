@@ -69,27 +69,27 @@
     (defstrand resp 3 (a a) (b b) (s s) (Kab Kab) (Nb1 Nb))
     (defstrand resp 3 (a a) (b b) (s s) (Kab Kab) (Nb2 Nb))
 
-    (deftrace attack_run
-        ;; session 1: legitimate run, establishes Kab
-        (send-from init_strand   (cat a b Na))
-        (recv-by   server_strand (cat a b Na))
-        (send-from server_strand (enc Na b Kab (enc Kab a (ltk b s)) (ltk a s)))
-        (recv-by   init_strand   (enc Na b Kab msg (ltk a s)))
-        (send-from init_strand   msg)                       
-        (recv-by   resp1_strand  (enc Kab a (ltk b s)))     
-        (send-from resp1_strand  (enc Nb1 Kab))             
-        (recv-by   init_strand   (enc Nb1 Kab))             
-        (send-from init_strand   (enc (hash Nb1) Kab))      
-        (recv-by   resp1_strand  (enc (hash Nb1) Kab))      
+    ; (deftrace attack_run
+    ;     ;; session 1: legitimate run, establishes Kab
+    ;     (send-from init_strand   (cat a b Na))
+    ;     (recv-by   server_strand (cat a b Na))
+    ;     (send-from server_strand (enc Na b Kab (enc Kab a (ltk b s)) (ltk a s)))
+    ;     (recv-by   init_strand   (enc Na b Kab msg (ltk a s)))
+    ;     (send-from init_strand   msg)                       
+    ;     (recv-by   resp1_strand  (enc Kab a (ltk b s)))     
+    ;     (send-from resp1_strand  (enc Nb1 Kab))             
+    ;     (recv-by   init_strand   (enc Nb1 Kab))             
+    ;     (send-from init_strand   (enc (hash Nb1) Kab))      
+    ;     (recv-by   resp1_strand  (enc (hash Nb1) Kab))      
 
 
 
-        ;; session 2: attack — attacker replays {Kab,A}Kbs to resp2
-        ;; NOTE: attacker knows Kab (compromised), so can answer resp2's challenge
-        (recv-by   resp2_strand  (enc Kab a (ltk b s)))
-        (send-from resp2_strand  (enc Nb2 Kab))
-        (recv-by   resp2_strand  (enc (hash Nb2) Kab))
-    )
+    ;     ;; session 2: attack — attacker replays {Kab,A}Kbs to resp2
+    ;     ;; NOTE: attacker knows Kab (compromised), so can answer resp2's challenge
+    ;     (recv-by   resp2_strand  (enc Kab a (ltk b s)))
+    ;     (send-from resp2_strand  (enc Nb2 Kab))
+    ;     (recv-by   resp2_strand  (enc (hash Nb2) Kab))
+    ; )
 )
 
 (defaltinstance honest_run_bounds 
