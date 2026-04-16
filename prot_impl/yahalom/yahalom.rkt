@@ -1,0 +1,63 @@
+#lang forge/domains/crypto
+
+(defprotocol yahalom basic
+    (defrole init 
+        (vars (a b s name) (Na Nb text) (Kab skey) (msg mesg))
+        (trace 
+            (send (cat a Na))
+            (recv (cat (enc b Kab Na Nb (ltk a s)) msg))
+            (send (cat msg (enc Nb Kab)))
+        )
+        (constraint
+            (non-orig (ltk a s))
+            (uniq-orig Na) (fresh-gen Na)
+            (not-eq a b) (not-eq a s) (not-eq b s)
+        )
+    )
+
+    (defrole server 
+        (vars (a b s name) (Na Nb text) (Kab skey))
+        (trace 
+            (recv (cat b (enc a Na Nb (ltk b s))))
+            (send (cat (enc b Kab Na Nb (ltk a s)) (enc a Kab (ltk b s))))
+        )
+        (constraint 
+            (non-orig (ltk a s))
+            (non-orig (ltk b s))
+            (fresh-gen Kab) (uniq-orig Kab)
+            (not-eq a b) (not-eq a s) (not-eq b s)
+        )
+    )
+
+    (defrole resp 
+        (vars (a b s name) (Na Nb text) (Kab skey))
+        (trace 
+            (recv (cat a Na))
+            (send (cat b (enc a Na Nb (ltk b s))))
+            (recv (cat (enc a Kab (ltk b s)) (enc Nb Kab)))
+        )
+        (constraint 
+            (non-orig (ltk b s))
+            (uniq-orig Nb) (fresh-gen Nb)
+            (not-eq a b) (not-eq a s) (not-eq b s)
+        )
+    )
+)
+
+(defskeleton yahalom
+    (vars (a b s name) (Na Nb text) (Kab skey))
+    (defstrand init 3 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb Nb))
+    (defstrand server 2 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb Nb))
+    (defstrand resp 3 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb Nb))
+)
+
+(defaltinstance honest_run_bounds
+    (Timeslot 8)
+    (mesg 27)
+    (Key 7) (name 4) (Ciphertext 5) (text 2) (tuple 9) (Hashed 0)
+    (skey 7) (akey 0)
+    (PublicKey 0) (PrivateKey 0)
+    (enc-depth 2) (tuple-length 4)
+    (init 1) (server 1) (resp 1) (Attacker 1)
+    (have-ltks)
+)
