@@ -17,6 +17,8 @@ yahalom_honest_run: run {
 
     not Attacker in (yahalom_init + yahalom_server + yahalom_resp).agent
 
+    all x, y: name | yahalom_server.yahalom_server_Kab != x.(KeyPairs.ltks)[y]
+
 } for {
     next is linear
     mt_next is linear
