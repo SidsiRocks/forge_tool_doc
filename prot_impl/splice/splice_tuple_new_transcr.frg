@@ -788,11 +788,12 @@ one sig skeleton_attack1_1 {
   skeleton_attack1_1_N2 : one text,
   skeleton_attack1_1_N3 : one text,
   skeleton_attack1_1_T : one text,
-  skeleton_attack1_1_L : one text
+  skeleton_attack1_1_L : one text,
+  skeleton_attack1_1_authority_strand : one splice_authority,
+  skeleton_attack1_1_server_strand : one splice_server
 }
 pred constrain_skeleton_attack1_1 {
   some skeleton_authority_1_strand_0 : splice_authority | {
-    skeleton_authority_1_strand_0.splice_authority_c = skeleton_attack1_1.skeleton_attack1_1_c
     skeleton_authority_1_strand_0.splice_authority_s = skeleton_attack1_1.skeleton_attack1_1_s
     skeleton_authority_1_strand_0.splice_authority_as = skeleton_attack1_1.skeleton_attack1_1_as
     skeleton_authority_1_strand_0.splice_authority_N1 = skeleton_attack1_1.skeleton_attack1_1_N1
@@ -802,7 +803,6 @@ pred constrain_skeleton_attack1_1 {
     skeleton_authority_1_strand_0.splice_authority_L = skeleton_attack1_1.skeleton_attack1_1_L
   }
   some skeleton_server_1_strand_1 : splice_server | {
-    skeleton_server_1_strand_1.splice_server_c = skeleton_attack1_1.skeleton_attack1_1_c
     skeleton_server_1_strand_1.splice_server_s = skeleton_attack1_1.skeleton_attack1_1_s
     skeleton_server_1_strand_1.splice_server_as = skeleton_attack1_1.skeleton_attack1_1_as
     skeleton_server_1_strand_1.splice_server_N1 = skeleton_attack1_1.skeleton_attack1_1_N1
@@ -810,6 +810,36 @@ pred constrain_skeleton_attack1_1 {
     skeleton_server_1_strand_1.splice_server_N3 = skeleton_attack1_1.skeleton_attack1_1_N3
     skeleton_server_1_strand_1.splice_server_T = skeleton_attack1_1.skeleton_attack1_1_T
     skeleton_server_1_strand_1.splice_server_L = skeleton_attack1_1.skeleton_attack1_1_L
+  }
+}
+one sig skeleton_attack2_2 {
+  skeleton_attack2_2_c : one name,
+  skeleton_attack2_2_s : one name,
+  skeleton_attack2_2_as : one name,
+  skeleton_attack2_2_N1 : one text,
+  skeleton_attack2_2_N2 : one text,
+  skeleton_attack2_2_N3 : one text,
+  skeleton_attack2_2_T : one text,
+  skeleton_attack2_2_L : one text
+}
+pred constrain_skeleton_attack2_2 {
+  some skeleton_client_2_strand_0 : splice_client | {
+    skeleton_client_2_strand_0.splice_client_c = skeleton_attack2_2.skeleton_attack2_2_c
+    skeleton_client_2_strand_0.splice_client_as = skeleton_attack2_2.skeleton_attack2_2_as
+    skeleton_client_2_strand_0.splice_client_N1 = skeleton_attack2_2.skeleton_attack2_2_N1
+    skeleton_client_2_strand_0.splice_client_N2 = skeleton_attack2_2.skeleton_attack2_2_N2
+    skeleton_client_2_strand_0.splice_client_N3 = skeleton_attack2_2.skeleton_attack2_2_N3
+    skeleton_client_2_strand_0.splice_client_T = skeleton_attack2_2.skeleton_attack2_2_T
+    skeleton_client_2_strand_0.splice_client_L = skeleton_attack2_2.skeleton_attack2_2_L
+  }
+  some skeleton_authority_2_strand_1 : splice_authority | {
+    skeleton_authority_2_strand_1.splice_authority_c = skeleton_attack2_2.skeleton_attack2_2_c
+    skeleton_authority_2_strand_1.splice_authority_as = skeleton_attack2_2.skeleton_attack2_2_as
+    skeleton_authority_2_strand_1.splice_authority_N1 = skeleton_attack2_2.skeleton_attack2_2_N1
+    skeleton_authority_2_strand_1.splice_authority_N2 = skeleton_attack2_2.skeleton_attack2_2_N2
+    skeleton_authority_2_strand_1.splice_authority_N3 = skeleton_attack2_2.skeleton_attack2_2_N3
+    skeleton_authority_2_strand_1.splice_authority_T = skeleton_attack2_2.skeleton_attack2_2_T
+    skeleton_authority_2_strand_1.splice_authority_L = skeleton_attack2_2.skeleton_attack2_2_L
   }
 }
 inst honest_run_bounds {
@@ -882,30 +912,70 @@ inst attack1_bounds {
   AttackerStrand = `AttackerStrand0
   strand = splice_client + splice_authority + splice_server + AttackerStrand
 }
+inst attack2_bounds {
+  PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2 + `PublicKey3
+  PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2 + `PrivateKey3
+  akey = PublicKey + PrivateKey
+  no skey
+  Key = akey
+  Attacker = `Attacker0
+  name = `name0 + `name1 + `name2 + Attacker
+  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4
+  text = `text0 + `text1 + `text2 + `text3 + `text4
+  Hashed = `Hashed0
+  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7 + `tuple8 + `tuple9 + `tuple10 + `tuple11
+  mesg = Key + name + Ciphertext + text + Hashed + tuple
+
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7 + `Timeslot8
+
+  components in tuple -> (0+1+2+3) -> (Key + name + text + Ciphertext + tuple + Hashed)
+  KeyPairs = `KeyPairs0
+  Microtick = `Microtick0 + `Microtick1 + `Microtick2
+  pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2 + `PrivateKey3->`PublicKey3)
+  owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`name2 + `PrivateKey3->`Attacker0)
+  no ltks
+
+  `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2 + `PublicKey3->`PrivateKey3 + `PrivateKey3->`PublicKey3
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7 + `Timeslot7->`Timeslot8
+  mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
+
+  generated_times in name -> (Key + text) -> Timeslot
+  hash_of in Hashed -> text
+  splice_client = `splice_client0
+  splice_authority = `splice_authority0
+  splice_server = `splice_server0
+  AttackerStrand = `AttackerStrand0
+  strand = splice_client + splice_authority + splice_server + AttackerStrand
+}
 option run_sterling "../../crypto_viz_seq_tuple.js"
 option solver Glucose
 option verbose 5
+
+pred attacker_learns2[d: mesg] {
+  d in Attacker.learned_times.Timeslot
+}
 
 splice_attack: run {
     wellformed
 
     exec_splice_client
-    exec_splice_server
+    // exec_splice_server
     exec_splice_authority
 
     // constrain_skeleton_splice_0
-    constrain_skeleton_attack1_1
+    // constrain_skeleton_attack1_1
+    constrain_skeleton_attack2_2
 
     no (splice_client.splice_client_c & Attacker)
-    no (splice_client.splice_client_s & Attacker)
+    // no (splice_client.splice_client_s & Attacker)
     no (splice_client.splice_client_as & Attacker)
 
     no (splice_server.splice_server_c & Attacker)
-    no (splice_server.splice_server_s & Attacker)
+    // no (splice_server.splice_server_s & Attacker)
     no (splice_server.splice_server_as & Attacker)
 
     no (splice_authority.splice_authority_c & Attacker)
-    no (splice_authority.splice_authority_s & Attacker)
+    // no (splice_authority.splice_authority_s & Attacker)
     no (splice_authority.splice_authority_as & Attacker)
 
 
@@ -917,10 +987,10 @@ splice_attack: run {
     no (splice_server.agent & Attacker)
     no (splice_authority.agent & Attacker)
 
-
+    attacker_learns2[splice_client.splice_client_N2]
 } for {
     next is linear
     mt_next is linear
     // honest_run_bounds
-    attack1_bounds
+    attack2_bounds
 }

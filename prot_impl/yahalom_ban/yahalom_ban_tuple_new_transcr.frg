@@ -669,6 +669,48 @@ pred constrain_skeleton_yahalom_ban_0 {
     skeleton_resp_0_strand_2.yahalom_ban_resp_Nb = skeleton_yahalom_ban_0.skeleton_yahalom_ban_0_Nb
   }
 }
+one sig skeleton_attack_1 {
+  skeleton_attack_1_a : one name,
+  skeleton_attack_1_b : one name,
+  skeleton_attack_1_s : one name,
+  skeleton_attack_1_Na : one text,
+  skeleton_attack_1_Nb : one text,
+  skeleton_attack_1_Kab : one skey
+}
+pred constrain_skeleton_attack_1 {
+  some skeleton_init_1_strand_0 : yahalom_ban_init | {
+    skeleton_init_1_strand_0.yahalom_ban_init_a = skeleton_attack_1.skeleton_attack_1_a
+    skeleton_init_1_strand_0.yahalom_ban_init_b = skeleton_attack_1.skeleton_attack_1_b
+    skeleton_init_1_strand_0.yahalom_ban_init_s = skeleton_attack_1.skeleton_attack_1_s
+    skeleton_init_1_strand_0.yahalom_ban_init_Kab = skeleton_attack_1.skeleton_attack_1_Kab
+    skeleton_init_1_strand_0.yahalom_ban_init_Na = skeleton_attack_1.skeleton_attack_1_Na
+    skeleton_init_1_strand_0.yahalom_ban_init_Nb = skeleton_attack_1.skeleton_attack_1_Nb
+  }
+  some skeleton_init_1_strand_1 : yahalom_ban_init | {
+    skeleton_init_1_strand_1.yahalom_ban_init_a = skeleton_attack_1.skeleton_attack_1_a
+    skeleton_init_1_strand_1.yahalom_ban_init_b = skeleton_attack_1.skeleton_attack_1_b
+    skeleton_init_1_strand_1.yahalom_ban_init_s = skeleton_attack_1.skeleton_attack_1_s
+    skeleton_init_1_strand_1.yahalom_ban_init_Kab = skeleton_attack_1.skeleton_attack_1_Kab
+    skeleton_init_1_strand_1.yahalom_ban_init_Na = skeleton_attack_1.skeleton_attack_1_Na
+    skeleton_init_1_strand_1.yahalom_ban_init_Nb = skeleton_attack_1.skeleton_attack_1_Nb
+  }
+  some skeleton_server_1_strand_2 : yahalom_ban_server | {
+    skeleton_server_1_strand_2.yahalom_ban_server_a = skeleton_attack_1.skeleton_attack_1_a
+    skeleton_server_1_strand_2.yahalom_ban_server_b = skeleton_attack_1.skeleton_attack_1_b
+    skeleton_server_1_strand_2.yahalom_ban_server_s = skeleton_attack_1.skeleton_attack_1_s
+    skeleton_server_1_strand_2.yahalom_ban_server_Kab = skeleton_attack_1.skeleton_attack_1_Kab
+    skeleton_server_1_strand_2.yahalom_ban_server_Na = skeleton_attack_1.skeleton_attack_1_Na
+    skeleton_server_1_strand_2.yahalom_ban_server_Nb = skeleton_attack_1.skeleton_attack_1_Nb
+  }
+  some skeleton_server_1_strand_3 : yahalom_ban_server | {
+    skeleton_server_1_strand_3.yahalom_ban_server_a = skeleton_attack_1.skeleton_attack_1_a
+    skeleton_server_1_strand_3.yahalom_ban_server_b = skeleton_attack_1.skeleton_attack_1_b
+    skeleton_server_1_strand_3.yahalom_ban_server_s = skeleton_attack_1.skeleton_attack_1_s
+    skeleton_server_1_strand_3.yahalom_ban_server_Kab = skeleton_attack_1.skeleton_attack_1_Kab
+    skeleton_server_1_strand_3.yahalom_ban_server_Na = skeleton_attack_1.skeleton_attack_1_Na
+    skeleton_server_1_strand_3.yahalom_ban_server_Nb = skeleton_attack_1.skeleton_attack_1_Nb
+  }
+}
 inst honest_run_bounds {
   no akey
   skey = `skey0 + `skey1 + `skey2 + `skey3 + `skey4 + `skey5 + `skey6
@@ -702,6 +744,39 @@ inst honest_run_bounds {
   AttackerStrand = `AttackerStrand0
   strand = yahalom_ban_init + yahalom_ban_server + yahalom_ban_resp + AttackerStrand
 }
+inst attack_bounds {
+  no akey
+  skey = `skey0 + `skey1 + `skey2 + `skey3 + `skey4 + `skey5 + `skey6
+  Key = skey
+  Attacker = `Attacker0
+  name = `name0 + `name1 + `name2 + Attacker
+  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7
+  text = `text0 + `text1 + `text2
+  no Hashed
+  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7 + `tuple8 + `tuple9 + `tuple10 + `tuple11 + `tuple12 + `tuple13 + `tuple14
+  mesg = Key + name + Ciphertext + text + tuple
+
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6
+
+  components in tuple -> (0+1+2+3) -> (Key + name + text + Ciphertext + tuple + Hashed)
+  KeyPairs = `KeyPairs0
+  Microtick = `Microtick0 + `Microtick1 + `Microtick2
+  no PublicKey
+  no PrivateKey
+
+  `KeyPairs0.ltks = `name0->`name1->`skey0 + `name0->`name2->`skey1 + `name0->`Attacker0->`skey2 + `name1->`name2->`skey3 + `name1->`Attacker0->`skey4 + `name2->`Attacker0->`skey5
+  `KeyPairs0.inv_key_helper = `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2 + `skey3->`skey3 + `skey4->`skey4 + `skey5->`skey5 + `skey6->`skey6
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6
+  mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
+
+  generated_times in name -> (Key + text) -> Timeslot
+  hash_of in Hashed -> text
+  yahalom_ban_init = `yahalom_ban_init0 + `yahalom_ban_init1
+  yahalom_ban_server = `yahalom_ban_server0 + `yahalom_ban_server1
+  yahalom_ban_resp = `yahalom_ban_resp0
+  AttackerStrand = `AttackerStrand0
+  strand = yahalom_ban_init + yahalom_ban_server + yahalom_ban_resp + AttackerStrand
+}
 option run_sterling "../../crypto_viz_seq_tuple.js"
 option solver Glucose
 option verbose 5
@@ -713,7 +788,8 @@ yahalom_ban_honest_run: run {
     exec_yahalom_ban_server
     exec_yahalom_ban_resp
 
-    constrain_skeleton_yahalom_ban_0
+    // constrain_skeleton_yahalom_ban_0
+    constrain_skeleton_attack_1
 
     no (yahalom_ban_init.agent & yahalom_ban_server.agent)
     no (yahalom_ban_init.agent & yahalom_ban_resp.agent)
@@ -726,5 +802,6 @@ yahalom_ban_honest_run: run {
 } for {
     next is linear
     mt_next is linear
-    honest_run_bounds
+    // honest_run_bounds
+    attack_bounds
 }

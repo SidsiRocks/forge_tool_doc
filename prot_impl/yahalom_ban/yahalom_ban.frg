@@ -9,7 +9,8 @@ yahalom_ban_honest_run: run {
     exec_yahalom_ban_server
     exec_yahalom_ban_resp
 
-    constrain_skeleton_yahalom_ban_0
+    // constrain_skeleton_yahalom_ban_0
+    constrain_skeleton_attack_1
 
     no (yahalom_ban_init.agent & yahalom_ban_server.agent)
     no (yahalom_ban_init.agent & yahalom_ban_resp.agent)
@@ -22,5 +23,6 @@ yahalom_ban_honest_run: run {
 } for {
     next is linear
     mt_next is linear
-    honest_run_bounds
+    // honest_run_bounds
+    attack_bounds
 }
