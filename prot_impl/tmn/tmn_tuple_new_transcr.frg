@@ -520,6 +520,7 @@ pred exec_tmn_server {
     arbitrary_server_tmn.tmn_server_a != arbitrary_server_tmn.tmn_server_b
     arbitrary_server_tmn.tmn_server_a != arbitrary_server_tmn.tmn_server_s
     arbitrary_server_tmn.tmn_server_b != arbitrary_server_tmn.tmn_server_s
+    arbitrary_server_tmn.tmn_server_Ka != arbitrary_server_tmn.tmn_server_Kb
     some t0 : Timeslot {
     some t1 : t0.(^next) {
     some t2 : t1.(^next) {
@@ -605,6 +606,117 @@ pred constrain_skeleton_tmn_0 {
     skeleton_server_0_strand_2.tmn_server_Kb = skeleton_tmn_0.skeleton_tmn_0_Kb
   }
 }
+one sig skeleton_attack1_1 {
+  skeleton_attack1_1_a : one name,
+  skeleton_attack1_1_b : one name,
+  skeleton_attack1_1_s : one name,
+  skeleton_attack1_1_Ka : one skey,
+  skeleton_attack1_1_Kb : one skey,
+  skeleton_attack1_1_server_strand : one tmn_server,
+  skeleton_attack1_1_resp_strand : one tmn_resp
+}
+pred constrain_skeleton_attack1_1_attack_trace {
+  some t_0 : Timeslot {
+  some t_1 : t_0.(^next) {
+  some t_2 : t_1.(^next) {
+    t_0.receiver = skeleton_attack1_1.skeleton_attack1_1_server_strand
+    inds[(t_0.data.components)] = 0+1
+    let name_25  = ((t_0.data.components))[0] | {
+    let enc_26  = ((t_0.data.components))[1] | {
+      (t_0.data.components) = 0->name_25 + 1->enc_26
+      name_25 = skeleton_attack1_1.skeleton_attack1_1_b
+      inds[(enc_26).plaintext.components] = 0
+      let skey_28  = ((enc_26).plaintext.components)[0] | {
+        (enc_26).plaintext.components = 0->skey_28
+        skey_28 = skeleton_attack1_1.skeleton_attack1_1_Ka
+      }
+      (enc_26).encryptionKey = getPUBK[skeleton_attack1_1.skeleton_attack1_1_s]
+    }}
+
+    t_1.sender = skeleton_attack1_1.skeleton_attack1_1_server_strand
+    (t_1.data) = skeleton_attack1_1.skeleton_attack1_1_a
+
+    t_2.receiver = skeleton_attack1_1.skeleton_attack1_1_resp_strand
+    (t_2.data) = skeleton_attack1_1.skeleton_attack1_1_a
+
+  }}}
+}
+pred constrain_skeleton_attack1_1 {
+  some skeleton_resp_1_strand_0 : tmn_resp | {
+    skeleton_resp_1_strand_0.tmn_resp_a = skeleton_attack1_1.skeleton_attack1_1_a
+    skeleton_resp_1_strand_0.tmn_resp_b = skeleton_attack1_1.skeleton_attack1_1_b
+    skeleton_resp_1_strand_0.tmn_resp_s = skeleton_attack1_1.skeleton_attack1_1_s
+    skeleton_resp_1_strand_0.tmn_resp_Kb = skeleton_attack1_1.skeleton_attack1_1_Kb
+  }
+  some skeleton_server_1_strand_1 : tmn_server | {
+    skeleton_server_1_strand_1.tmn_server_a = skeleton_attack1_1.skeleton_attack1_1_a
+    skeleton_server_1_strand_1.tmn_server_b = skeleton_attack1_1.skeleton_attack1_1_b
+    skeleton_server_1_strand_1.tmn_server_s = skeleton_attack1_1.skeleton_attack1_1_s
+    skeleton_server_1_strand_1.tmn_server_Ka = skeleton_attack1_1.skeleton_attack1_1_Ka
+    skeleton_server_1_strand_1.tmn_server_Kb = skeleton_attack1_1.skeleton_attack1_1_Kb
+  }
+  constrain_skeleton_attack1_1_attack_trace
+}
+one sig skeleton_attack2_2 {
+  skeleton_attack2_2_a : one name,
+  skeleton_attack2_2_b : one name,
+  skeleton_attack2_2_s : one name,
+  skeleton_attack2_2_Ka : one skey,
+  skeleton_attack2_2_Kb : one skey,
+  skeleton_attack2_2_server_strand : one tmn_server
+}
+pred constrain_skeleton_attack2_2 {
+  some skeleton_init_2_strand_0 : tmn_init | {
+    skeleton_init_2_strand_0.tmn_init_a = skeleton_attack2_2.skeleton_attack2_2_a
+    skeleton_init_2_strand_0.tmn_init_b = skeleton_attack2_2.skeleton_attack2_2_b
+    skeleton_init_2_strand_0.tmn_init_s = skeleton_attack2_2.skeleton_attack2_2_s
+    skeleton_init_2_strand_0.tmn_init_Ka = skeleton_attack2_2.skeleton_attack2_2_Ka
+    skeleton_init_2_strand_0.tmn_init_Kb = skeleton_attack2_2.skeleton_attack2_2_Kb
+  }
+  some skeleton_server_2_strand_1 : tmn_server | {
+    skeleton_server_2_strand_1.tmn_server_a = skeleton_attack2_2.skeleton_attack2_2_a
+    skeleton_server_2_strand_1.tmn_server_b = skeleton_attack2_2.skeleton_attack2_2_b
+    skeleton_server_2_strand_1.tmn_server_s = skeleton_attack2_2.skeleton_attack2_2_s
+    skeleton_server_2_strand_1.tmn_server_Ka = skeleton_attack2_2.skeleton_attack2_2_Ka
+    skeleton_server_2_strand_1.tmn_server_Kb = skeleton_attack2_2.skeleton_attack2_2_Kb
+  }
+}
+one sig skeleton_attack3_3 {
+  skeleton_attack3_3_a : one name,
+  skeleton_attack3_3_b : one name,
+  skeleton_attack3_3_s : one name,
+  skeleton_attack3_3_Ka : one skey,
+  skeleton_attack3_3_Kb : one skey
+}
+pred constrain_skeleton_attack3_3 {
+  some skeleton_server_3_strand_0 : tmn_server | {
+    skeleton_server_3_strand_0.tmn_server_a = skeleton_attack3_3.skeleton_attack3_3_a
+    skeleton_server_3_strand_0.tmn_server_b = skeleton_attack3_3.skeleton_attack3_3_b
+    skeleton_server_3_strand_0.tmn_server_s = skeleton_attack3_3.skeleton_attack3_3_s
+    skeleton_server_3_strand_0.tmn_server_Ka = skeleton_attack3_3.skeleton_attack3_3_Ka
+    skeleton_server_3_strand_0.tmn_server_Kb = skeleton_attack3_3.skeleton_attack3_3_Kb
+  }
+  some skeleton_resp_3_strand_1 : tmn_resp | {
+    skeleton_resp_3_strand_1.tmn_resp_a = skeleton_attack3_3.skeleton_attack3_3_a
+    skeleton_resp_3_strand_1.tmn_resp_b = skeleton_attack3_3.skeleton_attack3_3_b
+    skeleton_resp_3_strand_1.tmn_resp_s = skeleton_attack3_3.skeleton_attack3_3_s
+    skeleton_resp_3_strand_1.tmn_resp_Kb = skeleton_attack3_3.skeleton_attack3_3_Kb
+  }
+  some skeleton_server_3_strand_2 : tmn_server | {
+    skeleton_server_3_strand_2.tmn_server_a = skeleton_attack3_3.skeleton_attack3_3_a
+    skeleton_server_3_strand_2.tmn_server_b = skeleton_attack3_3.skeleton_attack3_3_b
+    skeleton_server_3_strand_2.tmn_server_s = skeleton_attack3_3.skeleton_attack3_3_s
+    skeleton_server_3_strand_2.tmn_server_Ka = skeleton_attack3_3.skeleton_attack3_3_Ka
+    skeleton_server_3_strand_2.tmn_server_Kb = skeleton_attack3_3.skeleton_attack3_3_Kb
+  }
+  some skeleton_init_3_strand_3 : tmn_init | {
+    skeleton_init_3_strand_3.tmn_init_a = skeleton_attack3_3.skeleton_attack3_3_a
+    skeleton_init_3_strand_3.tmn_init_b = skeleton_attack3_3.skeleton_attack3_3_b
+    skeleton_init_3_strand_3.tmn_init_s = skeleton_attack3_3.skeleton_attack3_3_s
+    skeleton_init_3_strand_3.tmn_init_Ka = skeleton_attack3_3.skeleton_attack3_3_Ka
+    skeleton_init_3_strand_3.tmn_init_Kb = skeleton_attack3_3.skeleton_attack3_3_Kb
+  }
+}
 inst alt_tmn_small {
   PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2 + `PublicKey3
   PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2 + `PrivateKey3
@@ -640,7 +752,42 @@ inst alt_tmn_small {
   AttackerStrand = `AttackerStrand0
   strand = tmn_init + tmn_resp + tmn_server + AttackerStrand
 }
-inst alt_tmn_attack {
+inst alt_tmn_attack1 {
+  PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2 + `PublicKey3
+  PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2 + `PrivateKey3
+  akey = PublicKey + PrivateKey
+  skey = `skey0 + `skey1
+  Key = akey + skey
+  Attacker = `Attacker0
+  name = `name0 + `name1 + `name2 + Attacker
+  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2
+  no text
+  no Hashed
+  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6
+  mesg = Key + name + Ciphertext + tuple
+
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5
+
+  components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple + Hashed)
+  KeyPairs = `KeyPairs0
+  Microtick = `Microtick0 + `Microtick1 + `Microtick2
+  pairs = KeyPairs -> (`PrivateKey0->`PublicKey0 + `PrivateKey1->`PublicKey1 + `PrivateKey2->`PublicKey2 + `PrivateKey3->`PublicKey3)
+  owners = KeyPairs -> (`PrivateKey0->`name0 + `PrivateKey1->`name1 + `PrivateKey2->`name2 + `PrivateKey3->`Attacker0)
+  no ltks
+
+  `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2 + `PublicKey3->`PrivateKey3 + `PrivateKey3->`PublicKey3 + `skey0->`skey0 + `skey1->`skey1
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5
+  mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
+
+  generated_times in name -> (Key + text) -> Timeslot
+  hash_of in Hashed -> text
+  tmn_init = `tmn_init0
+  tmn_resp = `tmn_resp0
+  tmn_server = `tmn_server0
+  AttackerStrand = `AttackerStrand0
+  strand = tmn_init + tmn_resp + tmn_server + AttackerStrand
+}
+inst alt_tmn_attack2 {
   PublicKey = `PublicKey0 + `PublicKey1 + `PublicKey2 + `PublicKey3
   PrivateKey = `PrivateKey0 + `PrivateKey1 + `PrivateKey2 + `PrivateKey3
   akey = PublicKey + PrivateKey
@@ -648,13 +795,13 @@ inst alt_tmn_attack {
   Key = akey + skey
   Attacker = `Attacker0
   name = `name0 + `name1 + `name2 + Attacker
-  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5 + `Ciphertext6 + `Ciphertext7
-  text = `text0 + `text1 + `text2 + `text3
+  Ciphertext = `Ciphertext0 + `Ciphertext1 + `Ciphertext2 + `Ciphertext3 + `Ciphertext4 + `Ciphertext5
+  no text
   no Hashed
-  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5
-  mesg = Key + name + Ciphertext + text + tuple
+  tuple = `tuple0 + `tuple1 + `tuple2 + `tuple3 + `tuple4 + `tuple5 + `tuple6 + `tuple7 + `tuple8 + `tuple9 + `tuple10 + `tuple11 + `tuple12 + `tuple13
+  mesg = Key + name + Ciphertext + tuple
 
-  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7
+  Timeslot = `Timeslot0 + `Timeslot1 + `Timeslot2 + `Timeslot3 + `Timeslot4 + `Timeslot5 + `Timeslot6 + `Timeslot7 + `Timeslot8 + `Timeslot9 + `Timeslot10 + `Timeslot11
 
   components in tuple -> (0+1) -> (Key + name + text + Ciphertext + tuple + Hashed)
   KeyPairs = `KeyPairs0
@@ -664,14 +811,14 @@ inst alt_tmn_attack {
   no ltks
 
   `KeyPairs0.inv_key_helper = `PublicKey0->`PrivateKey0 + `PrivateKey0->`PublicKey0 + `PublicKey1->`PrivateKey1 + `PrivateKey1->`PublicKey1 + `PublicKey2->`PrivateKey2 + `PrivateKey2->`PublicKey2 + `PublicKey3->`PrivateKey3 + `PrivateKey3->`PublicKey3 + `skey0->`skey0 + `skey1->`skey1 + `skey2->`skey2
-  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7
+  next = `Timeslot0->`Timeslot1 + `Timeslot1->`Timeslot2 + `Timeslot2->`Timeslot3 + `Timeslot3->`Timeslot4 + `Timeslot4->`Timeslot5 + `Timeslot5->`Timeslot6 + `Timeslot6->`Timeslot7 + `Timeslot7->`Timeslot8 + `Timeslot8->`Timeslot9 + `Timeslot9->`Timeslot10 + `Timeslot10->`Timeslot11
   mt_next = `Microtick0 -> `Microtick1 + `Microtick1 -> `Microtick2
 
   generated_times in name -> (Key + text) -> Timeslot
   hash_of in Hashed -> text
   tmn_init = `tmn_init0
   tmn_resp = `tmn_resp0
-  tmn_server = `tmn_server0
+  tmn_server = `tmn_server0 + `tmn_server1
   AttackerStrand = `AttackerStrand0
   strand = tmn_init + tmn_resp + tmn_server + AttackerStrand
 }
@@ -728,6 +875,8 @@ pred cannot_gen_privk{
 }
 pred gen_attack{
     self_names_constraint
+    all_distinct_agents
+    not_talking_with_attacker
     cannot_gen_privk
     tmn_resp.tmn_resp_a != Attacker
     tmn_resp.tmn_resp_s != Attacker
@@ -743,6 +892,9 @@ tmn_attack : run {
   exec_tmn_server
 
   -- constrain_skeleton_tmn_0
+//   constrain_skeleton_attack1_1
+//     constrain_skeleton_attack2_2
+constrain_skeleton_attack3_3
 
   -- honest participants
   tmn_init.agent != Attacker
@@ -758,5 +910,6 @@ tmn_attack : run {
   gen_attack
 } for {
   next is linear
-  alt_tmn_small
+  mt_next is linear
+  alt_tmn_attack2
 }

@@ -51,6 +51,8 @@ pred cannot_gen_privk{
 }
 pred gen_attack{
     self_names_constraint
+    all_distinct_agents
+    not_talking_with_attacker
     cannot_gen_privk
     tmn_resp.tmn_resp_a != Attacker
     tmn_resp.tmn_resp_s != Attacker
@@ -66,6 +68,9 @@ tmn_attack : run {
   exec_tmn_server
 
   -- constrain_skeleton_tmn_0
+//   constrain_skeleton_attack1_1
+//     constrain_skeleton_attack2_2
+constrain_skeleton_attack3_3
 
   -- honest participants
   tmn_init.agent != Attacker
@@ -81,5 +86,6 @@ tmn_attack : run {
   gen_attack
 } for {
   next is linear
-  alt_tmn_small
+  mt_next is linear
+  alt_tmn_attack2
 }
