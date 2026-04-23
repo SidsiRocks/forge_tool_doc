@@ -52,11 +52,22 @@
 )
 
 (defskeleton attack 
-    (vars (a b s name) (Na Nb text) (Kab skey))
-    (defstrand init 3 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb Nb))
-    (defstrand init 2 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb Nb))
-    (defstrand server 1 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb Nb))
-    (defstrand server 1 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb Nb))
+    (vars (a b s name) (Na Nb Na_ Ni text) (Kab skey) (init_strand1 init_strand2 role_init) 
+        (server_strand1 server_strand2 role_server))
+    ; (defstrand init 3 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb Nb))
+    ; (defstrand init 2 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb Nb))
+    ; (defstrand server 1 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb Nb))
+    ; (defstrand server 1 (a a) (b b) (s s) (Kab Kab) (Na Na) (Nb Nb))
+
+    (deftrace attack_run
+        (send-from init_strand1 (cat a Na))
+        (recv-by init_strand2 (cat b Na))
+        (send-from init_strand2 (cat a Na_ (enc b Na (ltk a s))))
+        (recv-by server_strand2 (cat a Na (enc b Na (ltk a s))))
+        (send-from server_strand1 (cat Na (enc a Kab Na (ltk b s)) (enc b Kab Na (ltk a s))))
+        (recv-by init_strand1 (cat Ni (enc b Kab Na (ltk a s)) (enc a Kab Na (ltk b s))))
+        (send-from init_strand1 (cat (enc a Kab Na (ltk b s)) (enc Ni Kab)))
+    )
 )
 
 (defaltinstance honest_run_bounds

@@ -422,7 +422,81 @@ sig yahalom_ban_init extends strand {
   yahalom_ban_init_Kab : one skey,
   yahalom_ban_init_msg : one mesg
 }
-pred exec_yahalom_ban_init {
+pred exec_yahalom_ban_init_mesg_0[t0:Timeslot,arbitrary_init_yahalom_ban:yahalom_ban_init]{
+  t0.sender = arbitrary_init_yahalom_ban
+  inds[((t0.data).components)] = 0+1
+  let name_1  = (((t0.data).components))[0] | {
+  let text_2  = (((t0.data).components))[1] | {
+    ((t0.data).components) = 0->name_1 + 1->text_2
+    name_1 = arbitrary_init_yahalom_ban.yahalom_ban_init_a
+    text_2 = arbitrary_init_yahalom_ban.yahalom_ban_init_Na
+  }}
+}
+pred exec_yahalom_ban_init_mesg_1[t1:Timeslot,arbitrary_init_yahalom_ban:yahalom_ban_init]{
+  t1.receiver = arbitrary_init_yahalom_ban
+  inds[((t1.data).components)] = 0+1+2
+  let text_3  = (((t1.data).components))[0] | {
+  let enc_4  = (((t1.data).components))[1] | {
+  let mesg_5  = (((t1.data).components))[2] | {
+    ((t1.data).components) = 0->text_3 + 1->enc_4 + 2->mesg_5
+    text_3 = arbitrary_init_yahalom_ban.yahalom_ban_init_Nb
+    learnt_term_by[getLTK[arbitrary_init_yahalom_ban.yahalom_ban_init_a,arbitrary_init_yahalom_ban.yahalom_ban_init_s],arbitrary_init_yahalom_ban.agent,t1]
+    inds[(enc_4).plaintext.components] = 0+1+2
+    let name_9  = ((enc_4).plaintext.components)[0] | {
+    let skey_10  = ((enc_4).plaintext.components)[1] | {
+    let text_11  = ((enc_4).plaintext.components)[2] | {
+      (enc_4).plaintext.components = 0->name_9 + 1->skey_10 + 2->text_11
+      name_9 = arbitrary_init_yahalom_ban.yahalom_ban_init_b
+      skey_10 = arbitrary_init_yahalom_ban.yahalom_ban_init_Kab
+      text_11 = arbitrary_init_yahalom_ban.yahalom_ban_init_Na
+    }}}
+    (enc_4).encryptionKey = getLTK[arbitrary_init_yahalom_ban.yahalom_ban_init_a,arbitrary_init_yahalom_ban.yahalom_ban_init_s]
+    mesg_5 = arbitrary_init_yahalom_ban.yahalom_ban_init_msg
+  }}}
+}
+pred exec_yahalom_ban_init_mesg_2[t2:Timeslot,arbitrary_init_yahalom_ban:yahalom_ban_init]{
+  t2.sender = arbitrary_init_yahalom_ban
+  inds[((t2.data).components)] = 0+1
+  let mesg_12  = (((t2.data).components))[0] | {
+  let enc_13  = (((t2.data).components))[1] | {
+    ((t2.data).components) = 0->mesg_12 + 1->enc_13
+    mesg_12 = arbitrary_init_yahalom_ban.yahalom_ban_init_msg
+    inds[(enc_13).plaintext.components] = 0
+    let text_15  = ((enc_13).plaintext.components)[0] | {
+      (enc_13).plaintext.components = 0->text_15
+      text_15 = arbitrary_init_yahalom_ban.yahalom_ban_init_Nb
+    }
+    (enc_13).encryptionKey = arbitrary_init_yahalom_ban.yahalom_ban_init_Kab
+  }}
+}
+pred exec_init_trace_len_0[arbitrary_init_yahalom_ban:yahalom_ban_init]{
+  no (sender.arbitrary_init_yahalom_ban + receiver.arbitrary_init_yahalom_ban)
+}
+pred exec_init_trace_len_1[arbitrary_init_yahalom_ban:yahalom_ban_init]{
+  some t0 : Timeslot {
+    t0 = sender.arbitrary_init_yahalom_ban + receiver.arbitrary_init_yahalom_ban
+    exec_yahalom_ban_init_mesg_0[t0,arbitrary_init_yahalom_ban]
+  }
+}
+pred exec_init_trace_len_2[arbitrary_init_yahalom_ban:yahalom_ban_init]{
+  some t0 : Timeslot {
+  some t1 : t0.(^next) {
+    t0+t1 = sender.arbitrary_init_yahalom_ban + receiver.arbitrary_init_yahalom_ban
+    exec_yahalom_ban_init_mesg_0[t0,arbitrary_init_yahalom_ban]
+    exec_yahalom_ban_init_mesg_1[t1,arbitrary_init_yahalom_ban]
+  }}
+}
+pred exec_init_trace_len_3[arbitrary_init_yahalom_ban:yahalom_ban_init]{
+  some t0 : Timeslot {
+  some t1 : t0.(^next) {
+  some t2 : t1.(^next) {
+    t0+t1+t2 = sender.arbitrary_init_yahalom_ban + receiver.arbitrary_init_yahalom_ban
+    exec_yahalom_ban_init_mesg_0[t0,arbitrary_init_yahalom_ban]
+    exec_yahalom_ban_init_mesg_1[t1,arbitrary_init_yahalom_ban]
+    exec_yahalom_ban_init_mesg_2[t2,arbitrary_init_yahalom_ban]
+  }}}
+}
+pred exec_yahalom_ban_init{
   all arbitrary_init_yahalom_ban : yahalom_ban_init | {
     no aStrand : strand | {
       originates[aStrand,getLTK[arbitrary_init_yahalom_ban.yahalom_ban_init_a,arbitrary_init_yahalom_ban.yahalom_ban_init_s]] or generates [aStrand,getLTK[arbitrary_init_yahalom_ban.yahalom_ban_init_a,arbitrary_init_yahalom_ban.yahalom_ban_init_s]]
@@ -431,56 +505,15 @@ pred exec_yahalom_ban_init {
     arbitrary_init_yahalom_ban.yahalom_ban_init_a != arbitrary_init_yahalom_ban.yahalom_ban_init_b
     arbitrary_init_yahalom_ban.yahalom_ban_init_a != arbitrary_init_yahalom_ban.yahalom_ban_init_s
     arbitrary_init_yahalom_ban.yahalom_ban_init_b != arbitrary_init_yahalom_ban.yahalom_ban_init_s
-    some t0 : Timeslot {
-    some t1 : t0.(^next) {
-    some t2 : t1.(^next) {
-      ((arbitrary_init_yahalom_ban.yahalom_ban_init_Na)->t0) in (arbitrary_init_yahalom_ban.agent).generated_times
-      t0+t1+t2 = sender.arbitrary_init_yahalom_ban + receiver.arbitrary_init_yahalom_ban
-      t0.sender = arbitrary_init_yahalom_ban
-      inds[((t0.data).components)] = 0+1
-      let name_1  = (((t0.data).components))[0] | {
-      let text_2  = (((t0.data).components))[1] | {
-        ((t0.data).components) = 0->name_1 + 1->text_2
-        name_1 = arbitrary_init_yahalom_ban.yahalom_ban_init_a
-        text_2 = arbitrary_init_yahalom_ban.yahalom_ban_init_Na
-      }}
-
-      t1.receiver = arbitrary_init_yahalom_ban
-      inds[((t1.data).components)] = 0+1+2
-      let text_3  = (((t1.data).components))[0] | {
-      let enc_4  = (((t1.data).components))[1] | {
-      let mesg_5  = (((t1.data).components))[2] | {
-        ((t1.data).components) = 0->text_3 + 1->enc_4 + 2->mesg_5
-        text_3 = arbitrary_init_yahalom_ban.yahalom_ban_init_Nb
-        learnt_term_by[getLTK[arbitrary_init_yahalom_ban.yahalom_ban_init_a,arbitrary_init_yahalom_ban.yahalom_ban_init_s],arbitrary_init_yahalom_ban.agent,t1]
-        inds[(enc_4).plaintext.components] = 0+1+2
-        let name_9  = ((enc_4).plaintext.components)[0] | {
-        let skey_10  = ((enc_4).plaintext.components)[1] | {
-        let text_11  = ((enc_4).plaintext.components)[2] | {
-          (enc_4).plaintext.components = 0->name_9 + 1->skey_10 + 2->text_11
-          name_9 = arbitrary_init_yahalom_ban.yahalom_ban_init_b
-          skey_10 = arbitrary_init_yahalom_ban.yahalom_ban_init_Kab
-          text_11 = arbitrary_init_yahalom_ban.yahalom_ban_init_Na
-        }}}
-        (enc_4).encryptionKey = getLTK[arbitrary_init_yahalom_ban.yahalom_ban_init_a,arbitrary_init_yahalom_ban.yahalom_ban_init_s]
-        mesg_5 = arbitrary_init_yahalom_ban.yahalom_ban_init_msg
-      }}}
-
-      t2.sender = arbitrary_init_yahalom_ban
-      inds[((t2.data).components)] = 0+1
-      let mesg_12  = (((t2.data).components))[0] | {
-      let enc_13  = (((t2.data).components))[1] | {
-        ((t2.data).components) = 0->mesg_12 + 1->enc_13
-        mesg_12 = arbitrary_init_yahalom_ban.yahalom_ban_init_msg
-        inds[(enc_13).plaintext.components] = 0
-        let text_15  = ((enc_13).plaintext.components)[0] | {
-          (enc_13).plaintext.components = 0->text_15
-          text_15 = arbitrary_init_yahalom_ban.yahalom_ban_init_Nb
-        }
-        (enc_13).encryptionKey = arbitrary_init_yahalom_ban.yahalom_ban_init_Kab
-      }}
-
-    }}}
+    {
+      { exec_init_trace_len_0[arbitrary_init_yahalom_ban] }
+      or
+      { exec_init_trace_len_1[arbitrary_init_yahalom_ban] }
+      or
+      { exec_init_trace_len_2[arbitrary_init_yahalom_ban] }
+      or
+      { exec_init_trace_len_3[arbitrary_init_yahalom_ban] }
+    }
   }
 }
 sig yahalom_ban_server extends strand {
@@ -491,7 +524,74 @@ sig yahalom_ban_server extends strand {
   yahalom_ban_server_Nb : one text,
   yahalom_ban_server_Kab : one skey
 }
-pred exec_yahalom_ban_server {
+pred exec_yahalom_ban_server_mesg_0[t0:Timeslot,arbitrary_server_yahalom_ban:yahalom_ban_server]{
+  t0.receiver = arbitrary_server_yahalom_ban
+  inds[((t0.data).components)] = 0+1+2
+  let name_16  = (((t0.data).components))[0] | {
+  let text_17  = (((t0.data).components))[1] | {
+  let enc_18  = (((t0.data).components))[2] | {
+    ((t0.data).components) = 0->name_16 + 1->text_17 + 2->enc_18
+    name_16 = arbitrary_server_yahalom_ban.yahalom_ban_server_b
+    text_17 = arbitrary_server_yahalom_ban.yahalom_ban_server_Nb
+    learnt_term_by[getLTK[arbitrary_server_yahalom_ban.yahalom_ban_server_b,arbitrary_server_yahalom_ban.yahalom_ban_server_s],arbitrary_server_yahalom_ban.agent,t0]
+    inds[(enc_18).plaintext.components] = 0+1
+    let name_21  = ((enc_18).plaintext.components)[0] | {
+    let text_22  = ((enc_18).plaintext.components)[1] | {
+      (enc_18).plaintext.components = 0->name_21 + 1->text_22
+      name_21 = arbitrary_server_yahalom_ban.yahalom_ban_server_a
+      text_22 = arbitrary_server_yahalom_ban.yahalom_ban_server_Na
+    }}
+    (enc_18).encryptionKey = getLTK[arbitrary_server_yahalom_ban.yahalom_ban_server_b,arbitrary_server_yahalom_ban.yahalom_ban_server_s]
+  }}}
+}
+pred exec_yahalom_ban_server_mesg_1[t1:Timeslot,arbitrary_server_yahalom_ban:yahalom_ban_server]{
+  t1.sender = arbitrary_server_yahalom_ban
+  inds[((t1.data).components)] = 0+1+2
+  let text_23  = (((t1.data).components))[0] | {
+  let enc_24  = (((t1.data).components))[1] | {
+  let enc_25  = (((t1.data).components))[2] | {
+    ((t1.data).components) = 0->text_23 + 1->enc_24 + 2->enc_25
+    text_23 = arbitrary_server_yahalom_ban.yahalom_ban_server_Nb
+    inds[(enc_24).plaintext.components] = 0+1+2
+    let name_29  = ((enc_24).plaintext.components)[0] | {
+    let skey_30  = ((enc_24).plaintext.components)[1] | {
+    let text_31  = ((enc_24).plaintext.components)[2] | {
+      (enc_24).plaintext.components = 0->name_29 + 1->skey_30 + 2->text_31
+      name_29 = arbitrary_server_yahalom_ban.yahalom_ban_server_b
+      skey_30 = arbitrary_server_yahalom_ban.yahalom_ban_server_Kab
+      text_31 = arbitrary_server_yahalom_ban.yahalom_ban_server_Na
+    }}}
+    (enc_24).encryptionKey = getLTK[arbitrary_server_yahalom_ban.yahalom_ban_server_a,arbitrary_server_yahalom_ban.yahalom_ban_server_s]
+    inds[(enc_25).plaintext.components] = 0+1+2
+    let name_35  = ((enc_25).plaintext.components)[0] | {
+    let skey_36  = ((enc_25).plaintext.components)[1] | {
+    let text_37  = ((enc_25).plaintext.components)[2] | {
+      (enc_25).plaintext.components = 0->name_35 + 1->skey_36 + 2->text_37
+      name_35 = arbitrary_server_yahalom_ban.yahalom_ban_server_a
+      skey_36 = arbitrary_server_yahalom_ban.yahalom_ban_server_Kab
+      text_37 = arbitrary_server_yahalom_ban.yahalom_ban_server_Nb
+    }}}
+    (enc_25).encryptionKey = getLTK[arbitrary_server_yahalom_ban.yahalom_ban_server_b,arbitrary_server_yahalom_ban.yahalom_ban_server_s]
+  }}}
+}
+pred exec_server_trace_len_0[arbitrary_server_yahalom_ban:yahalom_ban_server]{
+  no (sender.arbitrary_server_yahalom_ban + receiver.arbitrary_server_yahalom_ban)
+}
+pred exec_server_trace_len_1[arbitrary_server_yahalom_ban:yahalom_ban_server]{
+  some t0 : Timeslot {
+    t0 = sender.arbitrary_server_yahalom_ban + receiver.arbitrary_server_yahalom_ban
+    exec_yahalom_ban_server_mesg_0[t0,arbitrary_server_yahalom_ban]
+  }
+}
+pred exec_server_trace_len_2[arbitrary_server_yahalom_ban:yahalom_ban_server]{
+  some t0 : Timeslot {
+  some t1 : t0.(^next) {
+    t0+t1 = sender.arbitrary_server_yahalom_ban + receiver.arbitrary_server_yahalom_ban
+    exec_yahalom_ban_server_mesg_0[t0,arbitrary_server_yahalom_ban]
+    exec_yahalom_ban_server_mesg_1[t1,arbitrary_server_yahalom_ban]
+  }}
+}
+pred exec_yahalom_ban_server{
   all arbitrary_server_yahalom_ban : yahalom_ban_server | {
     no aStrand : strand | {
       originates[aStrand,getLTK[arbitrary_server_yahalom_ban.yahalom_ban_server_a,arbitrary_server_yahalom_ban.yahalom_ban_server_s]] or generates [aStrand,getLTK[arbitrary_server_yahalom_ban.yahalom_ban_server_a,arbitrary_server_yahalom_ban.yahalom_ban_server_s]]
@@ -503,59 +603,13 @@ pred exec_yahalom_ban_server {
     arbitrary_server_yahalom_ban.yahalom_ban_server_a != arbitrary_server_yahalom_ban.yahalom_ban_server_b
     arbitrary_server_yahalom_ban.yahalom_ban_server_a != arbitrary_server_yahalom_ban.yahalom_ban_server_s
     arbitrary_server_yahalom_ban.yahalom_ban_server_b != arbitrary_server_yahalom_ban.yahalom_ban_server_s
-    some t0 : Timeslot {
-    some t1 : t0.(^next) {
-      ((arbitrary_server_yahalom_ban.yahalom_ban_server_Kab)->t1) in (arbitrary_server_yahalom_ban.agent).generated_times
-      t0+t1 = sender.arbitrary_server_yahalom_ban + receiver.arbitrary_server_yahalom_ban
-      t0.receiver = arbitrary_server_yahalom_ban
-      inds[((t0.data).components)] = 0+1+2
-      let name_16  = (((t0.data).components))[0] | {
-      let text_17  = (((t0.data).components))[1] | {
-      let enc_18  = (((t0.data).components))[2] | {
-        ((t0.data).components) = 0->name_16 + 1->text_17 + 2->enc_18
-        name_16 = arbitrary_server_yahalom_ban.yahalom_ban_server_b
-        text_17 = arbitrary_server_yahalom_ban.yahalom_ban_server_Nb
-        learnt_term_by[getLTK[arbitrary_server_yahalom_ban.yahalom_ban_server_b,arbitrary_server_yahalom_ban.yahalom_ban_server_s],arbitrary_server_yahalom_ban.agent,t0]
-        inds[(enc_18).plaintext.components] = 0+1
-        let name_21  = ((enc_18).plaintext.components)[0] | {
-        let text_22  = ((enc_18).plaintext.components)[1] | {
-          (enc_18).plaintext.components = 0->name_21 + 1->text_22
-          name_21 = arbitrary_server_yahalom_ban.yahalom_ban_server_a
-          text_22 = arbitrary_server_yahalom_ban.yahalom_ban_server_Na
-        }}
-        (enc_18).encryptionKey = getLTK[arbitrary_server_yahalom_ban.yahalom_ban_server_b,arbitrary_server_yahalom_ban.yahalom_ban_server_s]
-      }}}
-
-      t1.sender = arbitrary_server_yahalom_ban
-      inds[((t1.data).components)] = 0+1+2
-      let text_23  = (((t1.data).components))[0] | {
-      let enc_24  = (((t1.data).components))[1] | {
-      let enc_25  = (((t1.data).components))[2] | {
-        ((t1.data).components) = 0->text_23 + 1->enc_24 + 2->enc_25
-        text_23 = arbitrary_server_yahalom_ban.yahalom_ban_server_Nb
-        inds[(enc_24).plaintext.components] = 0+1+2
-        let name_29  = ((enc_24).plaintext.components)[0] | {
-        let skey_30  = ((enc_24).plaintext.components)[1] | {
-        let text_31  = ((enc_24).plaintext.components)[2] | {
-          (enc_24).plaintext.components = 0->name_29 + 1->skey_30 + 2->text_31
-          name_29 = arbitrary_server_yahalom_ban.yahalom_ban_server_b
-          skey_30 = arbitrary_server_yahalom_ban.yahalom_ban_server_Kab
-          text_31 = arbitrary_server_yahalom_ban.yahalom_ban_server_Na
-        }}}
-        (enc_24).encryptionKey = getLTK[arbitrary_server_yahalom_ban.yahalom_ban_server_a,arbitrary_server_yahalom_ban.yahalom_ban_server_s]
-        inds[(enc_25).plaintext.components] = 0+1+2
-        let name_35  = ((enc_25).plaintext.components)[0] | {
-        let skey_36  = ((enc_25).plaintext.components)[1] | {
-        let text_37  = ((enc_25).plaintext.components)[2] | {
-          (enc_25).plaintext.components = 0->name_35 + 1->skey_36 + 2->text_37
-          name_35 = arbitrary_server_yahalom_ban.yahalom_ban_server_a
-          skey_36 = arbitrary_server_yahalom_ban.yahalom_ban_server_Kab
-          text_37 = arbitrary_server_yahalom_ban.yahalom_ban_server_Nb
-        }}}
-        (enc_25).encryptionKey = getLTK[arbitrary_server_yahalom_ban.yahalom_ban_server_b,arbitrary_server_yahalom_ban.yahalom_ban_server_s]
-      }}}
-
-    }}
+    {
+      { exec_server_trace_len_0[arbitrary_server_yahalom_ban] }
+      or
+      { exec_server_trace_len_1[arbitrary_server_yahalom_ban] }
+      or
+      { exec_server_trace_len_2[arbitrary_server_yahalom_ban] }
+    }
   }
 }
 sig yahalom_ban_resp extends strand {
@@ -566,7 +620,89 @@ sig yahalom_ban_resp extends strand {
   yahalom_ban_resp_Nb : one text,
   yahalom_ban_resp_Kab : one skey
 }
-pred exec_yahalom_ban_resp {
+pred exec_yahalom_ban_resp_mesg_0[t0:Timeslot,arbitrary_resp_yahalom_ban:yahalom_ban_resp]{
+  t0.receiver = arbitrary_resp_yahalom_ban
+  inds[((t0.data).components)] = 0+1
+  let name_38  = (((t0.data).components))[0] | {
+  let text_39  = (((t0.data).components))[1] | {
+    ((t0.data).components) = 0->name_38 + 1->text_39
+    name_38 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_a
+    text_39 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_Na
+  }}
+}
+pred exec_yahalom_ban_resp_mesg_1[t1:Timeslot,arbitrary_resp_yahalom_ban:yahalom_ban_resp]{
+  t1.sender = arbitrary_resp_yahalom_ban
+  inds[((t1.data).components)] = 0+1+2
+  let name_40  = (((t1.data).components))[0] | {
+  let text_41  = (((t1.data).components))[1] | {
+  let enc_42  = (((t1.data).components))[2] | {
+    ((t1.data).components) = 0->name_40 + 1->text_41 + 2->enc_42
+    name_40 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_b
+    text_41 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_Nb
+    inds[(enc_42).plaintext.components] = 0+1
+    let name_45  = ((enc_42).plaintext.components)[0] | {
+    let text_46  = ((enc_42).plaintext.components)[1] | {
+      (enc_42).plaintext.components = 0->name_45 + 1->text_46
+      name_45 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_a
+      text_46 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_Na
+    }}
+    (enc_42).encryptionKey = getLTK[arbitrary_resp_yahalom_ban.yahalom_ban_resp_b,arbitrary_resp_yahalom_ban.yahalom_ban_resp_s]
+  }}}
+}
+pred exec_yahalom_ban_resp_mesg_2[t2:Timeslot,arbitrary_resp_yahalom_ban:yahalom_ban_resp]{
+  t2.receiver = arbitrary_resp_yahalom_ban
+  inds[((t2.data).components)] = 0+1
+  let enc_47  = (((t2.data).components))[0] | {
+  let enc_48  = (((t2.data).components))[1] | {
+    ((t2.data).components) = 0->enc_47 + 1->enc_48
+    learnt_term_by[getLTK[arbitrary_resp_yahalom_ban.yahalom_ban_resp_b,arbitrary_resp_yahalom_ban.yahalom_ban_resp_s],arbitrary_resp_yahalom_ban.agent,t2]
+    inds[(enc_47).plaintext.components] = 0+1+2
+    let name_52  = ((enc_47).plaintext.components)[0] | {
+    let skey_53  = ((enc_47).plaintext.components)[1] | {
+    let text_54  = ((enc_47).plaintext.components)[2] | {
+      (enc_47).plaintext.components = 0->name_52 + 1->skey_53 + 2->text_54
+      name_52 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_a
+      skey_53 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_Kab
+      text_54 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_Nb
+    }}}
+    (enc_47).encryptionKey = getLTK[arbitrary_resp_yahalom_ban.yahalom_ban_resp_b,arbitrary_resp_yahalom_ban.yahalom_ban_resp_s]
+    learnt_term_by[arbitrary_resp_yahalom_ban.yahalom_ban_resp_Kab,arbitrary_resp_yahalom_ban.agent,t2]
+    inds[(enc_48).plaintext.components] = 0
+    let text_56  = ((enc_48).plaintext.components)[0] | {
+      (enc_48).plaintext.components = 0->text_56
+      text_56 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_Nb
+    }
+    (enc_48).encryptionKey = arbitrary_resp_yahalom_ban.yahalom_ban_resp_Kab
+  }}
+}
+pred exec_resp_trace_len_0[arbitrary_resp_yahalom_ban:yahalom_ban_resp]{
+  no (sender.arbitrary_resp_yahalom_ban + receiver.arbitrary_resp_yahalom_ban)
+}
+pred exec_resp_trace_len_1[arbitrary_resp_yahalom_ban:yahalom_ban_resp]{
+  some t0 : Timeslot {
+    t0 = sender.arbitrary_resp_yahalom_ban + receiver.arbitrary_resp_yahalom_ban
+    exec_yahalom_ban_resp_mesg_0[t0,arbitrary_resp_yahalom_ban]
+  }
+}
+pred exec_resp_trace_len_2[arbitrary_resp_yahalom_ban:yahalom_ban_resp]{
+  some t0 : Timeslot {
+  some t1 : t0.(^next) {
+    t0+t1 = sender.arbitrary_resp_yahalom_ban + receiver.arbitrary_resp_yahalom_ban
+    exec_yahalom_ban_resp_mesg_0[t0,arbitrary_resp_yahalom_ban]
+    exec_yahalom_ban_resp_mesg_1[t1,arbitrary_resp_yahalom_ban]
+  }}
+}
+pred exec_resp_trace_len_3[arbitrary_resp_yahalom_ban:yahalom_ban_resp]{
+  some t0 : Timeslot {
+  some t1 : t0.(^next) {
+  some t2 : t1.(^next) {
+    t0+t1+t2 = sender.arbitrary_resp_yahalom_ban + receiver.arbitrary_resp_yahalom_ban
+    exec_yahalom_ban_resp_mesg_0[t0,arbitrary_resp_yahalom_ban]
+    exec_yahalom_ban_resp_mesg_1[t1,arbitrary_resp_yahalom_ban]
+    exec_yahalom_ban_resp_mesg_2[t2,arbitrary_resp_yahalom_ban]
+  }}}
+}
+pred exec_yahalom_ban_resp{
   all arbitrary_resp_yahalom_ban : yahalom_ban_resp | {
     no aStrand : strand | {
       originates[aStrand,getLTK[arbitrary_resp_yahalom_ban.yahalom_ban_resp_b,arbitrary_resp_yahalom_ban.yahalom_ban_resp_s]] or generates [aStrand,getLTK[arbitrary_resp_yahalom_ban.yahalom_ban_resp_b,arbitrary_resp_yahalom_ban.yahalom_ban_resp_s]]
@@ -575,64 +711,15 @@ pred exec_yahalom_ban_resp {
     arbitrary_resp_yahalom_ban.yahalom_ban_resp_a != arbitrary_resp_yahalom_ban.yahalom_ban_resp_b
     arbitrary_resp_yahalom_ban.yahalom_ban_resp_a != arbitrary_resp_yahalom_ban.yahalom_ban_resp_s
     arbitrary_resp_yahalom_ban.yahalom_ban_resp_b != arbitrary_resp_yahalom_ban.yahalom_ban_resp_s
-    some t0 : Timeslot {
-    some t1 : t0.(^next) {
-    some t2 : t1.(^next) {
-      ((arbitrary_resp_yahalom_ban.yahalom_ban_resp_Nb)->t1) in (arbitrary_resp_yahalom_ban.agent).generated_times
-      t0+t1+t2 = sender.arbitrary_resp_yahalom_ban + receiver.arbitrary_resp_yahalom_ban
-      t0.receiver = arbitrary_resp_yahalom_ban
-      inds[((t0.data).components)] = 0+1
-      let name_38  = (((t0.data).components))[0] | {
-      let text_39  = (((t0.data).components))[1] | {
-        ((t0.data).components) = 0->name_38 + 1->text_39
-        name_38 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_a
-        text_39 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_Na
-      }}
-
-      t1.sender = arbitrary_resp_yahalom_ban
-      inds[((t1.data).components)] = 0+1+2
-      let name_40  = (((t1.data).components))[0] | {
-      let text_41  = (((t1.data).components))[1] | {
-      let enc_42  = (((t1.data).components))[2] | {
-        ((t1.data).components) = 0->name_40 + 1->text_41 + 2->enc_42
-        name_40 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_b
-        text_41 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_Nb
-        inds[(enc_42).plaintext.components] = 0+1
-        let name_45  = ((enc_42).plaintext.components)[0] | {
-        let text_46  = ((enc_42).plaintext.components)[1] | {
-          (enc_42).plaintext.components = 0->name_45 + 1->text_46
-          name_45 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_a
-          text_46 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_Na
-        }}
-        (enc_42).encryptionKey = getLTK[arbitrary_resp_yahalom_ban.yahalom_ban_resp_b,arbitrary_resp_yahalom_ban.yahalom_ban_resp_s]
-      }}}
-
-      t2.receiver = arbitrary_resp_yahalom_ban
-      inds[((t2.data).components)] = 0+1
-      let enc_47  = (((t2.data).components))[0] | {
-      let enc_48  = (((t2.data).components))[1] | {
-        ((t2.data).components) = 0->enc_47 + 1->enc_48
-        learnt_term_by[getLTK[arbitrary_resp_yahalom_ban.yahalom_ban_resp_b,arbitrary_resp_yahalom_ban.yahalom_ban_resp_s],arbitrary_resp_yahalom_ban.agent,t2]
-        inds[(enc_47).plaintext.components] = 0+1+2
-        let name_52  = ((enc_47).plaintext.components)[0] | {
-        let skey_53  = ((enc_47).plaintext.components)[1] | {
-        let text_54  = ((enc_47).plaintext.components)[2] | {
-          (enc_47).plaintext.components = 0->name_52 + 1->skey_53 + 2->text_54
-          name_52 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_a
-          skey_53 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_Kab
-          text_54 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_Nb
-        }}}
-        (enc_47).encryptionKey = getLTK[arbitrary_resp_yahalom_ban.yahalom_ban_resp_b,arbitrary_resp_yahalom_ban.yahalom_ban_resp_s]
-        learnt_term_by[arbitrary_resp_yahalom_ban.yahalom_ban_resp_Kab,arbitrary_resp_yahalom_ban.agent,t2]
-        inds[(enc_48).plaintext.components] = 0
-        let text_56  = ((enc_48).plaintext.components)[0] | {
-          (enc_48).plaintext.components = 0->text_56
-          text_56 = arbitrary_resp_yahalom_ban.yahalom_ban_resp_Nb
-        }
-        (enc_48).encryptionKey = arbitrary_resp_yahalom_ban.yahalom_ban_resp_Kab
-      }}
-
-    }}}
+    {
+      { exec_resp_trace_len_0[arbitrary_resp_yahalom_ban] }
+      or
+      { exec_resp_trace_len_1[arbitrary_resp_yahalom_ban] }
+      or
+      { exec_resp_trace_len_2[arbitrary_resp_yahalom_ban] }
+      or
+      { exec_resp_trace_len_3[arbitrary_resp_yahalom_ban] }
+    }
   }
 }
 one sig skeleton_yahalom_ban_0 {
@@ -643,7 +730,7 @@ one sig skeleton_yahalom_ban_0 {
   skeleton_yahalom_ban_0_Nb : one text,
   skeleton_yahalom_ban_0_Kab : one skey
 }
-pred constrain_skeleton_yahalom_ban_0 {
+pred constrain_skeleton_yahalom_ban_0{
   some skeleton_init_0_strand_0 : yahalom_ban_init | {
     skeleton_init_0_strand_0.yahalom_ban_init_a = skeleton_yahalom_ban_0.skeleton_yahalom_ban_0_a
     skeleton_init_0_strand_0.yahalom_ban_init_b = skeleton_yahalom_ban_0.skeleton_yahalom_ban_0_b
@@ -675,41 +762,161 @@ one sig skeleton_attack_1 {
   skeleton_attack_1_s : one name,
   skeleton_attack_1_Na : one text,
   skeleton_attack_1_Nb : one text,
-  skeleton_attack_1_Kab : one skey
+  skeleton_attack_1_Na_ : one text,
+  skeleton_attack_1_Ni : one text,
+  skeleton_attack_1_Kab : one skey,
+  skeleton_attack_1_init_strand1 : one yahalom_ban_init,
+  skeleton_attack_1_init_strand2 : one yahalom_ban_init,
+  skeleton_attack_1_server_strand1 : one yahalom_ban_server,
+  skeleton_attack_1_server_strand2 : one yahalom_ban_server
 }
-pred constrain_skeleton_attack_1 {
-  some skeleton_init_1_strand_0 : yahalom_ban_init | {
-    skeleton_init_1_strand_0.yahalom_ban_init_a = skeleton_attack_1.skeleton_attack_1_a
-    skeleton_init_1_strand_0.yahalom_ban_init_b = skeleton_attack_1.skeleton_attack_1_b
-    skeleton_init_1_strand_0.yahalom_ban_init_s = skeleton_attack_1.skeleton_attack_1_s
-    skeleton_init_1_strand_0.yahalom_ban_init_Kab = skeleton_attack_1.skeleton_attack_1_Kab
-    skeleton_init_1_strand_0.yahalom_ban_init_Na = skeleton_attack_1.skeleton_attack_1_Na
-    skeleton_init_1_strand_0.yahalom_ban_init_Nb = skeleton_attack_1.skeleton_attack_1_Nb
-  }
-  some skeleton_init_1_strand_1 : yahalom_ban_init | {
-    skeleton_init_1_strand_1.yahalom_ban_init_a = skeleton_attack_1.skeleton_attack_1_a
-    skeleton_init_1_strand_1.yahalom_ban_init_b = skeleton_attack_1.skeleton_attack_1_b
-    skeleton_init_1_strand_1.yahalom_ban_init_s = skeleton_attack_1.skeleton_attack_1_s
-    skeleton_init_1_strand_1.yahalom_ban_init_Kab = skeleton_attack_1.skeleton_attack_1_Kab
-    skeleton_init_1_strand_1.yahalom_ban_init_Na = skeleton_attack_1.skeleton_attack_1_Na
-    skeleton_init_1_strand_1.yahalom_ban_init_Nb = skeleton_attack_1.skeleton_attack_1_Nb
-  }
-  some skeleton_server_1_strand_2 : yahalom_ban_server | {
-    skeleton_server_1_strand_2.yahalom_ban_server_a = skeleton_attack_1.skeleton_attack_1_a
-    skeleton_server_1_strand_2.yahalom_ban_server_b = skeleton_attack_1.skeleton_attack_1_b
-    skeleton_server_1_strand_2.yahalom_ban_server_s = skeleton_attack_1.skeleton_attack_1_s
-    skeleton_server_1_strand_2.yahalom_ban_server_Kab = skeleton_attack_1.skeleton_attack_1_Kab
-    skeleton_server_1_strand_2.yahalom_ban_server_Na = skeleton_attack_1.skeleton_attack_1_Na
-    skeleton_server_1_strand_2.yahalom_ban_server_Nb = skeleton_attack_1.skeleton_attack_1_Nb
-  }
-  some skeleton_server_1_strand_3 : yahalom_ban_server | {
-    skeleton_server_1_strand_3.yahalom_ban_server_a = skeleton_attack_1.skeleton_attack_1_a
-    skeleton_server_1_strand_3.yahalom_ban_server_b = skeleton_attack_1.skeleton_attack_1_b
-    skeleton_server_1_strand_3.yahalom_ban_server_s = skeleton_attack_1.skeleton_attack_1_s
-    skeleton_server_1_strand_3.yahalom_ban_server_Kab = skeleton_attack_1.skeleton_attack_1_Kab
-    skeleton_server_1_strand_3.yahalom_ban_server_Na = skeleton_attack_1.skeleton_attack_1_Na
-    skeleton_server_1_strand_3.yahalom_ban_server_Nb = skeleton_attack_1.skeleton_attack_1_Nb
-  }
+pred constrain_skeleton_attack_1_attack_run{
+  some t_0 : Timeslot {
+  some t_1 : t_0.(^next) {
+  some t_2 : t_1.(^next) {
+  some t_3 : t_2.(^next) {
+  some t_4 : t_3.(^next) {
+  some t_5 : t_4.(^next) {
+  some t_6 : t_5.(^next) {
+    t_0.sender = skeleton_attack_1.skeleton_attack_1_init_strand1
+    inds[(t_0.data.components)] = 0+1
+    let name_57  = ((t_0.data.components))[0] | {
+    let text_58  = ((t_0.data.components))[1] | {
+      (t_0.data.components) = 0->name_57 + 1->text_58
+      name_57 = skeleton_attack_1.skeleton_attack_1_a
+      text_58 = skeleton_attack_1.skeleton_attack_1_Na
+    }}
+
+    t_1.receiver = skeleton_attack_1.skeleton_attack_1_init_strand2
+    inds[(t_1.data.components)] = 0+1
+    let name_59  = ((t_1.data.components))[0] | {
+    let text_60  = ((t_1.data.components))[1] | {
+      (t_1.data.components) = 0->name_59 + 1->text_60
+      name_59 = skeleton_attack_1.skeleton_attack_1_b
+      text_60 = skeleton_attack_1.skeleton_attack_1_Na
+    }}
+
+    t_2.sender = skeleton_attack_1.skeleton_attack_1_init_strand2
+    inds[(t_2.data.components)] = 0+1+2
+    let name_61  = ((t_2.data.components))[0] | {
+    let text_62  = ((t_2.data.components))[1] | {
+    let enc_63  = ((t_2.data.components))[2] | {
+      (t_2.data.components) = 0->name_61 + 1->text_62 + 2->enc_63
+      name_61 = skeleton_attack_1.skeleton_attack_1_a
+      text_62 = skeleton_attack_1.skeleton_attack_1_Na_
+      inds[(enc_63).plaintext.components] = 0+1
+      let name_66  = ((enc_63).plaintext.components)[0] | {
+      let text_67  = ((enc_63).plaintext.components)[1] | {
+        (enc_63).plaintext.components = 0->name_66 + 1->text_67
+        name_66 = skeleton_attack_1.skeleton_attack_1_b
+        text_67 = skeleton_attack_1.skeleton_attack_1_Na
+      }}
+      (enc_63).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_a,skeleton_attack_1.skeleton_attack_1_s]
+    }}}
+
+    t_3.receiver = skeleton_attack_1.skeleton_attack_1_server_strand2
+    inds[(t_3.data.components)] = 0+1+2
+    let name_68  = ((t_3.data.components))[0] | {
+    let text_69  = ((t_3.data.components))[1] | {
+    let enc_70  = ((t_3.data.components))[2] | {
+      (t_3.data.components) = 0->name_68 + 1->text_69 + 2->enc_70
+      name_68 = skeleton_attack_1.skeleton_attack_1_a
+      text_69 = skeleton_attack_1.skeleton_attack_1_Na
+      inds[(enc_70).plaintext.components] = 0+1
+      let name_73  = ((enc_70).plaintext.components)[0] | {
+      let text_74  = ((enc_70).plaintext.components)[1] | {
+        (enc_70).plaintext.components = 0->name_73 + 1->text_74
+        name_73 = skeleton_attack_1.skeleton_attack_1_b
+        text_74 = skeleton_attack_1.skeleton_attack_1_Na
+      }}
+      (enc_70).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_a,skeleton_attack_1.skeleton_attack_1_s]
+    }}}
+
+    t_4.sender = skeleton_attack_1.skeleton_attack_1_server_strand1
+    inds[(t_4.data.components)] = 0+1+2
+    let text_75  = ((t_4.data.components))[0] | {
+    let enc_76  = ((t_4.data.components))[1] | {
+    let enc_77  = ((t_4.data.components))[2] | {
+      (t_4.data.components) = 0->text_75 + 1->enc_76 + 2->enc_77
+      text_75 = skeleton_attack_1.skeleton_attack_1_Na
+      inds[(enc_76).plaintext.components] = 0+1+2
+      let name_81  = ((enc_76).plaintext.components)[0] | {
+      let skey_82  = ((enc_76).plaintext.components)[1] | {
+      let text_83  = ((enc_76).plaintext.components)[2] | {
+        (enc_76).plaintext.components = 0->name_81 + 1->skey_82 + 2->text_83
+        name_81 = skeleton_attack_1.skeleton_attack_1_a
+        skey_82 = skeleton_attack_1.skeleton_attack_1_Kab
+        text_83 = skeleton_attack_1.skeleton_attack_1_Na
+      }}}
+      (enc_76).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_b,skeleton_attack_1.skeleton_attack_1_s]
+      inds[(enc_77).plaintext.components] = 0+1+2
+      let name_87  = ((enc_77).plaintext.components)[0] | {
+      let skey_88  = ((enc_77).plaintext.components)[1] | {
+      let text_89  = ((enc_77).plaintext.components)[2] | {
+        (enc_77).plaintext.components = 0->name_87 + 1->skey_88 + 2->text_89
+        name_87 = skeleton_attack_1.skeleton_attack_1_b
+        skey_88 = skeleton_attack_1.skeleton_attack_1_Kab
+        text_89 = skeleton_attack_1.skeleton_attack_1_Na
+      }}}
+      (enc_77).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_a,skeleton_attack_1.skeleton_attack_1_s]
+    }}}
+
+    t_5.receiver = skeleton_attack_1.skeleton_attack_1_init_strand1
+    inds[(t_5.data.components)] = 0+1+2
+    let text_90  = ((t_5.data.components))[0] | {
+    let enc_91  = ((t_5.data.components))[1] | {
+    let enc_92  = ((t_5.data.components))[2] | {
+      (t_5.data.components) = 0->text_90 + 1->enc_91 + 2->enc_92
+      text_90 = skeleton_attack_1.skeleton_attack_1_Ni
+      inds[(enc_91).plaintext.components] = 0+1+2
+      let name_96  = ((enc_91).plaintext.components)[0] | {
+      let skey_97  = ((enc_91).plaintext.components)[1] | {
+      let text_98  = ((enc_91).plaintext.components)[2] | {
+        (enc_91).plaintext.components = 0->name_96 + 1->skey_97 + 2->text_98
+        name_96 = skeleton_attack_1.skeleton_attack_1_b
+        skey_97 = skeleton_attack_1.skeleton_attack_1_Kab
+        text_98 = skeleton_attack_1.skeleton_attack_1_Na
+      }}}
+      (enc_91).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_a,skeleton_attack_1.skeleton_attack_1_s]
+      inds[(enc_92).plaintext.components] = 0+1+2
+      let name_102  = ((enc_92).plaintext.components)[0] | {
+      let skey_103  = ((enc_92).plaintext.components)[1] | {
+      let text_104  = ((enc_92).plaintext.components)[2] | {
+        (enc_92).plaintext.components = 0->name_102 + 1->skey_103 + 2->text_104
+        name_102 = skeleton_attack_1.skeleton_attack_1_a
+        skey_103 = skeleton_attack_1.skeleton_attack_1_Kab
+        text_104 = skeleton_attack_1.skeleton_attack_1_Na
+      }}}
+      (enc_92).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_b,skeleton_attack_1.skeleton_attack_1_s]
+    }}}
+
+    t_6.sender = skeleton_attack_1.skeleton_attack_1_init_strand1
+    inds[(t_6.data.components)] = 0+1
+    let enc_105  = ((t_6.data.components))[0] | {
+    let enc_106  = ((t_6.data.components))[1] | {
+      (t_6.data.components) = 0->enc_105 + 1->enc_106
+      inds[(enc_105).plaintext.components] = 0+1+2
+      let name_110  = ((enc_105).plaintext.components)[0] | {
+      let skey_111  = ((enc_105).plaintext.components)[1] | {
+      let text_112  = ((enc_105).plaintext.components)[2] | {
+        (enc_105).plaintext.components = 0->name_110 + 1->skey_111 + 2->text_112
+        name_110 = skeleton_attack_1.skeleton_attack_1_a
+        skey_111 = skeleton_attack_1.skeleton_attack_1_Kab
+        text_112 = skeleton_attack_1.skeleton_attack_1_Na
+      }}}
+      (enc_105).encryptionKey = getLTK[skeleton_attack_1.skeleton_attack_1_b,skeleton_attack_1.skeleton_attack_1_s]
+      inds[(enc_106).plaintext.components] = 0
+      let text_114  = ((enc_106).plaintext.components)[0] | {
+        (enc_106).plaintext.components = 0->text_114
+        text_114 = skeleton_attack_1.skeleton_attack_1_Ni
+      }
+      (enc_106).encryptionKey = skeleton_attack_1.skeleton_attack_1_Kab
+    }}
+
+  }}}}}}}
+}
+pred constrain_skeleton_attack_1{
+  constrain_skeleton_attack_1_attack_run
 }
 inst honest_run_bounds {
   no akey
