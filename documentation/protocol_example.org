@@ -200,13 +200,13 @@ Only including the bound 24 mesg and a few other sets should be enough as mesg i
 
 
 * Running the protocol
-Now that we have created our CPSA and forge files we can now run this protocol using the following
+Now that we have created our CPSA and forge files and placed them in a directory inside the prot_impl directory we do the following to run it
 #+BEGIN_SRC shell
-  python3 main_seq_text.py racket_file forge_file --destination_forge_file_path destination_file
+  python3 run_protocol_tuple.py {protocol_directory}
 #+END_SRC
-Above command generates a forge file which includes the content from our *forge_file* and the contents of our *racket_file* transcribed to forge predicates.
+Above command generates a forge file of the form protocol_name_tuple_new_transcr.frg
 To run the forge file you have to run the below command.
 #+BEGIN_SRC shell
-  racket destination_file
+  racket ./protocol_directory/protocol_name_tuple_new_transcr.frg
 #+END_SRC
-The visualizer opens up in your forge file.
+This opens up forge's UI for generating and viewing instances in your browser.

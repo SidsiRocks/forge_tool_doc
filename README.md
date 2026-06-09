@@ -10,3 +10,9 @@ The files in this repo are not enough to run these examples you have to download
 ## Documentation
 This repository also contains documentation/explanation for the code written for the protocols in prot_impl, and for the base.frg file in the forge tool. base.frg contains the model used for verification of protocols itself.
 The documentation itself is located in the documentation folder. The index for the documentation is located at ./forge_tool_doc/main.md
+
+
+In doc include:
+ * shortcomings of partial protocol clause
+ * time analysis on various protocols
+ * check query size to SMT solver (only relevant for partial trace ability)
